@@ -23,6 +23,28 @@
     gap: 1.5rem;
 }
 
+.back-button {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-right: -0.5rem;
+}
+
+.back-button:hover {
+    background: var(--primary);
+    border-color: transparent;
+    transform: translateX(-4px);
+    box-shadow: 0 0 15px var(--primary-glow);
+}
+
 .client-avatar {
     width: 64px;
     height: 64px;
@@ -106,10 +128,38 @@
     }
 }
 
+.quadrant-link {
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+}
+
+.quadrant-link .quadrant {
+    width: 100%;
+}
+
 .quadrant {
     min-height: 320px;
     display: flex;
     flex-direction: column;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.quadrant-link:hover .quadrant {
+    border-color: var(--primary);
+    transform: translateY(-4px);
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+}
+
+.focused-view {
+    display: flex;
+    flex-direction: column;
+}
+
+.focused-view .quadrant {
+    min-height: 600px;
+    cursor: default;
 }
 
 .card-header {

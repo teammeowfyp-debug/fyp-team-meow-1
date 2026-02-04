@@ -54,7 +54,7 @@ const Login: React.FC = () => {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="login-form-group">
+        <form onSubmit={handleSubmit} className="login-form-group" noValidate>
           <label className="login-label">
             Email Address
             <div className="login-input-wrapper">
@@ -63,7 +63,6 @@ const Login: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="advisor@calibre.com"
-                required
               />
             </div>
           </label>
@@ -76,7 +75,6 @@ const Login: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                required
               />
             </div>
           </label>

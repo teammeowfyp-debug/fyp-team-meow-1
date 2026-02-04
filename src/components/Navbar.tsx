@@ -1,5 +1,4 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
 import { useAuth } from '../lib/AuthProvider'
 import './Navbar.css'
 
@@ -31,22 +30,22 @@ const Navbar: React.FC = () => {
             </div>
 
             <div className="navbar-right">
-                <div className="profile-container">
-                    <div className="advisor-profile">
-                        <div className="advisor-info">
-                            <span className="advisor-name">Marcus Tan</span>
-                            <span className="advisor-role">Premier Advisor</span>
+                <div className="profile-wrapper">
+                    <div className="profile-container glass">
+                        <div className="advisor-profile">
+                            <div className="advisor-info">
+                                <span className="advisor-name">Marcus Tan</span>
+                                <span className="advisor-role">Premier Advisor</span>
+                            </div>
+                            <div className="advisor-avatar">MT</div>
                         </div>
-                        <div className="advisor-avatar">MT</div>
-                    </div>
 
-                    {user ? (
-                        <div className="profile-dropdown glass-card">
+                        <div className="profile-dropdown">
+                            <div className="dropdown-divider"></div>
                             <div className="dropdown-header">
-                                <span className="user-email">{user.email}</span>
+                                <span className="user-email">{user?.email}</span>
                                 <span className="user-status">Logged in</span>
                             </div>
-                            <div className="dropdown-divider"></div>
                             <button className="logout-button" onClick={() => signOut()}>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -56,13 +55,7 @@ const Navbar: React.FC = () => {
                                 Sign Out
                             </button>
                         </div>
-                    ) : (
-                        <div className="profile-dropdown glass-card">
-                            <Link to="/login" className="login-button">
-                                Sign In
-                            </Link>
-                        </div>
-                    )}
+                    </div>
                 </div>
             </div>
         </nav>

@@ -24,6 +24,11 @@ function AppContent() {
               </RequireAuth>
             }
           />
+          {/* Quadrant Focused Routes */}
+          <Route path="/asset-allocation" element={<RequireAuth><Dashboard /></RequireAuth>} />
+          <Route path="/cashflow" element={<RequireAuth><Dashboard /></RequireAuth>} />
+          <Route path="/plans" element={<RequireAuth><Dashboard /></RequireAuth>} />
+          <Route path="/risk" element={<RequireAuth><Dashboard /></RequireAuth>} />
         </Routes>
       </main>
     </div>
