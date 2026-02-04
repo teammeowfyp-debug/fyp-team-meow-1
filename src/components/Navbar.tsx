@@ -1,7 +1,11 @@
-import React from 'react';
-import './Navbar.css';
+import React from 'react'
+import { Link } from 'react-router-dom'
+import { useAuth } from '../lib/AuthProvider'
+import './Navbar.css'
 
 const Navbar: React.FC = () => {
+    const { user, signOut } = useAuth()
+
     return (
         <nav className="navbar glass">
             <div className="navbar-left">
@@ -27,6 +31,17 @@ const Navbar: React.FC = () => {
             </div>
 
             <div className="navbar-right">
+                <div className="nav-actions">
+                    {!user ? (
+                        <Link to="/login" className="login-link">Login</Link>
+                    ) : (
+                        <div className="signed-in">
+                            <span className="signed-in-email">{user.email}</span>
+                            <button className="login-link" onClick={() => signOut()}>Logout</button>
+                        </div>
+                    )}
+                </div>
+
                 <div className="advisor-profile">
                     <div className="advisor-info">
                         <span className="advisor-name">Marcus Tan</span>
@@ -36,7 +51,7 @@ const Navbar: React.FC = () => {
                 </div>
             </div>
         </nav>
-    );
-};
+    )
+}
 
-export default Navbar;
+export default Navbar
