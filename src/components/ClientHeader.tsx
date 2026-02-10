@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { supabase } from '../lib/supabaseClient';
 import './Dashboard.css';
 
 interface ClientHeaderProps {
@@ -6,15 +8,85 @@ interface ClientHeaderProps {
     showBack?: boolean;
 }
 
+interface ClientData {
+    client_id: string;
+    full_name: string;
+    risk_profile: string;
+    risk_assessment_date: string;
+}
+
 const ClientHeader: React.FC<ClientHeaderProps> = ({ onBack, showBack }) => {
-    const clientInfo = {
-        name: 'Jonathan Sterling',
-        age: 42,
-        dob: '12 May 1983',
-        id: 'ID-992841-B',
-        lastUpdated: '04 Feb 2026, 12:45 PM',
-        netWorth: '$2,485,900.00',
-    };
+    const { clientId } = useParams<{ clientId: string }>();
+    const [client, setClient] = useState<ClientData | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchClientData = async () => {
+            try {
+                setLoading(true);
+
+                let query = supabase
+                    .from('clients')
+                    .select('client_id, full_name, risk_profile, risk_assessment_date');
+
+                if (clientId) {
+                    query = query.eq('client_id', clientId);
+                } else {
+                    query = query.limit(1);
+                }
+
+                const { data, error: sbError } = await query.maybeSingle();
+
+                if (sbError) throw sbError;
+                setClient(data);
+            } catch (err: any) {
+                console.error('Error fetching client:', err);
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchClientData();
+    }, [clientId]);
+
+    if (loading) {
+        return (
+            <header className="dashboard-header glass animate-pulse">
+                <div className="client-meta">
+                    <div className="client-avatar" style={{ background: '#333' }}>--</div>
+                    <div className="client-details">
+                        <div style={{ height: '32px', width: '200px', background: '#333', borderRadius: '8px' }}></div>
+                        <div className="meta-pills" style={{ marginTop: '12px' }}>
+                            <div style={{ height: '24px', width: '80px', background: '#333', borderRadius: '12px' }}></div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+        );
+    }
+
+    if (error || !client) {
+        return (
+            <header className="dashboard-header glass">
+                <div className="client-meta">
+                    <div className="client-details">
+                        <h1 style={{ color: 'var(--accent)' }}>System Error</h1>
+                        <p>{error || 'No client found in database.'}</p>
+                    </div>
+                </div>
+            </header>
+        );
+    }
+
+    // Generate initials for avatar
+    const initials = client.full_name
+        .split(' ')
+        .map(n => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2);
 
     return (
         <header className="dashboard-header glass">
@@ -27,24 +99,29 @@ const ClientHeader: React.FC<ClientHeaderProps> = ({ onBack, showBack }) => {
                         </svg>
                     </button>
                 )}
-                <div className="client-avatar">JS</div>
+                <div className="client-avatar">{initials}</div>
                 <div className="client-details">
-                    <h1>{clientInfo.name}</h1>
+                    <h1>{client.full_name}</h1>
                     <div className="meta-pills">
-                        <span className="pill">Age: {clientInfo.age}</span>
-                        <span className="pill">DOB: {clientInfo.dob}</span>
-                        <span className="pill">ID: {clientInfo.id}</span>
+                        <span className="pill">ID: {client.client_id}</span>
+                        <span className="pill risk-pill">{client.risk_profile} Profile</span>
                     </div>
                 </div>
             </div>
             <div className="header-stats">
                 <div className="stat-group">
-                    <span className="label">Grand Net Worth</span>
-                    <span className="value net-worth">{clientInfo.netWorth}</span>
+                    <span className="label">Risk Assessment Date</span>
+                    <span className="value timestamp">
+                        {new Date(client.risk_assessment_date).toLocaleDateString('en-SG', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric'
+                        })}
+                    </span>
                 </div>
                 <div className="stat-group align-end">
-                    <span className="label">Last Updated</span>
-                    <span className="value timestamp">{clientInfo.lastUpdated}</span>
+                    <span className="label">Status</span>
+                    <span className="value success">Active Client</span>
                 </div>
             </div>
         </header>

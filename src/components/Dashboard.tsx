@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link, useParams } from 'react-router-dom';
 import ClientHeader from './ClientHeader';
 import './Dashboard.css';
 
@@ -116,25 +116,26 @@ const RiskProfile: React.FC = () => (
 );
 
 const Dashboard: React.FC = () => {
+    const { clientId } = useParams<{ clientId: string }>();
     const location = useLocation();
     const navigate = useNavigate();
 
-    // Map the pathname to a quadrantId (removing the leading slash)
-    const quadrantId = location.pathname.substring(1);
-    const isFocused = quadrantId !== "" && quadrantId !== "/";
+    // Map the pathname to a quadrantId (removing the leading slash and clientId)
+    const quadrantId = location.pathname.split('/').pop();
+    const isFocused = quadrantId !== "" && quadrantId !== clientId && quadrantId !== undefined;
 
     const renderFullGrid = () => (
         <main className="dashboard-grid">
-            <Link to="/asset-allocation" className="quadrant-link">
+            <Link to={`/${clientId}/asset-allocation`} className="quadrant-link">
                 <AssetAllocation />
             </Link>
-            <Link to="/cashflow" className="quadrant-link">
+            <Link to={`/${clientId}/cashflow`} className="quadrant-link">
                 <CashflowAnalysis />
             </Link>
-            <Link to="/plans" className="quadrant-link">
+            <Link to={`/${clientId}/plans`} className="quadrant-link">
                 <PlansHeld />
             </Link>
-            <Link to="/risk" className="quadrant-link">
+            <Link to={`/${clientId}/risk`} className="quadrant-link">
                 <RiskProfile />
             </Link>
         </main>
@@ -150,11 +151,23 @@ const Dashboard: React.FC = () => {
         }
     };
 
+    if (!clientId) {
+        return (
+            <div className="dashboard-container animate-fade">
+                <div className="empty-state-container glass-card">
+                    <div className="empty-state-icon">🔍</div>
+                    <h2>No Client Selected</h2>
+                    <p>Please use the search bar above to select a client and view their financial dashboard.</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="dashboard-container animate-fade">
             <ClientHeader
                 showBack={isFocused}
-                onBack={() => navigate('/')}
+                onBack={() => navigate(`/${clientId}`)}
             />
             {isFocused ? (
                 <main className="focused-view">

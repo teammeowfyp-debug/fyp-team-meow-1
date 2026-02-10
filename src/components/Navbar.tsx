@@ -1,21 +1,81 @@
-import React from 'react'
+import React, { useState, useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/AuthProvider'
+import { supabase } from '../lib/supabaseClient'
 import './Navbar.css'
+
+interface SearchResult {
+    client_id: string;
+    full_name: string;
+}
 
 const Navbar: React.FC = () => {
     const { user, signOut } = useAuth()
+    const navigate = useNavigate()
+    const [searchQuery, setSearchQuery] = useState('')
+    const [results, setResults] = useState<SearchResult[]>([])
+    const [isSearching, setIsSearching] = useState(false)
+    const [showResults, setShowResults] = useState(false)
+    const searchRef = useRef<HTMLDivElement>(null)
+
+    // Close results when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+                setShowResults(false)
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside)
+        return () => document.removeEventListener('mousedown', handleClickOutside)
+    }, [])
+
+    // Debounced search
+    useEffect(() => {
+        const timer = setTimeout(async () => {
+            if (searchQuery.trim().length > 1) {
+                setIsSearching(true)
+                try {
+                    const { data, error } = await supabase
+                        .from('clients')
+                        .select('client_id, full_name')
+                        .ilike('full_name', `${searchQuery}%`)
+                        .limit(5)
+
+                    if (!error && data) {
+                        setResults(data)
+                        setShowResults(true)
+                    }
+                } catch (err) {
+                    console.error('Search error:', err)
+                } finally {
+                    setIsSearching(false)
+                }
+            } else {
+                setResults([])
+                setShowResults(false)
+            }
+        }, 300)
+
+        return () => clearTimeout(timer)
+    }, [searchQuery])
+
+    const handleResultClick = (clientId: string) => {
+        navigate(`/${clientId}`)
+        setSearchQuery('')
+        setShowResults(false)
+    }
 
     return (
         <nav className="navbar glass">
             <div className="navbar-left">
-                <div className="logo">
+                <div className="logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
                     <span className="logo-icon">▲</span>
                     <span className="logo-text">Calibre</span>
                 </div>
             </div>
 
             <div className="navbar-center">
-                <div className="search-container">
+                <div className="search-container" ref={searchRef}>
                     <svg className="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <circle cx="11" cy="11" r="8"></circle>
                         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -24,8 +84,26 @@ const Navbar: React.FC = () => {
                         type="text"
                         placeholder="Search clients (e.g. Jonathan...)"
                         className="search-input"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onFocus={() => searchQuery.trim().length > 1 && setShowResults(true)}
                     />
-                    <div className="search-shortcut">⌘K</div>
+                    {isSearching && <div className="search-spinner"></div>}
+
+                    {showResults && results.length > 0 && (
+                        <div className="search-results glass-card">
+                            {results.map((result) => (
+                                <div
+                                    key={result.client_id}
+                                    className="search-result-item"
+                                    onClick={() => handleResultClick(result.client_id)}
+                                >
+                                    <span className="result-name">{result.full_name}</span>
+                                    <span className="result-id">{result.client_id}</span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
 
