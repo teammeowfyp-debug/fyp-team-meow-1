@@ -1,5 +1,26 @@
 # React + TypeScript + Vite
 
+## Getting Started
+
+To run this project, you need to install the dependencies first. This project uses `npm` for package management.
+
+### 1. Install Dependencies
+Run the following command in your terminal to install all required packages (including `recharts`, `supabase-js`, etc.):
+
+```bash
+npm install
+```
+
+### 2. Run the Development Server
+Once dependencies are installed, start the app locally:
+
+```bash
+npm run dev
+```
+
+---
+
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:
