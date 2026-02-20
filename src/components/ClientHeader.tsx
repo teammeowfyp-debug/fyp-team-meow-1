@@ -36,13 +36,25 @@ const ClientHeader: React.FC<ClientHeaderProps> = ({ client, onBack, showBack })
                     <h1>{client.full_name}</h1>
                     <div className="meta-pills">
                         <span className="pill">ID: {client.client_id}</span>
+                        {client.age && <span className="pill">{client.age} years old</span>}
+                        {client.occupation && <span className="pill">{client.occupation}</span>}
+                        {client.marital_status && <span className="pill">{client.marital_status}</span>}
+                        {client.family_members_count !== undefined && (
+                            <span className="pill">{client.family_members_count} Family {client.family_members_count === 1 ? 'Member' : 'Members'}</span>
+                        )}
                     </div>
                 </div>
             </div>
             <div className="header-stats">
                 <div className="stat-group align-end">
-                    <span className="label">Status</span>
-                    <span className="value success">Active Client</span>
+                    <span className="label">Last Updated</span>
+                    <span className="value">
+                        {client.last_updated ? new Date(client.last_updated).toLocaleDateString('en-SG', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric'
+                        }) : 'Never'}
+                    </span>
                 </div>
             </div>
         </header>

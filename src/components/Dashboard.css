@@ -113,9 +113,21 @@
     font-weight: 700;
 }
 
+.value.accent {
+    color: var(--primary);
+}
+
+.value.success {
+    color: var(--success);
+}
+
+.value.warning {
+    color: var(--warning);
+}
+
 .net-worth {
     font-size: 1.75rem;
-    color: var(--accent);
+    color: var(--primary);
 }
 
 .timestamp {
@@ -146,11 +158,13 @@
 }
 
 .quadrant {
-    min-height: 320px;
+    height: 375px;
     display: flex;
     flex-direction: column;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    /* Prevent child overflow from breaking the card */
 }
 
 .quadrant-link:hover .quadrant {
@@ -165,7 +179,7 @@
 }
 
 .focused-view .quadrant {
-    min-height: 600px;
+    height: 650px;
     cursor: default;
 }
 
@@ -300,6 +314,9 @@
 .plans-table-container {
     flex: 1;
     overflow-x: auto;
+    overflow-y: auto;
+    padding-right: 4px;
+    /* Space for scrollbar */
 }
 
 .plans-table {
@@ -347,14 +364,18 @@
     color: var(--warning);
 }
 
+.status-pill.lapsed,
+.status-pill.void {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--danger);
+}
+
+.status-pill.matured,
+.status-pill.settled,
 .status-pill.ended {
     background: rgba(255, 255, 255, 0.1);
     color: var(--text-muted);
-}
-
-.status-pill.grace-period {
-    background: rgba(239, 68, 68, 0.15);
-    color: var(--danger);
+    border: 1px solid var(--border);
 }
 
 .risk-indicator {
@@ -370,6 +391,8 @@
     border-radius: var(--radius-md);
     border: 1px solid var(--border);
     border-left: 3px solid var(--primary);
+    overflow-y: auto;
+    flex: 1;
 }
 
 .analysis-text {

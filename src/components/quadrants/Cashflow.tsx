@@ -10,20 +10,20 @@ const Cashflow: React.FC<CashflowProps> = ({ client }) => {
     // Transform data for the chart
     // We want to show the cashflow history in chronological order
     const chartData = useMemo(() => {
-        if (!client?.monthly_cashflow || client.monthly_cashflow.length === 0) {
+        if (!client?.cashflow || client.cashflow.length === 0) {
             return [];
         }
 
-        return [...client.monthly_cashflow]
-            .sort((a: any, b: any) => new Date(a.month_year).getTime() - new Date(b.month_year).getTime())
+        return [...client.cashflow]
+            .sort((a: any, b: any) => new Date(a.as_of_date).getTime() - new Date(b.as_of_date).getTime())
             .map((item: any) => ({
-                date: new Date(item.month_year).toLocaleDateString('en-SG', { month: 'short', year: '2-digit' }),
-                fullDate: new Date(item.month_year).toLocaleDateString('en-SG', { month: 'long', year: 'numeric' }),
+                date: new Date(item.as_of_date).toLocaleDateString('en-SG', { month: 'short', year: '2-digit' }),
+                fullDate: new Date(item.as_of_date).toLocaleDateString('en-SG', { month: 'long', year: 'numeric' }),
                 inflow: parseFloat(item.total_inflow),
                 outflow: parseFloat(item.total_outflow),
                 net: parseFloat(item.net_surplus)
             }));
-    }, [client?.monthly_cashflow_history]);
+    }, [client?.cashflow]);
 
     const hasData = chartData.length > 0;
 
@@ -55,7 +55,7 @@ const Cashflow: React.FC<CashflowProps> = ({ client }) => {
             <div className="card-header">
                 <h3>Cashflow</h3>
             </div>
-            <div className="chart-container" style={{ width: '100%', height: '250px', marginTop: '10px' }}>
+            <div className="chart-container" style={{ width: '100%', flex: 1, marginTop: '10px' }}>
                 {hasData ? (
                     <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 35, left: 0 }}>

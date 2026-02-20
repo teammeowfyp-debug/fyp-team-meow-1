@@ -8,16 +8,28 @@ interface PlanDetailModalProps {
 }
 
 const PlanDetailModal: React.FC<PlanDetailModalProps> = ({ plan, onClose }) => {
+    const isInsurance = plan.asset_class.includes('Insurance');
+
     const valuationData = React.useMemo(() => {
-        if (!plan?.monthly_valuations) return [];
-        return [...plan.monthly_valuations]
+        const sourceData = isInsurance ? plan.insurance_valuations : plan.investment_valuations;
+        if (!sourceData) return [];
+
+        return [...sourceData]
             .sort((a: any, b: any) => new Date(a.as_of_date).getTime() - new Date(b.as_of_date).getTime())
             .map((v: any) => ({
                 date: new Date(v.as_of_date).toLocaleDateString('en-SG', { month: 'short', year: '2-digit' }),
                 fullDate: new Date(v.as_of_date).toLocaleDateString('en-SG', { month: 'long', year: 'numeric' }),
-                value: parseFloat(v.market_value)
+                value: parseFloat(isInsurance ? v.cash_value : v.market_value),
+                // Keep extra fields for insurance
+                ...(isInsurance && {
+                    death: parseFloat(v.death_benefit),
+                    ci: parseFloat(v.critical_illness_benefit),
+                    disability: parseFloat(v.disability_benefit)
+                })
             }));
-    }, [plan]);
+    }, [plan, isInsurance]);
+
+    const latestValuation = valuationData.length > 0 ? valuationData[valuationData.length - 1] : null;
 
     const CustomTooltip = ({ active, payload }: any) => {
         if (active && payload && payload.length) {
@@ -31,7 +43,7 @@ const PlanDetailModal: React.FC<PlanDetailModalProps> = ({ plan, onClose }) => {
                 }}>
                     <p style={{ color: 'var(--secondary)', fontWeight: 600, marginBottom: 4 }}>{payload[0].payload.fullDate}</p>
                     <p style={{ color: 'var(--primary)', fontSize: '0.9rem' }}>
-                        Value: <span style={{ fontWeight: 600 }}>${payload[0].value.toLocaleString()}</span>
+                        {isInsurance ? 'Cash Value' : 'Market Value'}: <span style={{ fontWeight: 600 }}>${payload[0].value.toLocaleString()}</span>
                     </p>
                 </div>
             );
@@ -39,17 +51,19 @@ const PlanDetailModal: React.FC<PlanDetailModalProps> = ({ plan, onClose }) => {
         return null;
     };
 
+    const hasValue = valuationData.some(v => v.value > 0);
+
     return (
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                 <button className="modal-close" onClick={onClose}>&times;</button>
                 <div className="modal-header">
                     <h2>{plan.plan_name}</h2>
-                    <div className="modal-id">Plan ID: {plan.plan_id}</div>
+                    <div className="modal-id">Plan ID: {plan.plan_id} • Status: {plan.status}</div>
                 </div>
 
-                <div className="chart-container" style={{ width: '100%', height: '350px', marginTop: '20px' }}>
-                    {valuationData.length > 0 ? (
+                {hasValue ? (
+                    <div className="chart-container" style={{ width: '100%', height: '250px', marginTop: '20px' }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <LineChart data={valuationData} margin={{ top: 10, right: 30, left: 10, bottom: 40 }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
@@ -73,7 +87,7 @@ const PlanDetailModal: React.FC<PlanDetailModalProps> = ({ plan, onClose }) => {
                                 <Line
                                     type="monotone"
                                     dataKey="value"
-                                    name="Market Value"
+                                    name={isInsurance ? "Cash Value" : "Market Value"}
                                     stroke="var(--primary)"
                                     strokeWidth={3}
                                     dot={{ r: 4, fill: 'var(--primary)', strokeWidth: 0 }}
@@ -81,12 +95,38 @@ const PlanDetailModal: React.FC<PlanDetailModalProps> = ({ plan, onClose }) => {
                                 />
                             </LineChart>
                         </ResponsiveContainer>
-                    ) : (
-                        <div className="error-text" style={{ textAlign: 'center', padding: '2rem' }}>
-                            No valuation history available for this plan.
+                    </div>
+                ) : (
+                    <div className="no-value-info" style={{
+                        padding: '1.5rem',
+                        textAlign: 'center',
+                        color: 'var(--secondary)',
+                        background: 'rgba(0, 0, 0, 0.02)',
+                        borderRadius: 'var(--radius-sm)',
+                        border: '1px solid var(--border)',
+                        marginTop: '1.5rem',
+                        fontSize: '0.9rem'
+                    }}>
+                        {isInsurance ? "This is a pure protection plan with no cash value." : "No valuation data available for this plan."}
+                    </div>
+                )}
+
+                {isInsurance && latestValuation && (
+                    <div className="insurance-benefits" style={{ marginTop: '2rem', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
+                        <div className="stat-group">
+                            <span className="label">Death Benefit</span>
+                            <span className="value" style={{ color: 'var(--danger)' }}>${latestValuation.death?.toLocaleString()}</span>
                         </div>
-                    )}
-                </div>
+                        <div className="stat-group">
+                            <span className="label">Critical Illness</span>
+                            <span className="value" style={{ color: 'var(--warning)' }}>${latestValuation.ci?.toLocaleString()}</span>
+                        </div>
+                        <div className="stat-group">
+                            <span className="label">Disability</span>
+                            <span className="value" style={{ color: 'var(--accent)' }}>${latestValuation.disability?.toLocaleString()}</span>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -173,13 +213,7 @@ const PlansHeld: React.FC<PlansHeldProps> = ({ client, mode = 'overview' }) => {
         });
     };
 
-    const getStatus = (startDate: string, endDate: string | null) => {
-        const today = new Date();
-        const start = new Date(startDate);
-        if (today < start) return 'Pending';
-        if (endDate && today > new Date(endDate)) return 'Ended';
-        return 'Active';
-    };
+
 
     const startMonthOptions = React.useMemo(() => {
         const months = new Set<string>();
@@ -230,7 +264,7 @@ const PlansHeld: React.FC<PlansHeldProps> = ({ client, mode = 'overview' }) => {
             if (assetFilter !== 'All' && plan.asset_class !== assetFilter) return false;
 
             // Status Filter
-            const status = getStatus(plan.start_date, plan.end_date);
+            const status = plan.status;
             if (statusFilter !== 'All' && status !== statusFilter) return false;
 
             // Start Month Filter (Exact month match)
@@ -283,7 +317,10 @@ const PlansHeld: React.FC<PlansHeldProps> = ({ client, mode = 'overview' }) => {
                             { label: 'All', value: 'All' },
                             { label: 'Equity', value: 'Equity' },
                             { label: 'Fixed Income', value: 'Fixed Income' },
-                            { label: 'Cash', value: 'Cash' }
+                            { label: 'Cash', value: 'Cash' },
+                            { label: 'Life Insurance', value: 'Life Insurance' },
+                            { label: 'Health Insurance', value: 'Health Insurance' },
+                            { label: 'General Insurance', value: 'General Insurance' }
                         ]}
                     />
 
@@ -307,9 +344,12 @@ const PlansHeld: React.FC<PlansHeldProps> = ({ client, mode = 'overview' }) => {
                         onChange={setStatusFilter}
                         options={[
                             { label: 'All', value: 'All' },
-                            { label: 'Active', value: 'Active' },
                             { label: 'Pending', value: 'Pending' },
-                            { label: 'Ended', value: 'Ended' }
+                            { label: 'Active', value: 'Active' },
+                            { label: 'Lapsed', value: 'Lapsed' },
+                            { label: 'Matured', value: 'Matured' },
+                            { label: 'Settled', value: 'Settled' },
+                            { label: 'Void', value: 'Void' }
                         ]}
                     />
 
@@ -334,7 +374,7 @@ const PlansHeld: React.FC<PlansHeldProps> = ({ client, mode = 'overview' }) => {
                     </thead>
                     <tbody>
                         {filteredPlans.map((plan: any, index: number) => {
-                            const status = getStatus(plan.start_date, plan.end_date);
+                            const status = plan.status;
                             return (
                                 <tr key={index} onClick={(e) => {
                                     if (mode !== 'focused') return;

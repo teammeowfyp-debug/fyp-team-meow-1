@@ -33,21 +33,26 @@ const RiskProfile: React.FC<RiskProfileProps> = ({ client, mode = 'overview' }) 
 
             try {
                 setClientInfo({
-                    category: client.risk_profile || 'Moderate',
-                    date: client.risk_assessment_date || new Date().toISOString()
+                    category: client.risk_profile || 'Balanced',
+                    date: client.last_updated || new Date().toISOString()
                 });
 
                 // 2. Prepare parameters for AI (EXCLUSIVELY using database data)
-                const allocationMap: Record<string, number> = { 'Equity': 0, 'Fixed Income': 0, 'Cash': 0 };
+                const allocationMap: Record<string, number> = {};
                 let totalValue = 0;
 
                 client.client_plans?.forEach((plan: any) => {
-                    const latestVal = plan.monthly_valuations?.sort((a: any, b: any) =>
+                    // Pick the correct valuation source
+                    const isInsurance = plan.asset_class.includes('Insurance');
+                    const valuations = isInsurance ? plan.insurance_valuations : plan.investment_valuations;
+                    const valueKey = isInsurance ? 'cash_value' : 'market_value';
+
+                    const latestVal = valuations?.sort((a: any, b: any) =>
                         new Date(b.as_of_date).getTime() - new Date(a.as_of_date).getTime()
                     )[0];
 
                     if (latestVal) {
-                        const val = parseFloat(latestVal.market_value);
+                        const val = parseFloat(latestVal[valueKey]);
                         allocationMap[plan.asset_class] = (allocationMap[plan.asset_class] || 0) + val;
                         totalValue += val;
                     }
@@ -60,12 +65,12 @@ const RiskProfile: React.FC<RiskProfileProps> = ({ client, mode = 'overview' }) 
                         .join(', ')
                     : 'No allocation data';
 
-                const latestCashflow = client.monthly_cashflow?.sort((a: any, b: any) =>
-                    new Date(b.month_year).getTime() - new Date(a.month_year).getTime()
+                const latestCashflow = client.cashflow?.sort((a: any, b: any) =>
+                    new Date(b.as_of_date).getTime() - new Date(a.as_of_date).getTime()
                 )[0];
 
                 const cashflowString = latestCashflow
-                    ? `Inflow: $${latestCashflow.total_inflow}, Outflow: $${latestCashflow.total_outflow}, Net: $${latestCashflow.net_surplus} (${new Date(latestCashflow.month_year).toLocaleDateString('en-SG', { month: 'short', year: 'numeric' })})`
+                    ? `Inflow: $${latestCashflow.total_inflow}, Outflow: $${latestCashflow.total_outflow}, Net: $${latestCashflow.net_surplus} (${new Date(latestCashflow.as_of_date).toLocaleDateString('en-SG', { month: 'short', year: 'numeric' })})`
                     : 'No cashflow data';
 
                 const plansString = client.client_plans?.length > 0

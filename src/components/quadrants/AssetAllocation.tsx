@@ -7,9 +7,9 @@ const ALLOCATION_COLORS: Record<string, string> = {
     'Fixed Income': 'var(--warning)',
     'Cash': 'var(--success)',
     'Bonds': 'var(--warning)',
-    'Real Estate': '#BC6C25', // Specialized color
-    'Commodities': 'var(--danger)',
-    'Alternatives': '#606C38', // Specialized color
+    'Life Insurance': '#BC6C25',
+    'Health Insurance': '#9B2226',
+    'General Insurance': '#606C38',
 };
 
 const FALLBACK_COLORS = ['#C5B358', '#D4A373', '#719266', '#BC6C25', '#9B2226', '#606C38'];
@@ -21,24 +21,24 @@ interface AssetAllocationProps {
 const AssetAllocation: React.FC<AssetAllocationProps> = ({ client }) => {
     // 1. Process Allocation history (stacked bar chart: month × asset_class)
     const { history, assetClasses } = React.useMemo(() => {
-        if (!client?.monthly_cashflow || !client?.client_plans) {
+        if (!client?.cashflow || !client?.client_plans) {
             return { history: [], assetClasses: [] };
         }
 
-        const cashflowMonths: string[] = [...(client.monthly_cashflow || [])]
-            .sort((a: any, b: any) => new Date(a.month_year).getTime() - new Date(b.month_year).getTime())
-            .map((c: any) => c.month_year);
+        const cashflowMonths: string[] = [...(client.cashflow || [])]
+            .sort((a: any, b: any) => new Date(a.as_of_date).getTime() - new Date(b.as_of_date).getTime())
+            .map((c: any) => c.as_of_date);
 
         // Collect asset classes from ALL plans
         const assetClassSet = new Set<string>();
         client.client_plans?.forEach((plan: any) => assetClassSet.add(plan.asset_class));
         const allAssetClasses = Array.from(assetClassSet);
 
-        const allocation_history = cashflowMonths.map((monthYear: string) => {
-            const monthTs = new Date(monthYear).getTime();
+        const allocation_history = cashflowMonths.map((asOfDate: string) => {
+            const monthTs = new Date(asOfDate).getTime();
             const row: Record<string, any> = {
-                date: new Date(monthYear).toLocaleDateString('en-SG', { month: 'short', year: '2-digit' }),
-                fullDate: new Date(monthYear).toLocaleDateString('en-SG', { month: 'long', year: 'numeric' }),
+                date: new Date(asOfDate).toLocaleDateString('en-SG', { month: 'short', year: '2-digit' }),
+                fullDate: new Date(asOfDate).toLocaleDateString('en-SG', { month: 'long', year: 'numeric' }),
             };
 
             allAssetClasses.forEach((cls: string) => { row[cls] = 0; });
@@ -49,21 +49,39 @@ const AssetAllocation: React.FC<AssetAllocationProps> = ({ client }) => {
                 const wasActiveThisMonth = isActive || new Date(ed).getTime() >= monthTs;
                 if (!wasActiveThisMonth) return;
 
-                const eligible = (plan.monthly_valuations || []).filter(
+                // Pick either investment or insurance valuations
+                let valuations = [];
+                let valueKey = 'market_value';
+
+                if (plan.asset_class.includes('Insurance')) {
+                    valuations = plan.insurance_valuations || [];
+                    valueKey = 'cash_value';
+                } else {
+                    valuations = plan.investment_valuations || [];
+                }
+
+                const eligible = valuations.filter(
                     (v: any) => new Date(v.as_of_date).getTime() <= monthTs
                 );
                 if (eligible.length === 0) return;
+
                 const best = eligible.reduce((a: any, b: any) =>
                     new Date(a.as_of_date).getTime() > new Date(b.as_of_date).getTime() ? a : b
                 );
-                row[plan.asset_class] = (row[plan.asset_class] || 0) + parseFloat(best.market_value);
+
+                row[plan.asset_class] = (row[plan.asset_class] || 0) + parseFloat(best[valueKey] || 0);
             });
 
             return row;
         });
 
-        return { history: allocation_history, assetClasses: allAssetClasses };
-    }, [client?.monthly_cashflow, client?.client_plans]);
+        // Filter out asset classes that never have a value > 0 in the history
+        const activeAssetClasses = allAssetClasses.filter(cls =>
+            allocation_history.some(row => row[cls] > 0)
+        );
+
+        return { history: allocation_history, assetClasses: activeAssetClasses };
+    }, [client?.cashflow, client?.client_plans]);
 
     const hasData = history.length > 0 && assetClasses.length > 0;
 
@@ -99,7 +117,7 @@ const AssetAllocation: React.FC<AssetAllocationProps> = ({ client }) => {
             <div className="card-header">
                 <h3>Asset Allocation</h3>
             </div>
-            <div className="chart-container" style={{ width: '100%', height: '250px', marginTop: '10px' }}>
+            <div className="chart-container" style={{ width: '100%', flex: 1, marginTop: '10px' }}>
                 {hasData ? (
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={history} margin={{ top: 5, right: 20, bottom: 35, left: 0 }}>

@@ -26,21 +26,30 @@ const Dashboard: React.FC = () => {
                     .select(`
                         *,
                         client_plans (
-                            plan_id,
-                            plan_name,
-                            asset_class,
-                            start_date,
-                            end_date,
-                            monthly_valuations (
+                            *,
+                            investment_valuations (
                                 market_value,
+                                as_of_date
+                            ),
+                            insurance_valuations (
+                                death_benefit,
+                                cash_value,
+                                critical_illness_benefit,
+                                disability_benefit,
                                 as_of_date
                             )
                         ),
-                        monthly_cashflow (
+                        cashflow (
+                            as_of_date,
+                            salary,
+                            rental_income,
+                            other_inflow,
+                            living_expenses,
+                            debt_repayment,
+                            other_outflow,
                             total_inflow,
                             total_outflow,
-                            net_surplus,
-                            month_year
+                            net_surplus
                         )
                     `)
                     .eq('client_id', clientId)
