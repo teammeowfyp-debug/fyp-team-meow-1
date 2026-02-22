@@ -1,0 +1,11 @@
+client_id,full_name,age,occupation,marital_status,family_members_count,risk_profile,last_updated
+71b73dc7-d80e-4e90-94c7-6f7e3830304d,David Reyes,64,Retired,Divorced,5,Conservative,2025-09-21
+3752f932-6f33-4ff3-9845-c7335d7d9ee7,Heather Pierce,51,Retired,Divorced,4,Balanced,2025-11-08
+90eb6701-51d5-456e-a4f8-8c8b8dcae6b1,Kevin Marks,69,Teacher,Single,2,Balanced,2026-01-08
+42207a07-a586-4571-ad74-e9f53bcf7493,Richard Anderson,28,Accountant,Single,2,Aggressive,2025-09-12
+4908f957-3b05-4ea3-84e3-d6346a6ace02,Kara White,63,Retired,Widowed,0,Conservative,2025-11-24
+4f198535-9cdf-40d8-a66f-cd202b480a9d,Johnny Burns,33,Student,Single,3,Conservative,2025-11-18
+84f081e3-5d11-4243-8058-bccdc27c577a,Christopher Stevens,38,Retired,Widowed,0,Conservative,2026-02-07
+b6ba7a91-a90a-4c33-ba7f-769d8803a794,Kristin Todd,40,Software Engineer,Divorced,3,Balanced,2025-11-01
+075a486c-c2c2-47aa-8d86-9f6b8d99b4c3,Tara Bishop DVM,22,Lawyer,Single,2,Balanced,2026-01-26
+8a3a2bd2-dd45-4c2f-9416-669a2a086a60,Thomas Ward,60,Software Engineer,Widowed,5,Conservative,2025-12-11

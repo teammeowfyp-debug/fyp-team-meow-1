@@ -1,0 +1,65 @@
+plan_id,client_id,plan_name,asset_class,start_date,end_date,status
+f680e2eb-885f-4b1b-81ca-60b1f3e164a6,71b73dc7-d80e-4e90-94c7-6f7e3830304d,Zhang PLC Plus Plan,Life Insurance,2023-02-04,,Active
+15651496-746e-4b10-8525-d048ef710ef6,71b73dc7-d80e-4e90-94c7-6f7e3830304d,Harris Ltd Classic Plan,Life Insurance,2020-06-01,,Pending
+fbee8def-2334-4145-a383-2cad1236374d,71b73dc7-d80e-4e90-94c7-6f7e3830304d,Reid-Gaines Classic Plan,General Insurance,2020-10-31,,Active
+ab8e2293-5a59-46eb-af35-ea1a827fbc61,71b73dc7-d80e-4e90-94c7-6f7e3830304d,Galvan-Kelley Essential Plan,Health Insurance,2025-09-21,,Pending
+5e6db9a9-2d80-48ac-8a77-559eee1ae6de,71b73dc7-d80e-4e90-94c7-6f7e3830304d,Williams Group Classic Plan,Health Insurance,2024-07-29,2026-01-31,Matured
+6cbbde0e-1b4d-4b18-9811-7fa655e3afdf,71b73dc7-d80e-4e90-94c7-6f7e3830304d,Green LLC Portfolio Fund,Fixed Income,2022-12-21,,Active
+6781c817-27ba-4dd2-ab4c-de52a1d57c3a,71b73dc7-d80e-4e90-94c7-6f7e3830304d,"Nelson, Mullins and Martinez Plus Plan",General Insurance,2023-11-28,,Active
+023932e9-fd4f-4393-9b00-72272d94bd93,3752f932-6f33-4ff3-9845-c7335d7d9ee7,"Kramer, Cortez and Smith Portfolio Fund",Cash,2020-05-22,,Active
+33f7d613-db1f-4730-ae7e-ddd62ba7473a,3752f932-6f33-4ff3-9845-c7335d7d9ee7,Powell-Perez Essential Plan,Health Insurance,2023-12-08,,Active
+412327d2-0cdd-43a2-ab46-a212045cf283,3752f932-6f33-4ff3-9845-c7335d7d9ee7,Bailey and Sons Protector Plan,Life Insurance,2025-11-08,,Active
+7511eddb-60b5-4aba-ad20-24fb075e2da0,3752f932-6f33-4ff3-9845-c7335d7d9ee7,"Elliott, Hudson and Smith Plus Plan",Life Insurance,2024-05-09,,Active
+994a6495-c2e5-4193-b352-d9ab8fc5594f,3752f932-6f33-4ff3-9845-c7335d7d9ee7,Jensen-Kaufman Comprehensive Plan,General Insurance,2022-05-21,,Active
+ae95358d-36e7-48ea-855f-eeaa7c86bff7,3752f932-6f33-4ff3-9845-c7335d7d9ee7,"Stevens, Thompson and Ortiz Comprehensive Plan",General Insurance,2022-05-09,2022-12-22,Lapsed
+9d2e7a21-bf0c-424b-ab88-6b1571b46e2c,3752f932-6f33-4ff3-9845-c7335d7d9ee7,"Watkins, Thompson and Small Global Fund",Cash,2021-11-14,,Active
+d3c7076e-e388-4455-a2e4-f935a7e04dd8,3752f932-6f33-4ff3-9845-c7335d7d9ee7,Hunt-Huang Protector Plan,Health Insurance,2024-04-18,,Active
+75f83f37-5344-4b9b-8f0d-fc57cc7560b7,90eb6701-51d5-456e-a4f8-8c8b8dcae6b1,Frazier-King Global Fund,Cash,2020-09-17,,Active
+34dfa095-68dd-40ce-9ec3-cefe7de23c90,90eb6701-51d5-456e-a4f8-8c8b8dcae6b1,Miller and Sons Core Fund,Cash,2021-09-08,,Active
+601137e0-9b01-46f3-aa5c-eb6ae87ee423,90eb6701-51d5-456e-a4f8-8c8b8dcae6b1,Olson-Douglas Core Fund,Cash,2021-02-10,,Active
+46e3d9c2-ada7-4333-bae1-3fc6298c659f,90eb6701-51d5-456e-a4f8-8c8b8dcae6b1,Collier Group Strategic Fund,Equity,2020-03-11,,Active
+3c8a0edf-7d3d-45ea-aca6-a17a257478d8,90eb6701-51d5-456e-a4f8-8c8b8dcae6b1,Dodson-Wallace Essential Plan,Life Insurance,2020-07-11,,Active
+fcf43e91-7fdd-4b2f-9195-1a8146add8ba,90eb6701-51d5-456e-a4f8-8c8b8dcae6b1,Nunez Inc Protector Plan,General Insurance,2025-09-18,,Active
+e3688e73-5201-487b-9a2e-532eaf5cb534,42207a07-a586-4571-ad74-e9f53bcf7493,"Smith, Flowers and Hopkins Portfolio Fund",Cash,2025-01-28,2026-02-23,Settled
+42eef524-80b3-45b5-9ce4-5e903082b622,42207a07-a586-4571-ad74-e9f53bcf7493,"Williams, Jenkins and Arias Classic Plan",Health Insurance,2022-04-23,,Active
+dde79749-a4b4-459d-a17c-a074c0dc221b,42207a07-a586-4571-ad74-e9f53bcf7493,"Wood, Davis and Spencer Global Fund",Fixed Income,2024-08-26,2025-04-28,Matured
+adf1f75d-8ec9-49e9-81ef-4ae782115eee,42207a07-a586-4571-ad74-e9f53bcf7493,"Nichols, Castro and Smith Core Fund",Equity,2021-02-26,2023-11-07,Void
+d2a2b056-4960-44b0-a6e4-a32642f2dc3e,4908f957-3b05-4ea3-84e3-d6346a6ace02,Lutz Ltd Diversified Fund,Equity,2024-06-17,,Active
+59c34972-b88d-4628-ad8d-6f43e6ebea34,4908f957-3b05-4ea3-84e3-d6346a6ace02,"Simpson, Brewer and Santana Principal Fund",Fixed Income,2023-10-12,,Active
+511ce609-9c23-4dc6-803c-9b414577b415,4908f957-3b05-4ea3-84e3-d6346a6ace02,Lopez and Sons Protector Plan,Life Insurance,2023-12-03,,Active
+dc61187d-ea91-4125-ba4b-a5a5918f3a8a,4908f957-3b05-4ea3-84e3-d6346a6ace02,Schmidt PLC Protector Plan,Health Insurance,2024-02-15,,Active
+dcbad4ca-c4f4-4cba-b3de-655994a49006,4908f957-3b05-4ea3-84e3-d6346a6ace02,Anderson-Torres Strategic Fund,Cash,2025-03-04,,Active
+732d6399-9169-4ac4-9074-d3e98840e24f,4f198535-9cdf-40d8-a66f-cd202b480a9d,"Anderson, Allen and Kelley Portfolio Fund",Fixed Income,2022-11-27,,Active
+8bafa84a-399e-49ed-be7d-50ad0412e131,4f198535-9cdf-40d8-a66f-cd202b480a9d,Rivera LLC Strategic Fund,Equity,2022-12-28,,Active
+9c56c64a-e8f9-4686-9162-ba6e08e7f0c1,4f198535-9cdf-40d8-a66f-cd202b480a9d,Wilson and Sons Core Fund,Fixed Income,2024-05-23,,Active
+deaf8b94-48c2-42a3-83aa-de3c75de4a19,4f198535-9cdf-40d8-a66f-cd202b480a9d,Jones-Green Plus Plan,Life Insurance,2021-04-01,,Active
+3ee982be-430e-4a20-a53c-79560e5beb79,4f198535-9cdf-40d8-a66f-cd202b480a9d,"Robinson, Bush and Harris Comprehensive Plan",General Insurance,2023-02-20,,Pending
+27cc87b2-dd1f-4fba-a102-292d4f928be8,4f198535-9cdf-40d8-a66f-cd202b480a9d,James Inc Portfolio Fund,Equity,2022-06-08,,Active
+8420531c-8c43-411e-ad5b-71cccd662574,4f198535-9cdf-40d8-a66f-cd202b480a9d,Martinez Inc Core Fund,Cash,2022-02-14,,Active
+ca677b00-645b-4da1-88f8-a4ff036c945b,84f081e3-5d11-4243-8058-bccdc27c577a,"Smith, Cook and Garcia Strategic Fund",Cash,2020-10-18,,Active
+82caf581-be7f-49d7-afd4-2a6dbdd857bb,84f081e3-5d11-4243-8058-bccdc27c577a,"Lawson, Jones and Myers Portfolio Fund",Fixed Income,2022-09-02,2022-12-07,Matured
+2ef0bc11-2845-4aff-823d-a7d066027300,84f081e3-5d11-4243-8058-bccdc27c577a,Brady Ltd Protector Plan,General Insurance,2022-01-18,,Active
+3c70c554-4e5b-4dcf-9033-e85b2c89fd6a,84f081e3-5d11-4243-8058-bccdc27c577a,Myers Inc Strategic Fund,Equity,2020-02-27,,Active
+b7095609-4f30-4b68-8e84-08afe46b3dd8,84f081e3-5d11-4243-8058-bccdc27c577a,"Salas, Sanford and Gonzales Comprehensive Plan",Life Insurance,2021-11-14,2023-05-04,Void
+ed957b31-413d-4fa5-9408-ce504b60f71c,84f081e3-5d11-4243-8058-bccdc27c577a,Hill-Rodriguez Principal Fund,Fixed Income,2022-06-12,,Active
+ced9da41-c917-4906-95f7-0cbf8368cbb6,84f081e3-5d11-4243-8058-bccdc27c577a,White-Edwards Comprehensive Plan,Life Insurance,2020-11-30,,Active
+6485e3ba-daf7-449b-a75a-89609a244281,84f081e3-5d11-4243-8058-bccdc27c577a,Lynch-Orr Essential Plan,Health Insurance,2023-07-02,2026-02-23,Void
+ff24f1c5-e0b6-4cf4-8b87-fb562a8b6ae7,84f081e3-5d11-4243-8058-bccdc27c577a,Rivas-Contreras Strategic Fund,Equity,2024-05-08,,Active
+6dbbe8a6-b805-453d-ab26-41972ab366af,b6ba7a91-a90a-4c33-ba7f-769d8803a794,"Strickland, Robinson and Garcia Comprehensive Plan",General Insurance,2024-12-02,2025-09-22,Settled
+693bc648-299c-47d8-a77f-221a7660305b,b6ba7a91-a90a-4c33-ba7f-769d8803a794,"Davidson, Vargas and Smith Protector Plan",Health Insurance,2022-10-19,2023-01-28,Settled
+dda5f00e-a51f-4a88-908a-a816c8daf220,b6ba7a91-a90a-4c33-ba7f-769d8803a794,"Walsh, Hensley and Eaton Essential Plan",Health Insurance,2021-03-06,,Active
+01c10d90-31d1-49f1-8267-f6826cca171d,b6ba7a91-a90a-4c33-ba7f-769d8803a794,"Phillips, Lopez and Jefferson Secure Plan",Life Insurance,2024-06-17,,Active
+c1e22ee0-444f-421c-9367-db855b92f6a2,b6ba7a91-a90a-4c33-ba7f-769d8803a794,Griffin-Cruz Classic Plan,Health Insurance,2024-07-30,,Active
+3969a280-e6bc-4702-b35d-0739fe64af19,b6ba7a91-a90a-4c33-ba7f-769d8803a794,Smith-Keller Core Fund,Cash,2021-06-21,,Active
+86064af5-c603-4164-980f-ddfb9d0bc2e2,b6ba7a91-a90a-4c33-ba7f-769d8803a794,"Stein, Young and Griffin Comprehensive Plan",Life Insurance,2025-02-28,2026-02-23,Lapsed
+d8037596-a380-4937-be5b-6fa82117c0be,075a486c-c2c2-47aa-8d86-9f6b8d99b4c3,Simpson-Johnson Plus Plan,General Insurance,2024-03-15,,Active
+a9e2d1ba-b1cf-4003-acd9-d15746d98af2,075a486c-c2c2-47aa-8d86-9f6b8d99b4c3,"Duran, Hayes and Morse Classic Plan",Life Insurance,2022-04-22,2022-11-14,Lapsed
+ed4bba45-b280-42a0-a4f0-6487ba939158,075a486c-c2c2-47aa-8d86-9f6b8d99b4c3,Mcknight-Mckinney Comprehensive Plan,Life Insurance,2023-08-22,,Active
+3ff65361-e199-4a5a-a9db-0caf54eb7bf1,075a486c-c2c2-47aa-8d86-9f6b8d99b4c3,Cruz and Sons Classic Plan,General Insurance,2024-11-15,,Active
+0f0296fb-1493-4205-8514-1d32a94d14b7,075a486c-c2c2-47aa-8d86-9f6b8d99b4c3,"Burns, Kelley and Booker Plus Plan",Life Insurance,2025-10-09,,Active
+2d7cb9a8-1b1a-4c73-bb8c-6fc380e79ca5,075a486c-c2c2-47aa-8d86-9f6b8d99b4c3,"Ramirez, Elliott and Mays Comprehensive Plan",Life Insurance,2024-09-22,,Active
+ec097d88-9535-493b-a964-7f2f468001c1,075a486c-c2c2-47aa-8d86-9f6b8d99b4c3,Johnson-Keller Protector Plan,Health Insurance,2025-07-10,2026-02-23,Void
+63a64758-9a73-4d09-8859-e9714901c76b,075a486c-c2c2-47aa-8d86-9f6b8d99b4c3,"Wilson, Jarvis and Thomas Plus Plan",Health Insurance,2026-01-26,,Pending
+115ea4d8-3c89-48ce-8b34-2d8b7d2e4560,8a3a2bd2-dd45-4c2f-9416-669a2a086a60,Kennedy Ltd Principal Fund,Equity,2020-12-08,,Active
+418ecc77-d75b-4216-9e8a-8cb966c5c3bb,8a3a2bd2-dd45-4c2f-9416-669a2a086a60,Chambers PLC Essential Plan,Health Insurance,2024-04-03,,Pending
+90271687-9828-4a6c-9ee5-228baa3c5232,8a3a2bd2-dd45-4c2f-9416-669a2a086a60,Snyder Ltd Core Fund,Fixed Income,2022-08-16,,Active
