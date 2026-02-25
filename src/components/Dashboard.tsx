@@ -53,7 +53,8 @@ const Dashboard: React.FC = () => {
                             cpf_contribution_total,
                             regular_investments,
                             total_inflow,
-                            total_outflow,
+                            total_expense,
+                            wealth_transfers,
                             net_surplus,
                             net_cashflow
                         )

@@ -126,8 +126,6 @@ def generate_financial_data():
             income_tax = round(employment_income_gross * np.random.uniform(0.05, 0.15), 2)
             insurance_premiums = round(base_expenses * np.random.uniform(0.1, 0.2), 2)
             property_expenses = round(base_expenses * np.random.uniform(0.1, 0.2), 2)
-            
-            # Loans
             has_property_loan = np.random.choice([0, 1], p=[0.8, 0.2])
             property_loan_repayment = round(np.random.uniform(100, 1000), 2) if has_property_loan else 0
             has_non_property_loan = np.random.choice([0, 1], p=[0.8, 0.2])

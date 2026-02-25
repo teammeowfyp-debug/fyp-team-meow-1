@@ -1,10 +1,11 @@
 import os
 import pandas as pd
-import requests
 import subprocess
 import sys
+import psycopg2
+from psycopg2.extras import execute_values
+from urllib.parse import urlparse
 
-# 1. Load configuration from .env.local
 def load_env():
     env_path = os.path.join(os.path.dirname(__file__), '..', '.env.local')
     config = {}
@@ -13,99 +14,92 @@ def load_env():
             for line in f:
                 if '=' in line and not line.startswith('#'):
                     key, value = line.strip().split('=', 1)
-                    config[key] = value
+                    config[key] = value.strip('"').strip("'")
     return config
 
 def main():
-    # Setup base directory
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     synth_dir = os.path.join(base_dir, 'synthetic data')
-    
     config = load_env()
+    
+    # Connection Config
+    db_url = config.get('VITE_SUPABASE_DATABASE_URL')
+    db_password = config.get('VITE_SUPABASE_PASSWORD')
+    db_host_override = config.get('VITE_SUPABASE_DB_HOST')
     supabase_url = config.get('VITE_SUPABASE_URL')
-    supabase_key = config.get('VITE_SUPABASE_ANON_KEY')
-    # Use SERVICE_ROLE_KEY if available for bypass RLS
-    service_role_key = config.get('SUPABASE_SERVICE_ROLE_KEY') or supabase_key
 
-    if not supabase_url or not supabase_key:
-        print("Error: VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY not found in .env.local")
+    # Detect if password/host was accidentally a full URL
+    for val in [db_url, db_password, db_host_override]:
+        if val and val.startswith('postgresql://'):
+            db_url = val
+            break
+
+    if not db_url and not db_password:
+        print("Error: Missing VITE_SUPABASE_DATABASE_URL or VITE_SUPABASE_PASSWORD in .env.local")
         return
 
-    # 2. Run dataGenerator.py
+    # 1. Generate Data
     print("--- 1. Generating new data ---")
     try:
-        # Use the same python executable that is running this script
-        generator_script = os.path.join(synth_dir, 'dataGenerator.py')
-        subprocess.run([sys.executable, generator_script], check=True, cwd=base_dir)
-    except subprocess.CalledProcessError as e:
-        print(f"Error running dataGenerator.py: {e}")
+        subprocess.run([sys.executable, os.path.join(synth_dir, 'dataGenerator.py')], check=True, cwd=base_dir)
+    except Exception as e:
+        print(f"Error generating data: {e}")
         return
 
-    # 3. Define headers
-    headers = {
-        "apikey": service_role_key,
-        "Authorization": f"Bearer {service_role_key}",
-        "Content-Type": "application/json",
-        "Prefer": "return=minimal"
-    }
-
-    # 4. Clear existing data (in reverse order of dependencies)
-    tables_to_clear = [
-        "investment_valuations",
-        "insurance_valuations",
-        "client_plans",
-        "cashflow",
-        "clients"
-    ]
-
-    print("\n--- 2. Clearing existing data in Supabase ---")
-    for table in tables_to_clear:
-        print(f"Clearing {table} table")
-        # Use a broad filter to avoid 'delete without filter' restrictions
-        filter_col = "client_id" if table in ["clients", "client_plans", "cashflow"] else "plan_id"
-        
-        del_url = f"{supabase_url}/rest/v1/{table}?{filter_col}=not.is.null"
-        response = requests.delete(del_url, headers=headers)
-        
-        if response.status_code not in [200, 204]:
-            print(f"Warning: Failed to clear {table}. Status: {response.status_code}")
-            print(response.text)
-            if "violates foreign key constraint" in response.text:
-                print("Aborting due to constraint error.")
-                return
-
-    # 5. Populate tables with new data
-    data_files = [
-        ("clients", "clients.csv"),
-        ("client_plans", "client_plans.csv"),
-        ("cashflow", "cashflow.csv"),
-        ("investment_valuations", "investment_valuations.csv"),
-        ("insurance_valuations", "insurance_valuations.csv")
-    ]
-
-    print("\n--- 3. Repopulating Supabase tables ---")
-    for table, file_name in data_files:
-        file_path = os.path.join(synth_dir, file_name)
-        if not os.path.exists(file_path):
-            print(f"Error: {file_path} not found.")
-            continue
-
-        df = pd.read_csv(file_path)
-        
-        # Convert NaN to None for JSON serialization
-        records = df.where(pd.notnull(df), None).to_dict(orient='records')
-        
-        url = f"{supabase_url}/rest/v1/{table}"
-        response = requests.post(url, headers=headers, json=records)
-        
-        if response.status_code in [201, 200, 204]:
-            print(f"Uploaded {len(records)} rows to {table}.")
+    # 2. Connect to Database
+    print("\n--- 2. Resetting Schema ---")
+    try:
+        if db_url:
+            conn = psycopg2.connect(db_url)
         else:
-            print(f"Error uploading to {table}. Status: {response.status_code}")
-            print(response.text)
-            return
+            project_ref = urlparse(supabase_url).netloc.split('.')[0] if supabase_url else "unknown"
+            host = db_host_override or f"db.{project_ref}.supabase.co"
+            user = f"postgres.{project_ref}" if "pooler.supabase.com" in host else "postgres"
+            conn = psycopg2.connect(dbname='postgres', user=user, password=db_password, host=host, port='5432', sslmode='require')
+        
+        conn.autocommit = True
+        cur = conn.cursor()
 
-    print("\n--- Database Repopulated! ---")
+        # 3. Schema Reset
+        tables = ["public.investment_valuations", "public.insurance_valuations", "public.cashflow", "public.client_plans", "public.clients"]
+        for t in tables:
+            cur.execute(f"DROP TABLE IF EXISTS {t} CASCADE;")
+        
+        with open(os.path.join(synth_dir, 'createTables.sql'), 'r') as f:
+            cur.execute(f.read())
+        print("All tables dropped and recreated.")
+
+        # 4. Repopulate Data
+        print("\n--- 3. Repopulating Data ---")
+        data_files = [
+            ("public.clients", "clients.csv"),
+            ("public.client_plans", "client_plans.csv"),
+            ("public.cashflow", "cashflow.csv"),
+            ("public.investment_valuations", "investment_valuations.csv"),
+            ("public.insurance_valuations", "insurance_valuations.csv")
+        ]
+
+        for table, file_name in data_files:
+            file_path = os.path.join(synth_dir, file_name)
+            if not os.path.exists(file_path): continue
+        
+            df = pd.read_csv(file_path)
+            
+            columns = ",".join(df.columns)
+            rows = [tuple(x) for x in df.where(pd.notnull(df), None).values]
+            
+            insert_query = f"INSERT INTO {table} ({columns}) VALUES %s"
+            execute_values(cur, insert_query, rows)
+            print(f"  - Uploaded {len(rows)} rows to {table.replace('public.', '')}.")
+
+        cur.close()
+        conn.close()
+        print("\n--- Database Repopulated! ---")
+
+    except Exception as e:
+        print(f"Database Error: {e}")
+        if "translate host name" in str(e):
+            print("\nTIP: Use your 'Pooler' host from Supabase settings to avoid DNS issues.")
 
 if __name__ == "__main__":
     main()

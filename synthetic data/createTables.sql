@@ -37,8 +37,6 @@ CREATE TABLE public.cashflow (
   income_tax numeric NOT NULL DEFAULT 0 CHECK (income_tax >= 0),
   insurance_premiums numeric NOT NULL DEFAULT 0 CHECK (insurance_premiums >= 0),
   property_expenses numeric NOT NULL DEFAULT 0 CHECK (property_expenses >= 0),
-
-  -- Loans
   property_loan_repayment numeric NOT NULL DEFAULT 0 CHECK (property_loan_repayment >= 0),
   non_property_loan_repayment numeric NOT NULL DEFAULT 0 CHECK (non_property_loan_repayment >= 0),
 
@@ -50,16 +48,17 @@ CREATE TABLE public.cashflow (
   total_inflow numeric GENERATED ALWAYS AS (
     employment_income_gross + rental_income + investment_income
   ) STORED,
-  total_outflow numeric GENERATED ALWAYS AS (
-    household_expenses + income_tax + insurance_premiums + 
-    property_expenses + property_loan_repayment + non_property_loan_repayment
+  total_expense numeric GENERATED ALWAYS AS (
+    household_expenses + income_tax + insurance_premiums + property_expenses + property_loan_repayment + non_property_loan_repayment
+  ) STORED,
+  wealth_transfers numeric GENERATED ALWAYS AS (
+    cpf_contribution_total + regular_investments
   ) STORED,
   net_surplus numeric GENERATED ALWAYS AS (
     (employment_income_gross + rental_income + investment_income) - 
     (household_expenses + income_tax + insurance_premiums + property_expenses + property_loan_repayment + non_property_loan_repayment)
   ) STORED,
-  -- After wealth transfers
-  net_cashflow numeric GENERATED ALWAYS AS (
+  net_cashflow numeric GENERATED ALWAYS AS (  -- After wealth transfers
     (employment_income_gross + rental_income + investment_income) - 
     (household_expenses + income_tax + insurance_premiums + property_expenses + property_loan_repayment + non_property_loan_repayment + cpf_contribution_total + regular_investments)
   ) STORED,

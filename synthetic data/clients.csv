@@ -1,11 +1,11 @@
 client_id,full_name,age,occupation,marital_status,family_members_count,risk_profile,last_updated
-4cb813e6-1a7c-452a-9017-47702973fe54,Samuel Sanders,39,Artist,Married,1,Conservative,2025-06-09
-2bfded53-2de7-4331-96c1-1ccd3c851cb2,Thomas Willis,79,Doctor,Married,2,Conservative,2025-07-04
-1a4d66e3-9e49-4990-912f-ff04b23a1c3e,Candice Fisher,54,Teacher,Divorced,5,Balanced,2025-11-21
-63907370-1f06-4dc5-ad34-e55e8d218f18,Edward Valencia,68,Software Engineer,Divorced,2,Balanced,2025-10-21
-67e8d8cc-65b9-4fdc-a250-7e095fb6012e,Laura Woods,68,Software Engineer,Widowed,5,Conservative,2025-11-03
-33a02eda-7a66-4158-adb1-7725e5286f94,Kirk Brown,30,Unemployed,Widowed,5,Aggressive,2025-06-23
-ffa4cc29-7632-4f53-a7d2-19a8bed6f027,Melinda Estrada,23,Retired,Married,3,Balanced,2025-10-06
-3523183b-0198-4cca-a852-52a8512718b3,Patricia Brady,26,Accountant,Divorced,0,Balanced,2026-02-18
-4c23eee5-dd8e-4910-a53f-71f7c302518a,Erika Lopez,72,Unemployed,Married,5,Conservative,2025-11-26
-8dd6730b-5829-4150-8669-3761f40608ce,Michele Washington,30,Teacher,Married,4,Balanced,2025-06-17
+5c26ee48-5a7c-4ec3-90a5-261409028473,Daniel Thompson,50,Retired,Single,1,Balanced,2026-02-04
+e2ca64d5-b840-48d1-a509-297bfd518c20,Corey Erickson,83,Artist,Widowed,4,Balanced,2026-01-30
+c8987959-7285-45c1-81f8-01e163ef322d,Hannah Maynard,20,Unemployed,Widowed,0,Aggressive,2026-02-14
+7d077871-5f8a-4d35-939f-9019145083a9,Linda Hayes,66,Teacher,Divorced,0,Aggressive,2025-11-07
+bb222ad1-6715-4ae3-8286-e937eea7366d,Travis Obrien,35,Business Owner,Widowed,3,Aggressive,2025-12-29
+06b7c94f-73a9-4691-97d6-59e76e51eb60,Regina Lewis,67,Doctor,Married,1,Balanced,2025-05-23
+25993ada-2c34-478b-9935-9387b7f2d8b4,Emily Mayer,32,Unemployed,Divorced,5,Conservative,2026-02-09
+5c568f10-1400-4b52-b120-543c51b22674,Donna Castro,41,Retired,Single,3,Aggressive,2025-09-09
+28a7a9e3-629c-4aea-bfda-93cc5a0d3789,Benjamin Lee,56,Doctor,Married,3,Conservative,2025-10-04
+d7f1e3e5-87f4-4c1b-abbc-1c012228fc3b,Carl Bryant,82,Accountant,Single,4,Conservative,2026-01-25
