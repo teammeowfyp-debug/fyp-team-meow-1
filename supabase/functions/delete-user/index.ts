@@ -54,6 +54,8 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({}))
     const userIds = Array.isArray(body?.user_ids) ? body.user_ids : [body?.user_id].filter(Boolean)
+    const reassignToUserId = typeof body?.reassign_to_user_id === 'string' ? body.reassign_to_user_id.trim() || null : null
+
     if (userIds.length === 0) {
       return new Response(JSON.stringify({ error: 'Missing user_ids (array) or user_id' }), {
         status: 400,
@@ -61,38 +63,79 @@ Deno.serve(async (req) => {
       })
     }
 
-    // 1) Ensure no clients are assigned to these users (FK RESTRICT would fail anyway)
+    if (reassignToUserId && userIds.includes(reassignToUserId)) {
+      return new Response(JSON.stringify({ error: 'Reassign target cannot be one of the users you are deleting.' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    // 1) If reassign_to_user_id: move all clients from deleted users to that user. Else: require no clients.
     const { count: assignedCount } = await adminClient
       .from('clients')
       .select('*', { count: 'exact', head: true })
       .in('assigned_user_id', userIds)
 
     if ((assignedCount ?? 0) > 0) {
-      return new Response(
-        JSON.stringify({ error: 'Reassign or remove all clients from these users before deleting them.' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      if (reassignToUserId) {
+        const { error: reassignErr } = await adminClient
+          .from('clients')
+          .update({ assigned_user_id: reassignToUserId })
+          .in('assigned_user_id', userIds)
+        if (reassignErr) {
+          return new Response(
+            JSON.stringify({ error: 'Failed to reassign clients: ' + reassignErr.message }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+      } else {
+        return new Response(
+          JSON.stringify({ error: 'Reassign or remove all clients from these users before deleting, or choose "Reassign their clients to" below.' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+    }
+
+    // public.users.user_id is gen_random_uuid(), not auth.users.id — we must look up auth user by email
+    const { data: rows } = await adminClient
+      .from('users')
+      .select('user_id, email')
+      .in('user_id', userIds)
+
+    if (!rows?.length) {
+      return new Response(JSON.stringify({ error: 'No matching users found in public.users' }), {
+        status: 404,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    const { data: authList } = await adminClient.auth.admin.listUsers({ perPage: 1000 })
+    const emailToAuthId = new Map<string, string>()
+    for (const u of authList?.users ?? []) {
+      if (u.email) emailToAuthId.set(u.email.trim().toLowerCase(), u.id)
     }
 
     const errors: string[] = []
 
-    for (const uid of userIds) {
-      // 2) Delete auth user FIRST (so trigger on public.users delete won't fail)
-      const { error: authErr } = await adminClient.auth.admin.deleteUser(uid)
-      if (authErr) {
-        const msg = authErr.message || ''
-        if (msg.includes('User not found') || msg.includes('not found') || msg.includes('404')) {
-          // Auth user already gone; still remove public.users row if present
-        } else {
-          errors.push(`${uid}: ${msg}`)
-          continue
+    for (const row of rows) {
+      const authId = row.email ? emailToAuthId.get(row.email.trim().toLowerCase()) : null
+
+      // 2) Delete auth user FIRST (by auth id, not public.users.user_id)
+      if (authId) {
+        const { error: authErr } = await adminClient.auth.admin.deleteUser(authId)
+        if (authErr) {
+          const msg = authErr.message || ''
+          if (!msg.includes('User not found') && !msg.includes('not found') && !msg.includes('404')) {
+            errors.push(`${row.email}: ${msg}`)
+            continue
+          }
         }
       }
 
-      // 3) Then delete from public.users (trigger may run here; auth is already deleted)
-      const { error: dbErr } = await adminClient.from('users').delete().eq('user_id', uid)
+      // 3) Then delete from public.users
+      const { error: dbErr } = await adminClient.from('users').delete().eq('user_id', row.user_id)
       if (dbErr) {
-        errors.push(`${uid}: ${dbErr.message}`)
+        errors.push(`${row.email ?? row.user_id}: ${dbErr.message}`)
       }
     }
 

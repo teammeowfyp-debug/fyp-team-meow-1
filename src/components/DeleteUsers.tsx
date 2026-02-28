@@ -12,10 +12,13 @@ const DeleteUsers: React.FC = () => {
   const navigate = useNavigate()
   const [users, setUsers] = useState<UserRow[]>([])
   const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [reassignToUserId, setReassignToUserId] = useState<string>('')
   const [loading, setLoading] = useState(true)
   const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+
+  const otherUsers = users.filter((u) => !selected.has(u.user_id))
 
   if (user && !user.admin) {
     navigate('/')
@@ -55,13 +58,16 @@ const DeleteUsers: React.FC = () => {
     setError(null)
     setSuccess(null)
     try {
+      const body: { user_ids: string[]; reassign_to_user_id?: string } = { user_ids: ids }
+      if (reassignToUserId) body.reassign_to_user_id = reassignToUserId
       const { data, error: invokeError } = await supabase.functions.invoke('delete-user', {
-        body: { user_ids: ids },
+        body,
       })
       if (invokeError) throw new Error(invokeError.message)
       if (data?.error) throw new Error(data.error)
-      setSuccess(`Deleted ${ids.length} user(s).`)
+      setSuccess(reassignToUserId ? `Reassigned clients and deleted ${ids.length} user(s).` : `Deleted ${ids.length} user(s).`)
       setSelected(new Set())
+      setReassignToUserId('')
       setUsers((prev) => prev.filter((u) => !ids.includes(u.user_id)))
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to delete selected users')
@@ -75,7 +81,7 @@ const DeleteUsers: React.FC = () => {
       <div className="edit-users-card glass-card animate-fade">
         <header className="login-header">
           <h2>Delete Users</h2>
-          <span className="login-subtitle">Remove staff or admin accounts. Reassign their clients first (Edit Users).</span>
+          <span className="login-subtitle">Remove staff or admin accounts. Optionally reassign their clients to another user.</span>
         </header>
 
         {error && (
@@ -89,7 +95,7 @@ const DeleteUsers: React.FC = () => {
           </div>
         )}
         {success && (
-          <div className="add-user-success">
+          <div className="add-user-success" style={{ marginTop: '1rem', marginBottom: '1rem' }}>
             <div className="add-user-success-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
@@ -113,8 +119,24 @@ const DeleteUsers: React.FC = () => {
                 <input type="checkbox" checked={selected.size === users.length} onChange={selectAll} />
                 Select all
               </label>
-              {selected.size > 0 && (
+            </div>
+            {selected.size > 0 && (
+              <div className="edit-users-bulk-bar edit-users-bulk-bar-second">
                 <div className="edit-users-bulk-actions">
+                  <span className="edit-users-bulk-label">Reassign their clients to</span>
+                  <select
+                    className="edit-users-select"
+                    value={reassignToUserId}
+                    onChange={(e) => setReassignToUserId(e.target.value)}
+                    disabled={deleting}
+                  >
+                    <option value="">None (no clients assigned)</option>
+                    {otherUsers.map((u) => (
+                      <option key={u.user_id} value={u.user_id}>
+                        {u.full_name} ({u.role})
+                      </option>
+                    ))}
+                  </select>
                   <button
                     type="button"
                     className="edit-users-save-btn"
@@ -125,8 +147,8 @@ const DeleteUsers: React.FC = () => {
                     {deleting ? 'Deleting...' : `Delete ${selected.size} user(s)`}
                   </button>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
             <div className="edit-users-table-wrap">
               <table className="edit-users-table">
                 <thead>

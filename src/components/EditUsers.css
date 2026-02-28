@@ -179,6 +179,11 @@
   margin-bottom: 0.75rem;
 }
 
+.edit-users-bulk-bar-second {
+  margin-top: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
 .edit-users-check-all {
   display: inline-flex;
   align-items: center;
