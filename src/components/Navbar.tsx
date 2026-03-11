@@ -107,7 +107,26 @@ const Navbar: React.FC = () => {
                         onChange={(e) => setSearchQuery(e.target.value)}
                         onFocus={() => searchQuery.trim().length > 0 && setShowResults(true)}
                     />
-                    {isSearching && <div className="search-spinner"></div>}
+                    {isSearching && (
+                        <div className="search-spinner-wrapper" style={{ marginLeft: '10px', display: 'flex', alignItems: 'center' }}>
+                            <svg
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="var(--primary)"
+                                strokeWidth="3"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                style={{
+                                    animation: 'hourglassFlip 1.2s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite'
+                                }}
+                            >
+                                <path d="M5 2h14l-7 9.5-7-9.5z" fill="var(--bg-main)"></path>
+                                <path d="M5 22h14l-7-9.5-7 9.5z" fill="var(--bg-main)"></path>
+                            </svg>
+                        </div>
+                    )}
 
                     {showResults && results.length > 0 && (
                         <div className="search-results glass-card">

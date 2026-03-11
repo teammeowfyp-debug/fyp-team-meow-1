@@ -39,8 +39,9 @@
 }
 
 .back-button:hover {
-    background: var(--primary);
-    border-color: transparent;
+    background: var(--primary-glow);
+    border-color: var(--primary);
+    color: var(--primary);
     transform: translateX(-4px);
     box-shadow: 0 0 15px var(--primary-glow);
 }
@@ -459,24 +460,14 @@
     font-size: 0.95rem;
     line-height: 1.6;
     margin-bottom: 0.75rem;
-    padding-left: 1.4rem;
+    padding-left: 1rem;
     position: relative;
     color: var(--text-main);
-}
-
-.analysis-section li::before {
-    content: "→";
-    position: absolute;
-    left: 0;
-    color: var(--primary);
-    font-weight: bold;
+    list-style-type: disc;
+    margin-left: 1.25rem;
 }
 
 .analysis-section.red-flags h4 {
-    color: var(--warning);
-}
-
-.analysis-section.red-flags li::before {
     color: var(--warning);
 }
 
@@ -549,7 +540,7 @@
 
 .empty-state-icon {
     font-size: 4rem;
-    opacity: 0.5;
+    opacity: 1;
     filter: drop-shadow(0 0 20px var(--primary-glow));
 }
 
@@ -575,6 +566,20 @@
 
     to {
         transform: rotate(360deg);
+    }
+}
+
+@keyframes hourglassFlip {
+    0% {
+        transform: rotate(0);
+    }
+
+    65% {
+        transform: rotate(0);
+    }
+
+    100% {
+        transform: rotate(180deg);
     }
 }
 

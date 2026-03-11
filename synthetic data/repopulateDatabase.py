@@ -73,6 +73,7 @@ def main():
 
         # 3. Schema Reset (clients before users - clients has FK to users)
         tables = [
+            "public.ai_feedback",
             "public.investment_valuations",
             "public.insurance_valuations",
             "public.cashflow",

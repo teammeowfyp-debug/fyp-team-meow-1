@@ -162,3 +162,14 @@ CREATE TABLE public.insurance_valuations (
   CONSTRAINT insurance_valuations_pkey PRIMARY KEY (valuation_id),
   CONSTRAINT insurance_valuations_policy_id_fkey FOREIGN KEY (policy_id) REFERENCES public.client_insurance(policy_id) ON DELETE CASCADE
 );
+
+CREATE TABLE public.ai_feedback (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    client_id UUID REFERENCES public.clients(client_id) ON DELETE CASCADE,
+    rating BOOLEAN NOT NULL,
+    comment TEXT,
+    ai_type TEXT,
+    generated_content TEXT,
+    created_at TIMESTAMPTZ DEFAULT now()
+);

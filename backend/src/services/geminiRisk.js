@@ -1,7 +1,13 @@
 import { GoogleGenAI, Type, ThinkingLevel } from '@google/genai'
 import { env } from '../config/env.js'
 
-const ai = new GoogleGenAI({ apiKey: env.geminiApiKey })
+let ai = null
+function getAi() {
+  if (!ai && env.geminiApiKey) {
+    ai = new GoogleGenAI({ apiKey: env.geminiApiKey })
+  }
+  return ai
+}
 
 const SYSTEM_INSTRUCTION_BASE = `Role: You are a Financial Planning Consultant and Investment Analyst.
 
@@ -38,7 +44,11 @@ function buildContents(params) {
   ]
 }
 
-async function generateJson({ params, schema, instruction }) {
+async function generateJson({ params, schema, instruction, fallback }) {
+  if (!env.geminiApiKey) {
+    return fallback
+  }
+
   const config = {
     thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
     responseMimeType: 'application/json',
@@ -46,7 +56,8 @@ async function generateJson({ params, schema, instruction }) {
     systemInstruction: [{ text: `${SYSTEM_INSTRUCTION_BASE}\n${instruction}\n- Ensure response is as concise as possible.` }],
   }
 
-  const res = await ai.models.generateContent({
+  const activeAi = getAi()
+  const res = await activeAi.models.generateContent({
     model: env.geminiModel,
     config,
     contents: buildContents(params),
@@ -67,7 +78,8 @@ export async function generateRiskSummary(params) {
     properties: { 'Executive Summary': { type: Type.STRING } },
   }
   const instruction = "- Executive Summary: A 2-sentence executive summary of the client's risk alignment"
-  return await generateJson({ params, schema, instruction })
+  const fallback = { "Executive Summary": "AI functions are currently disabled to save tokens." }
+  return await generateJson({ params, schema, instruction, fallback })
 }
 
 export async function generateRiskAnalysis(params) {
@@ -83,6 +95,11 @@ export async function generateRiskAnalysis(params) {
   const instruction = `- Key Insights: Concise insights based on synthesized data.
 - Potential Risks: Any immediate dangers.
 - Recommendations: Clear actions for the advisor to take.`
-  return await generateJson({ params, schema, instruction })
+  const fallback = {
+    "Key Insights": "AI functions are currently disabled to save tokens.",
+    "Potential Risks": "AI functions are currently disabled to save tokens.",
+    "Recommendations": "AI functions are currently disabled to save tokens."
+  }
+  return await generateJson({ params, schema, instruction, fallback })
 }
 

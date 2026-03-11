@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { generateRiskAnalysis, generateRiskSummary } from '../../lib/riskProfileAI';
+import { generateRiskAnalysis, generateRiskSummary, submitAIFeedback } from '../../lib/riskProfileAI';
 
 interface RiskProfileProps {
     clientId?: string;
@@ -75,7 +75,7 @@ const AIInfoModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
                 >&times;</button>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem', borderBottom: '1px solid var(--border)', paddingBottom: '0.75rem' }}>
-                    <h2 style={{ fontSize: '1.5rem', color: 'var(--secondary)', margin: 0 }}>How AI Generates This Analysis</h2>
+                    <h2 style={{ fontSize: '1.5rem', color: 'var(--secondary)', margin: 0 }}>How Does AI Generate This Analysis?</h2>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -113,6 +113,170 @@ const AIInfoModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
     );
 };
 
+const AIFeedbackModal: React.FC<{
+    isOpen: boolean;
+    onClose: () => void;
+    rating: boolean | null;
+    setRating: (rating: boolean | null) => void;
+    feedbackComment: string;
+    setFeedbackComment: (comment: string) => void;
+    isSubmitting: boolean;
+    submitted: boolean;
+    onSubmit: () => void;
+    error: string | null;
+}> = ({ isOpen, onClose, rating, setRating, feedbackComment, setFeedbackComment, isSubmitting, submitted, onSubmit, error }) => {
+    if (!isOpen) return null;
+
+    return createPortal(
+        <div className="modal-overlay" onClick={onClose} style={{
+            position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+            background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
+            backdropFilter: 'blur(4px)'
+        }}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{
+                width: '100%', maxWidth: '500px', padding: '2rem',
+                background: '#fff', borderRadius: '24px', boxShadow: 'var(--shadow-xl)',
+                position: 'relative',
+                maxHeight: '90vh',
+                overflowY: 'auto'
+            }}>
+                <button
+                    onClick={onClose}
+                    style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', background: 'transparent', border: 'none', fontSize: '1.75rem', cursor: 'pointer', color: 'var(--text-muted)' }}
+                >&times;</button>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <h2 style={{ fontSize: '1.5rem', color: 'var(--secondary)', marginBottom: '0' }}>Was This Analysis Helpful?</h2>
+                    <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.5rem', lineHeight: '1.5' }}>
+                        Your feedback helps us improve the relevance and accuracy of our AI-generated risk insights.
+                    </p>
+
+                    {!submitted ? (
+                        <>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px' }}>
+                                <button
+                                    onClick={() => setRating(true)}
+                                    style={{
+                                        background: rating === true ? 'rgba(113, 146, 102, 0.15)' : 'rgba(0,0,0,0.02)',
+                                        border: `1px solid ${rating === true ? 'var(--success)' : 'var(--border)'}`,
+                                        borderRadius: '12px',
+                                        padding: '16px',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s',
+                                        flex: 1,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        color: rating === true ? 'var(--success)' : 'var(--text-muted)'
+                                    }}
+                                >
+                                    <svg width="28" height="28" viewBox="0 0 24 24" fill={rating === true ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M7 10v12"></path>
+                                        <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2h0a3.13 3.13 0 0 1 3 3.88Z"></path>
+                                    </svg>
+                                </button>
+                                <button
+                                    onClick={() => setRating(false)}
+                                    style={{
+                                        background: rating === false ? 'rgba(155, 34, 38, 0.1)' : 'rgba(0,0,0,0.02)',
+                                        border: `1px solid ${rating === false ? '#9B2226' : 'var(--border)'}`,
+                                        borderRadius: '12px',
+                                        padding: '16px',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s',
+                                        flex: 1,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        color: rating === false ? '#9B2226' : 'var(--text-muted)'
+                                    }}
+                                >
+                                    <svg width="28" height="28" viewBox="0 0 24 24" fill={rating === false ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M17 14V2"></path>
+                                        <path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2h13.5a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22h0a3.13 3.13 0 0 1-3-3.88Z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                <textarea
+                                    placeholder="Optional: How can we improve this result?"
+                                    value={feedbackComment}
+                                    onChange={(e) => setFeedbackComment(e.target.value)}
+                                    style={{
+                                        width: '100%',
+                                        minHeight: '100px',
+                                        padding: '12px',
+                                        borderRadius: '12px',
+                                        border: '1px solid var(--border)',
+                                        fontSize: '0.85rem',
+                                        fontFamily: 'inherit',
+                                        resize: 'none',
+                                        outline: 'none',
+                                        boxSizing: 'border-box'
+                                    }}
+                                />
+
+                                {error && (
+                                    <p style={{ color: 'var(--danger)', fontSize: '0.8rem', fontWeight: 500, textAlign: 'center', margin: 0 }}>
+                                        {error}
+                                    </p>
+                                )}
+
+                                <button
+                                    onClick={onSubmit}
+                                    disabled={isSubmitting || rating === null}
+                                    style={{
+                                        width: '100%',
+                                        padding: '12px',
+                                        borderRadius: '12px',
+                                        background: 'var(--primary)',
+                                        color: '#fff',
+                                        border: 'none',
+                                        fontWeight: 600,
+                                        fontSize: '0.9rem',
+                                        cursor: (isSubmitting || rating === null) ? 'not-allowed' : 'pointer',
+                                        opacity: (isSubmitting || rating === null) ? 0.7 : 1,
+                                        transition: 'all 0.2s'
+                                    }}
+                                    onMouseOver={(e) => {
+                                        if (!isSubmitting && rating !== null) {
+                                            e.currentTarget.style.filter = 'brightness(0.9)';
+                                        }
+                                    }}
+                                    onMouseOut={(e) => {
+                                        e.currentTarget.style.filter = 'none';
+                                    }}
+                                >
+                                    {isSubmitting ? 'Submitting...' : 'Submit Feedback'}
+                                </button>
+                            </div>
+                        </>
+                    ) : (
+                        <div style={{
+                            textAlign: 'center',
+                            minHeight: '235px',
+                            background: 'var(--primary-glow)',
+                            border: '1px solid rgba(197, 179, 88, 0.15)',
+                            borderRadius: '16px',
+                            color: 'var(--primary)',
+                            fontWeight: 600,
+                            fontSize: '1.5rem',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}>
+                            Thank you for your feedback!
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>,
+        document.body
+    );
+};
+
 const RiskProfile: React.FC<RiskProfileProps> = ({
     client,
     mode = 'overview',
@@ -130,6 +294,7 @@ const RiskProfile: React.FC<RiskProfileProps> = ({
 
     const [isInfoModalOpen, setIsInfoModalOpen] = useState<boolean>(false);
     const [isAIModalOpen, setIsAIModalOpen] = useState<boolean>(false);
+    const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState<boolean>(false);
     const [structuredAnalysis, setStructuredAnalysis] = useState<{
         "Key Insights": string;
         "Potential Risks": string;
@@ -137,12 +302,132 @@ const RiskProfile: React.FC<RiskProfileProps> = ({
     } | null>(cache?.focused || null);
     const [copied, setCopied] = useState<boolean>(false);
 
-    const aiDisclaimerPill = (
+    // AI Feedback State
+    const [rating, setRating] = useState<boolean | null>(null);
+    const [feedbackComment, setFeedbackComment] = useState<string>('');
+    const [isSubmittingFeedback, setIsSubmittingFeedback] = useState<boolean>(false);
+    const [feedbackSubmitted, setFeedbackSubmitted] = useState<boolean>(false);
+    const [feedbackError, setFeedbackError] = useState<string | null>(null);
+
+    const handleFeedbackSubmit = async () => {
+        if (!client || rating === null) return;
+        setIsSubmittingFeedback(true);
+        setFeedbackError(null);
+        try {
+            const formattedContent = structuredAnalysis
+                ? `Key Insights:\n${structuredAnalysis["Key Insights"]}\n\n` +
+                `Potential Risks:\n${structuredAnalysis["Potential Risks"]}\n\n` +
+                `Recommendations:\n${structuredAnalysis["Recommendations"]}`
+                : '';
+
+            await submitAIFeedback({
+                client_id: client.client_id,
+                rating,
+                comment: feedbackComment || undefined,
+                generated_content: formattedContent,
+                ai_type: 'risk_analysis'
+            });
+            setFeedbackSubmitted(true);
+        } catch (err: any) {
+            console.error('Feedback submission failed:', err);
+            const errMsg = err.message === 'Load failed' || err.message === 'Failed to fetch'
+                ? 'AI Service is currently unreachable. Please check your connection or try again later.'
+                : (err.message || 'Failed to submit feedback. Please try again.');
+            setFeedbackError(errMsg);
+        } finally {
+            setIsSubmittingFeedback(false);
+        }
+    };
+
+    const handleCloseFeedbackModal = () => {
+        setIsFeedbackModalOpen(false);
+        // Small delay to reset state after modal animation starts closing
+        setTimeout(() => {
+            setRating(null);
+            setFeedbackComment('');
+            setFeedbackSubmitted(false);
+            setFeedbackError(null);
+        }, 200);
+    };
+
+    const aiDisclaimerPill = mode === 'focused' ? (
+        <div style={{
+            display: 'flex',
+            justifyContent: 'flex-start',
+            padding: '1.5rem 0 0.5rem 0',
+            marginTop: 'auto'
+        }}>
+            <button
+                onClick={() => setIsAIModalOpen(true)}
+                style={{
+                    fontSize: '0.65rem',
+                    color: 'var(--text-muted)',
+                    background: 'rgba(0, 0, 0, 0.03)',
+                    padding: '6px 14px',
+                    borderRadius: '20px',
+                    border: '1px solid var(--border)',
+                    fontWeight: 700,
+                    letterSpacing: '0.05em',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    textTransform: 'uppercase',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                }}
+                onMouseOver={(e) => {
+                    e.currentTarget.style.background = 'var(--primary-glow)';
+                    e.currentTarget.style.color = 'var(--primary)';
+                    e.currentTarget.style.borderColor = 'var(--primary)';
+                }}
+                onMouseOut={(e) => {
+                    e.currentTarget.style.background = 'rgba(0, 0, 0, 0.03)';
+                    e.currentTarget.style.color = 'var(--text-muted)';
+                    e.currentTarget.style.borderColor = 'var(--border)';
+                }}
+            >
+                How Does AI Generate This Analysis?
+            </button>
+
+            <button
+                onClick={() => setIsFeedbackModalOpen(true)}
+                style={{
+                    fontSize: '0.65rem',
+                    color: 'var(--text-muted)',
+                    background: 'rgba(0, 0, 0, 0.03)',
+                    padding: '6px 14px',
+                    borderRadius: '20px',
+                    border: '1px solid var(--border)',
+                    fontWeight: 700,
+                    letterSpacing: '0.05em',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    textTransform: 'uppercase',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    marginLeft: 'auto'
+                }}
+                onMouseOver={(e) => {
+                    e.currentTarget.style.background = 'var(--primary-glow)';
+                    e.currentTarget.style.color = 'var(--primary)';
+                    e.currentTarget.style.borderColor = 'var(--primary)';
+                }}
+                onMouseOut={(e) => {
+                    e.currentTarget.style.background = 'rgba(0, 0, 0, 0.03)';
+                    e.currentTarget.style.color = 'var(--text-muted)';
+                    e.currentTarget.style.borderColor = 'var(--border)';
+                }}
+            >
+                Provide Feedback
+            </button>
+        </div>
+    ) : (
         <div style={{
             display: 'flex',
             justifyContent: 'center',
-            padding: mode === 'overview' ? 0 : '4px 0 12px 0',
-            marginTop: mode === 'overview' ? '0' : 'auto'
+            padding: 0,
+            marginTop: '0'
         }}>
             <button
                 onClick={() => setIsAIModalOpen(true)}
@@ -159,19 +444,12 @@ const RiskProfile: React.FC<RiskProfileProps> = ({
                     alignItems: 'center',
                     gap: '6px',
                     textTransform: 'uppercase',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                }}
-                onMouseOver={(e) => {
-                    e.currentTarget.style.background = 'rgba(0, 0, 0, 0.06)';
-                    e.currentTarget.style.color = 'var(--secondary)';
-                }}
-                onMouseOut={(e) => {
-                    e.currentTarget.style.background = 'rgba(0, 0, 0, 0.03)';
-                    e.currentTarget.style.color = 'var(--text-muted)';
+                    cursor: 'pointer'
                 }}
             >
-                <span style={{ fontSize: '0.8rem' }}>✨</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--primary)" style={{ opacity: 0.9 }}>
+                    <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" />
+                </svg>
                 This analysis is generated by AI
             </button>
         </div>
@@ -179,6 +457,12 @@ const RiskProfile: React.FC<RiskProfileProps> = ({
 
     useEffect(() => {
         if (!client) return;
+
+        // Reset feedback state on client/mode switch
+        setRating(null);
+        setFeedbackComment('');
+        setFeedbackSubmitted(false);
+        setFeedbackError(null);
 
         // Reset local states if cache is null (new client/leaves page)
         if (!cache) {
@@ -345,7 +629,10 @@ const RiskProfile: React.FC<RiskProfileProps> = ({
                 }
             } catch (err: any) {
                 console.error('Risk Analysis Error:', err);
-                setError('Failed to load risk analysis.');
+                const errMsg = err.message === 'Load failed' || err.message === 'Failed to fetch'
+                    ? 'AI Service unreachable.'
+                    : 'Failed to load risk analysis.';
+                setError(errMsg);
             } finally {
                 setLoading(false);
             }
@@ -354,14 +641,7 @@ const RiskProfile: React.FC<RiskProfileProps> = ({
         analyze();
     }, [client, mode]);
 
-    const renderListItems = (text: string) => {
-        if (!text) return null;
-        // Split by newlines and handle various bullet formats (*, -, •, or numbers)
-        const items = text.split(/\n/).filter(line => line.trim().length > 0);
-        return items.map((item, i) => (
-            <li key={i}>{item.replace(/^[\s*•\-]+/, '').trim()}</li>
-        ));
-    };
+
 
     const handleCopy = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -370,10 +650,9 @@ const RiskProfile: React.FC<RiskProfileProps> = ({
         if (mode === 'overview') {
             textToCopy = summary;
         } else if (mode === 'focused' && structuredAnalysis) {
-            textToCopy = `RISK ANALYSIS REPORT\n\n` +
-                `KEY INSIGHTS:\n${structuredAnalysis["Key Insights"]}\n\n` +
-                `POTENTIAL RISKS:\n${structuredAnalysis["Potential Risks"] || 'None identified.'}\n\n` +
-                `RECOMMENDATIONS:\n${structuredAnalysis["Recommendations"]}`;
+            textToCopy = `Key Insights:\n${structuredAnalysis["Key Insights"]}\n\n` +
+                `Potential Risks:\n${structuredAnalysis["Potential Risks"] || 'None identified.'}\n\n` +
+                `Recommendations:\n${structuredAnalysis["Recommendations"]}`;
         }
 
         if (textToCopy) {
@@ -409,6 +688,20 @@ const RiskProfile: React.FC<RiskProfileProps> = ({
                             border: copied ? '1px solid var(--success)' : '1px solid var(--border)'
                         }}
                         title="Copy analysis to clipboard"
+                        onMouseOver={(e) => {
+                            if (!copied) {
+                                e.currentTarget.style.background = 'rgba(0, 0, 0, 0.06)';
+                                e.currentTarget.style.color = 'var(--secondary)';
+                                e.currentTarget.style.borderColor = 'var(--primary)';
+                            }
+                        }}
+                        onMouseOut={(e) => {
+                            if (!copied) {
+                                e.currentTarget.style.background = 'rgba(0,0,0,0.02)';
+                                e.currentTarget.style.color = 'var(--text-muted)';
+                                e.currentTarget.style.borderColor = 'var(--border)';
+                            }
+                        }}
                     >
                         {copied ? (
                             <>
@@ -430,53 +723,56 @@ const RiskProfile: React.FC<RiskProfileProps> = ({
                 )}
             </div>
 
-            <div className="risk-indicator" style={mode === 'overview' ? { flex: 1, gap: '1rem' } : { gap: '1rem' }}>
+            <div className="risk-indicator" style={{ flex: 1, gap: '1rem', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
                 {clientInfo && (
                     <div className="risk-header-info animate-fade">
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
                             <div className="risk-category-display" style={{ alignItems: 'center', textAlign: 'center' }}>
-                                <span className="label">Current Category</span>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                    <span className="value" style={{ fontSize: '2rem' }}>{clientInfo.category}</span>
-                                    <button
-                                        onClick={() => setIsInfoModalOpen(true)}
-                                        style={{
-                                            width: '20px',
-                                            height: '20px',
-                                            borderRadius: '50%',
-                                            border: '1px solid var(--border)',
-                                            background: 'rgba(0,0,0,0.03)',
-                                            fontSize: '0.8rem',
-                                            color: 'var(--text-muted)',
-                                            cursor: 'pointer',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            transition: 'all 0.2s',
-                                            fontWeight: 700,
-                                            marginTop: '4px'
-                                        }}
-                                        title="View Risk Level Guide"
-                                        onMouseOver={(e) => {
-                                            e.currentTarget.style.background = 'var(--primary)';
-                                            e.currentTarget.style.color = '#fff';
-                                            e.currentTarget.style.borderColor = 'var(--primary)';
-                                        }}
-                                        onMouseOut={(e) => {
-                                            e.currentTarget.style.background = 'rgba(0,0,0,0.03)';
-                                            e.currentTarget.style.color = 'var(--text-muted)';
-                                            e.currentTarget.style.borderColor = 'var(--border)';
-                                        }}
-                                    >
-                                        ?
-                                    </button>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
+                                    <span className="label">Current Category</span>
+                                    {mode === 'focused' && (
+                                        <button
+                                            onClick={() => setIsInfoModalOpen(true)}
+                                            style={{
+                                                width: '18px',
+                                                height: '18px',
+                                                borderRadius: '50%',
+                                                border: '1px solid var(--border)',
+                                                background: 'rgba(0,0,0,0.03)',
+                                                color: 'var(--text-muted)',
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                transition: 'all 0.2s',
+                                                padding: 0,
+                                                marginTop: '-2px',
+                                                fontSize: '0.75rem',
+                                                fontWeight: 600
+                                            }}
+                                            title="View Risk Level Guide"
+                                            onMouseOver={(e) => {
+                                                e.currentTarget.style.background = 'var(--primary)';
+                                                e.currentTarget.style.color = '#fff';
+                                                e.currentTarget.style.borderColor = 'var(--primary)';
+                                            }}
+                                            onMouseOut={(e) => {
+                                                e.currentTarget.style.background = 'rgba(0,0,0,0.03)';
+                                                e.currentTarget.style.color = 'var(--text-muted)';
+                                                e.currentTarget.style.borderColor = 'var(--border)';
+                                            }}
+                                        >
+                                            ?
+                                        </button>
+                                    )}
                                 </div>
+                                <span className="value" style={{ fontSize: '2rem' }}>{clientInfo.category}</span>
                             </div>
                         </div>
                     </div>
                 )}
 
-                <div className="ai-analysis-content">
+                <div className="ai-analysis-content" style={{ minHeight: 0 }}>
                     {loading && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', padding: '1rem 0' }}>
                             <div className="loading-shimmer">
@@ -502,13 +798,17 @@ const RiskProfile: React.FC<RiskProfileProps> = ({
                         <div className="structured-analysis animate-fade">
                             <div className="analysis-section">
                                 <h4>Key Insights</h4>
-                                <ul>{renderListItems(structuredAnalysis["Key Insights"])}</ul>
+                                <p style={{ fontSize: '0.95rem', lineHeight: '1.6', color: 'var(--text-main)', whiteSpace: 'pre-line' }}>
+                                    {structuredAnalysis["Key Insights"].replace(/^[\s*•\-→]|(?:->)+/gm, '').trim()}
+                                </p>
                             </div>
 
                             {structuredAnalysis["Potential Risks"] && (
                                 <div className="analysis-section red-flags">
                                     <h4>Potential Risks</h4>
-                                    <ul>{renderListItems(structuredAnalysis["Potential Risks"])}</ul>
+                                    <p style={{ fontSize: '0.95rem', lineHeight: '1.6', color: 'var(--text-main)', whiteSpace: 'pre-line' }}>
+                                        {structuredAnalysis["Potential Risks"].replace(/^[\s*•\-→]|(?:->)+/gm, '').trim()}
+                                    </p>
                                 </div>
                             )}
 
@@ -539,6 +839,18 @@ const RiskProfile: React.FC<RiskProfileProps> = ({
 
             <RiskLevelInfoModal isOpen={isInfoModalOpen} onClose={() => setIsInfoModalOpen(false)} />
             <AIInfoModal isOpen={isAIModalOpen} onClose={() => setIsAIModalOpen(false)} />
+            <AIFeedbackModal
+                isOpen={isFeedbackModalOpen}
+                onClose={handleCloseFeedbackModal}
+                rating={rating}
+                setRating={setRating}
+                feedbackComment={feedbackComment}
+                setFeedbackComment={setFeedbackComment}
+                isSubmitting={isSubmittingFeedback}
+                submitted={feedbackSubmitted}
+                onSubmit={handleFeedbackSubmit}
+                error={feedbackError}
+            />
         </section>
     );
 };

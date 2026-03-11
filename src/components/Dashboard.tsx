@@ -179,7 +179,22 @@ const Dashboard: React.FC = () => {
         return (
             <div className="dashboard-container animate-fade">
                 <div className="empty-state-container glass-card">
-                    <div className="empty-state-icon">🔍</div>
+                    <div className="empty-state-icon">
+                        <svg
+                            width="64"
+                            height="64"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="var(--primary)"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            style={{ filter: 'drop-shadow(0 0 10px var(--primary-glow))' }}
+                        >
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="22" y1="22" x2="17.5" y2="17.5" strokeWidth="3"></line>
+                        </svg>
+                    </div>
                     <h2>No Client Selected</h2>
                     <p>Please use the search bar above to select a client and view their financial dashboard.</p>
                 </div>
@@ -191,9 +206,26 @@ const Dashboard: React.FC = () => {
         return (
             <div className="dashboard-container animate-fade">
                 <div className="empty-state-container glass-card">
-                    <div className="empty-state-icon loading-spinner-icon">⏳</div>
+                    <div className="empty-state-icon">
+                        <svg
+                            width="64"
+                            height="64"
+                            viewBox="0 0 24 24"
+                            stroke="var(--primary)"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            style={{
+                                filter: 'drop-shadow(0 0 15px var(--primary-glow))',
+                                animation: 'hourglassFlip 1.2s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite'
+                            }}
+                        >
+                            <path d="M5 2h14l-7 9.5-7-9.5z" fill="var(--bg-main)"></path>
+                            <path d="M5 22h14l-7-9.5-7 9.5z" fill="var(--bg-main)"></path>
+                        </svg>
+                    </div>
                     <h2>Loading Client Data</h2>
-                    <p>Fetching the latest financial records from Supabase...</p>
+                    <p>Fetching the latest financial records...</p>
                 </div>
             </div>
         );

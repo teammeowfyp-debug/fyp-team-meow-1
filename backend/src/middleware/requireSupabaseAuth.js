@@ -1,9 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
-import { env } from '../config/env.js'
-
-const supabase = createClient(env.supabaseUrl, env.supabaseAnonKey, {
-  auth: { persistSession: false },
-})
+import { supabase } from '../lib/supabase.js'
 
 export async function requireSupabaseAuth(req, res, next) {
   try {
@@ -15,6 +10,7 @@ export async function requireSupabaseAuth(req, res, next) {
     if (error || !data?.user) return res.status(401).json({ error: 'Invalid or expired token' })
 
     req.user = data.user
+    req.token = token
     return next()
   } catch {
     return res.status(401).json({ error: 'Invalid or expired token' })

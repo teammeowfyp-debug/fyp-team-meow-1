@@ -375,3 +375,18 @@ CREATE POLICY "insurance_valuations_delete" ON public.insurance_valuations
 
 -- Done. Service role (Edge Functions, migrations) bypasses RLS.
 -- Authenticated requests use the JWT; these policies enforce who sees what.
+
+-- 11) Policies: ai_feedback
+ALTER TABLE public.ai_feedback ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "ai_feedback_insert" ON public.ai_feedback;
+CREATE POLICY "ai_feedback_insert" ON public.ai_feedback
+  FOR INSERT
+  TO authenticated
+  WITH CHECK (true);
+
+DROP POLICY IF EXISTS "ai_feedback_select" ON public.ai_feedback;
+CREATE POLICY "ai_feedback_select" ON public.ai_feedback
+  FOR SELECT
+  TO authenticated
+  USING (true);

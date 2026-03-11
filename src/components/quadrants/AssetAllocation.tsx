@@ -185,8 +185,8 @@ const AssetAllocation: React.FC<AssetAllocationProps> = ({ client, mode = 'overv
                         letterSpacing: '0.05em'
                     }}
                     onMouseOver={(e) => {
-                        e.currentTarget.style.background = 'rgba(0,0,0,0.06)';
-                        e.currentTarget.style.color = 'var(--secondary)';
+                        e.currentTarget.style.background = 'var(--primary-glow)';
+                        e.currentTarget.style.color = 'var(--primary)';
                         e.currentTarget.style.borderColor = 'var(--primary)';
                     }}
                     onMouseOut={(e) => {
