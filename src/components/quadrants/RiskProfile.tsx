@@ -116,7 +116,6 @@ const AIInfoModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
 const RiskProfile: React.FC<RiskProfileProps> = ({
     client,
     mode = 'overview',
-    dateRange,
     cache,
     onCacheUpdate
 }) => {

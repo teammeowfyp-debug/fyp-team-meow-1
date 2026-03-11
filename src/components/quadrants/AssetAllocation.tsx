@@ -195,17 +195,6 @@ const AssetAllocation: React.FC<AssetAllocationProps> = ({ client, mode = 'overv
                         e.currentTarget.style.borderColor = 'var(--border)';
                     }}
                 >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        {chartType === 'absolute' ? (
-                            <path d="M18 20V10M12 20V4M6 20v-6" />
-                        ) : (
-                            <>
-                                <rect x="3" y="3" width="18" height="18" rx="2" />
-                                <line x1="3" y1="9" x2="21" y2="9" />
-                                <line x1="3" y1="15" x2="21" y2="15" />
-                            </>
-                        )}
-                    </svg>
                     <span>{chartType === 'absolute' ? 'Show %' : 'Show Value'}</span>
                 </button>
             </div>

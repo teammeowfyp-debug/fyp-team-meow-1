@@ -257,7 +257,8 @@ interface ClientHeaderProps {
     endDate: string;
     onStartDateChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onEndDateChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    onClearDates: () => void;
+    onSetMaxRange: () => void;
+    absoluteBounds: { start: string; end: string } | null;
 }
 
 const ClientHeader: React.FC<ClientHeaderProps> = ({
@@ -268,7 +269,8 @@ const ClientHeader: React.FC<ClientHeaderProps> = ({
     endDate,
     onStartDateChange,
     onEndDateChange,
-    onClearDates
+    onSetMaxRange,
+    absoluteBounds
 }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -322,14 +324,80 @@ const ClientHeader: React.FC<ClientHeaderProps> = ({
                     style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '320px' }}
                 >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 8px' }}>
-                        <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: '0.05em' }}>
-                            Adjust Analysis Period
-                        </span>
-                        {(startDate || endDate) && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: '0.05em' }}>
+                                Analysis Period
+                            </span>
+                            <div style={{ display: 'flex', gap: '4px', marginLeft: '4px' }}>
+                                {[
+                                    { label: '3Y', years: 3 },
+                                    { label: '5Y', years: 5 }
+                                ].map(p => (
+                                    <button
+                                        key={p.label}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            const end = new Date();
+                                            const start = new Date();
+                                            start.setFullYear(end.getFullYear() - p.years);
+
+                                            // Format to YYYY-MM-DD for input type="date"
+                                            const formatDateStr = (d: Date) => d.toISOString().split('T')[0];
+
+                                            // We need to bypass the React.ChangeEvent<HTMLInputElement> type since we're calling directly
+                                            // but the implementation in Dashboard.tsx just takes e.target.value
+                                            onStartDateChange({ target: { value: formatDateStr(start) } } as any);
+                                            onEndDateChange({ target: { value: formatDateStr(end) } } as any);
+                                        }}
+                                        style={{
+                                            background: (startDate && new Date(startDate).getFullYear() === new Date().getFullYear() - p.years) ? 'var(--primary)' : 'rgba(0,0,0,0.03)',
+                                            border: '1px solid var(--border)',
+                                            color: (startDate && new Date(startDate).getFullYear() === new Date().getFullYear() - p.years) ? '#fff' : 'var(--text-muted)',
+                                            fontSize: '0.6rem',
+                                            fontWeight: 700,
+                                            padding: '2px 6px',
+                                            borderRadius: '4px',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s'
+                                        }}
+                                        onMouseOver={(e) => {
+                                            if (e.currentTarget.style.background !== 'var(--primary)') {
+                                                e.currentTarget.style.background = 'rgba(0,0,0,0.08)';
+                                            }
+                                        }}
+                                        onMouseOut={(e) => {
+                                            if (e.currentTarget.style.background !== 'var(--primary)') {
+                                                e.currentTarget.style.background = 'rgba(0,0,0,0.03)';
+                                            }
+                                        }}
+                                    >
+                                        {p.label}
+                                    </button>
+                                ))}
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onSetMaxRange();
+                                    }}
+                                    style={{
+                                        background: (absoluteBounds && startDate === absoluteBounds.start && endDate === absoluteBounds.end) ? 'var(--primary)' : 'rgba(0,0,0,0.03)',
+                                        border: '1px solid var(--border)',
+                                        color: (absoluteBounds && startDate === absoluteBounds.start && endDate === absoluteBounds.end) ? '#fff' : 'var(--text-muted)',
+                                        fontSize: '0.6rem',
+                                        fontWeight: 700,
+                                        padding: '2px 6px',
+                                        borderRadius: '4px',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s'
+                                    }}
+                                >MAX</button>
+                            </div>
+                        </div>
+                        {absoluteBounds && (startDate !== absoluteBounds.start || endDate !== absoluteBounds.end) && (
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    onClearDates();
+                                    onSetMaxRange();
                                 }}
                                 style={{
                                     background: 'transparent',
@@ -342,7 +410,7 @@ const ClientHeader: React.FC<ClientHeaderProps> = ({
                                     letterSpacing: '0.05em',
                                     padding: 0
                                 }}
-                            >Clear</button>
+                            >Reset</button>
                         )}
                     </div>
                     <div

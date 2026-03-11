@@ -22,6 +22,7 @@ const Dashboard: React.FC = () => {
         overview?: string;
         focused?: any;
     }>>({});
+    const [absoluteBounds, setAbsoluteBounds] = useState<{ start: string; end: string } | null>(null);
 
     const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newStart = e.target.value;
@@ -136,6 +137,28 @@ const Dashboard: React.FC = () => {
                     }));
 
                     data.client_plans = [...mappedInvestments, ...mappedInsurance];
+
+                    // Calculate absolute bounds for date filtering
+                    const allDates: string[] = [];
+                    data.cashflow?.forEach((c: any) => allDates.push(c.as_of_date));
+                    data.client_plans.forEach((p: any) => {
+                        if (p.start_date) allDates.push(p.start_date);
+                        if (p.end_date) allDates.push(p.end_date);
+                    });
+
+                    if (allDates.length > 0) {
+                        const sorted = allDates.map(d => d.substring(0, 10)).sort();
+                        const bounds = {
+                            start: sorted[0],
+                            end: sorted[sorted.length - 1]
+                        };
+                        setAbsoluteBounds(bounds);
+
+                        // Default to Max Range on load
+                        setStartDate(bounds.start);
+                        setEndDate(bounds.end);
+                    }
+
                     setClient(data);
                 }
             } catch (err) {
@@ -240,14 +263,20 @@ const Dashboard: React.FC = () => {
                 endDate={endDate}
                 onStartDateChange={handleStartDateChange}
                 onEndDateChange={handleEndDateChange}
-                onClearDates={() => { setStartDate(''); setEndDate(''); }}
+                onSetMaxRange={() => {
+                    if (absoluteBounds) {
+                        setStartDate(absoluteBounds.start);
+                        setEndDate(absoluteBounds.end);
+                    }
+                }}
+                absoluteBounds={absoluteBounds}
             />
             {isFocused ? (
-                <main className="focused-view" style={{ marginTop: '1.5rem' }}>
+                <main className="focused-view">
                     {renderFocusedQuadrant()}
                 </main>
             ) : (
-                <div style={{ marginTop: '1.5rem' }}>
+                <div>
                     {renderFullGrid()}
                 </div>
             )}

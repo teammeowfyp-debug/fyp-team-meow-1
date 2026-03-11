@@ -154,7 +154,6 @@ const Cashflow: React.FC<CashflowProps> = ({ client, mode = 'overview', dateRang
             <section className={`glass-card quadrant ${mode === 'focused' ? 'focused' : ''}`}>
                 <div className="card-header">
                     <h3>Cashflow Analysis</h3>
-                    <div className="badge">{client?.cashflow?.length || 0} Snapshots</div>
                 </div>
 
                 <div className="chart-container" style={{ flex: 1, position: 'relative', minHeight: 0 }}>
@@ -354,7 +353,7 @@ const Cashflow: React.FC<CashflowProps> = ({ client, mode = 'overview', dateRang
                             <div style={{ flex: '1', minWidth: '350px' }}>
                                 <h4 style={{ fontSize: '0.85rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '1.5rem', letterSpacing: '0.05em', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem' }}>Details by Category</h4>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                                    {getPieGroups(selectedSnapshot).map((group, i) => {
+                                    {getPieGroups(selectedSnapshot).map((group) => {
                                         const groupColor = CASHFLOW_COLORS[group.name];
                                         const actualItems = group.items.filter(it => it.value > 0);
                                         const isCatActive = activeCategory === group.name || (activeItemName && actualItems.find(it => it.name === activeItemName));
