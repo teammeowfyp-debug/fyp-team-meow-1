@@ -5,7 +5,7 @@
     padding: 0.75rem 2rem;
     position: sticky;
     top: 0;
-    z-index: 100;
+    z-index: 10001;
 }
 
 .navbar-left .logo {
@@ -102,15 +102,7 @@
     color: var(--text-muted);
 }
 
-.search-spinner {
-    width: 16px;
-    height: 16px;
-    border: 2px solid rgba(0, 0, 0, 0.1);
-    border-top: 2px solid var(--primary);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin-left: 10px;
-}
+
 
 @keyframes spin {
     0% {
@@ -125,6 +117,26 @@
 .navbar-right {
     display: flex;
     align-items: center;
+    gap: 1rem;
+}
+
+.navbar-add-user-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--primary);
+    color: white;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.navbar-add-user-btn:hover {
+    filter: brightness(0.9);
+    transform: translateY(-1px);
 }
 
 .profile-wrapper {

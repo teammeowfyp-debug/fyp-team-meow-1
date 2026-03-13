@@ -2,3 +2,65 @@
   min-height: 100vh;
   width: 100%;
 }
+
+#root {
+  width: 100%;
+}
+
+/* Idle logout warning popup */
+.idle-warning-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.3s ease;
+}
+
+.idle-warning-popup {
+  background: #fff;
+  padding: 2.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  max-width: 380px;
+  text-align: center;
+}
+
+.idle-warning-popup h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.25rem;
+  font-family: var(--font-heading);
+  color: var(--secondary);
+  font-weight: 700;
+}
+
+.idle-warning-popup p {
+  margin: 0 0 1.5rem;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.idle-warning-stay {
+  padding: 0.7rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.idle-warning-stay:hover {
+  filter: brightness(0.9);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-lg);
+}

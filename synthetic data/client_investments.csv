@@ -1,0 +1,77 @@
+policy_id,client_id,policy_name,policy_type,initial_investment,contribution_amount,contribution_frequency,start_date,expiry_date,status
+c0682497-3129-4958-baa9-e8422e66e726,e2564ada-dc96-446e-a209-b62431e250a5,Gonzales Inc Balanced Fund,Fixed Income,4088.16,41.8,Semi-Annual,2025-09-11,2026-02-28,Void
+0c7b5ccd-510f-41a5-b662-07ad98c41aae,e2564ada-dc96-446e-a209-b62431e250a5,Jones and Sons Balanced Fund,Fixed Income,5295.4,66.67,Monthly,2024-04-16,2029-03-20,Active
+664137b0-4405-4178-8e10-16fa70c6bbbb,2c06dfe8-d725-4c85-971f-0a1efef7b187,"Lynch, Murphy and Hooper Strategic Fund",Cash,2855.43,36.42,Annual,2022-12-26,2025-08-14,Matured
+27574c9c-cf9f-4ea1-853b-078adc9f8246,2c06dfe8-d725-4c85-971f-0a1efef7b187,"Brown, Gonzalez and Barron Global Fund",Cash,1348.03,26.59,Semi-Annual,2020-12-30,2022-05-03,Matured
+7504cbe6-f902-43e9-b80b-a0d517fd026b,c3bdd2fb-e2fd-4bfc-83e0-ce97f09fb095,Johnson Ltd Global Fund,Fixed Income,4905.07,71.17,Semi-Annual,2022-01-15,2026-07-26,Active
+0d1759bb-285c-493e-8a82-cdeef1c3eade,c3bdd2fb-e2fd-4bfc-83e0-ce97f09fb095,"Buck, Goodwin and Oliver Strategic Fund",Fixed Income,5080.93,45.73,Semi-Annual,2024-07-04,2025-11-10,Matured
+0c9cc0b7-482a-4a32-b6b5-033ca0c40123,c3bdd2fb-e2fd-4bfc-83e0-ce97f09fb095,"Cook, Phelps and Anderson Balanced Fund",Equity,5520.96,102.74,Annual,2024-05-08,2034-04-29,Active
+d7332977-3839-4752-9366-c3148bb2c212,50486c7d-3817-4072-ac3e-eaba9f90cf56,"Roy, Hicks and Anderson Global Fund",Cash,51182.73,859.4,Annual,2024-01-22,2031-09-07,Active
+d4e60bbf-e621-4e74-b0c2-b02138181c7a,84094c82-f508-427b-9ee4-fe3ba3f87387,Burton-Harris Global Fund,Cash,2538.52,91.86,Annual,2022-01-15,2028-09-11,Active
+bea3fc52-7f10-49ea-ab00-297476222abb,84094c82-f508-427b-9ee4-fe3ba3f87387,Ayers-Smith Vantage Fund,Equity,2720.79,89.65,Annual,2017-10-24,2027-10-01,Active
+6b923608-058c-4022-a4bd-32a1ba5f1e01,84094c82-f508-427b-9ee4-fe3ba3f87387,Perry LLC Global Fund,Fixed Income,6324.24,86.64,Monthly,2025-07-08,2034-11-14,Active
+657e1bac-b2fe-47ca-8144-4f5bf670f12c,84094c82-f508-427b-9ee4-fe3ba3f87387,Padilla-Davis Global Fund,Equity,5289.18,84.02,Semi-Annual,2017-02-03,2018-03-08,Matured
+ba896629-3348-4c12-a513-cedf7b1cd221,c6222502-902e-4eaf-a53a-2b591ecd4271,"Myers, Holmes and Thompson Growth Fund",Equity,33508.02,339.05,Annual,2022-08-24,2030-03-19,Pending
+e78db623-796e-4e24-b74d-410c1dac4212,c6222502-902e-4eaf-a53a-2b591ecd4271,"Adams, Arnold and Brown Balanced Fund",Fixed Income,43338.25,471.0,Quarterly,2024-12-10,2034-06-15,Active
+945c4274-1c2d-4b3f-baca-aac4fb0d3a61,c6222502-902e-4eaf-a53a-2b591ecd4271,"Stevens, Perry and Ray Balanced Fund",Fixed Income,29070.27,621.61,Annual,2021-03-29,2022-07-05,Lapsed
+0ffe0335-1b4a-47e2-ad50-89d0e654220c,c6222502-902e-4eaf-a53a-2b591ecd4271,Paul-Lucas Alpha Fund,Equity,50049.9,438.35,Annual,2021-09-24,2028-05-06,Settled
+cf60ed61-5148-4a98-8efb-baf7cd05fda7,7b66ef0f-e383-4013-9b6a-16f550822316,"Booker, Watson and Rodriguez Global Fund",Equity,47616.42,610.87,Monthly,2016-05-25,2022-11-30,Matured
+da7ba458-fae7-49a3-b38d-5f7448fe5cdf,7b66ef0f-e383-4013-9b6a-16f550822316,Garner and Sons Dividend Fund,Fixed Income,42731.01,463.26,Monthly,2020-04-14,2022-01-03,Matured
+2087b83b-dc5b-4b2a-bfc4-b20b13cd0ceb,7b66ef0f-e383-4013-9b6a-16f550822316,Chung and Sons Global Fund,Fixed Income,50948.61,843.42,Annual,2023-03-19,2032-11-18,Active
+5d751e94-b677-4802-a4fa-fb98f48f11e3,7b66ef0f-e383-4013-9b6a-16f550822316,Castro LLC Growth Fund,Fixed Income,26693.69,790.8,Annual,2016-11-26,2021-09-20,Matured
+27d45170-615b-46d5-ad4a-a7a22eaca555,f625fcbd-b88d-4d73-a3fe-c3821c457e42,"Flores, Newman and Gilbert Strategic Fund",Equity,5000.0,0.0,,2024-12-21,2026-02-26,Lapsed
+1c6aa13d-66ff-4bcc-82ed-efb94232882c,f625fcbd-b88d-4d73-a3fe-c3821c457e42,Conner-Campbell Strategic Fund,Equity,5000.0,0.0,,2024-01-24,2028-01-15,Active
+07c4c194-89f3-4dab-859f-15ef12f0966f,b97695e4-1256-445c-978b-ade055511a09,Richards PLC Global Fund,Fixed Income,59804.97,648.98,Annual,2022-02-22,2023-09-27,Matured
+0bea1cff-3ac4-4847-8db8-ec7140411db2,b97695e4-1256-445c-978b-ade055511a09,"Griffin, Williams and Berry Dividend Fund",Equity,79319.74,1300.42,Monthly,2024-07-12,2029-01-26,Active
+9bb6c074-f773-4138-a495-9a346ebb57a3,b97695e4-1256-445c-978b-ade055511a09,Nguyen Group Strategic Fund,Equity,47364.7,1197.26,Quarterly,2018-05-30,2022-12-22,Matured
+34f58ab9-d5b1-4b1e-8e0d-1c4b8c7ea55d,e3456dc3-25a1-4ca7-b13d-4aee088c11a0,Sanchez LLC ESG Fund,Fixed Income,81330.11,575.59,Annual,2023-09-24,2024-07-10,Void
+9b50d8cd-cb61-4028-bbe5-555aced7f1f2,e3456dc3-25a1-4ca7-b13d-4aee088c11a0,Hernandez LLC Vantage Fund,Cash,81126.63,928.28,Monthly,2025-02-17,2026-09-20,Settled
+43b10b0b-ec48-4526-b191-a9da37f4159d,e3456dc3-25a1-4ca7-b13d-4aee088c11a0,"Stuart, Harrington and Velasquez Horizon Fund",Equity,59307.15,702.36,Monthly,2020-10-09,2022-08-27,Matured
+602834e9-47bd-4105-a872-92c3b0461847,e3456dc3-25a1-4ca7-b13d-4aee088c11a0,Knox-French ESG Fund,Equity,82808.23,1258.69,Annual,2016-10-29,2023-01-10,Matured
+d6807e45-708d-424f-bfe8-d633320afd68,6207643a-4c29-449d-8cfe-31d90db759b3,Smith Group Pioneer Fund,Cash,36812.01,477.23,Annual,2019-11-29,2024-01-05,Matured
+5d7c7076-2b59-4484-aedb-c916310aaa88,6207643a-4c29-449d-8cfe-31d90db759b3,"Gray, Marshall and Ellis Horizon Fund",Fixed Income,21381.16,548.08,Annual,2018-11-03,2023-08-12,Matured
+aacdc9d4-0efd-44af-a24a-aebeda04eb65,6207643a-4c29-449d-8cfe-31d90db759b3,Liu Ltd Strategic Fund,Cash,31278.2,327.2,Semi-Annual,2025-05-05,2035-01-14,Active
+650be3e3-5b0f-4fa0-8d9d-55e39143bc90,006d1014-0d33-470d-b3a7-23c5c42a9064,Harris-Allen Horizon Fund,Cash,61861.93,789.63,Quarterly,2016-08-22,2020-10-22,Matured
+80e5b224-bfe3-4e2d-8399-b5ebb42db44a,006d1014-0d33-470d-b3a7-23c5c42a9064,Carroll-Byrd Strategic Fund,Cash,72519.6,1236.73,Monthly,2020-05-03,2021-02-08,Void
+12a506f4-47d3-467c-a45b-c370acf207c9,792c2888-6857-4e7e-8a67-9585086dece7,"Robinson, Aguilar and Martinez Pioneer Fund",Fixed Income,4674.88,96.52,Monthly,2025-10-09,2026-02-28,Lapsed
+79098908-f1cf-4507-80c0-7276d894be4d,792c2888-6857-4e7e-8a67-9585086dece7,"Brown, Shaffer and Johnson Horizon Fund",Equity,4495.67,42.99,Quarterly,2025-10-05,2032-07-21,Active
+603ec92f-fa2a-418e-8963-fee6dd02a6c8,a2c2899d-2f10-4056-8e97-95c4de82f3b3,Haynes and Sons Alpha Fund,Equity,2882.03,81.73,Monthly,2021-07-23,2026-09-16,Settled
+7244d10c-6635-4e8c-b3ee-b57525d0ec94,a2c2899d-2f10-4056-8e97-95c4de82f3b3,"Martinez, Yang and Little Horizon Fund",Equity,3856.78,71.91,Monthly,2018-11-29,2028-04-05,Pending
+c3cdfff1-9db1-4932-891d-98d2477b455f,a2c2899d-2f10-4056-8e97-95c4de82f3b3,Lambert-Watts Pioneer Fund,Cash,3873.64,77.42,Monthly,2025-03-07,2033-09-30,Active
+0aca00f5-1a15-4f67-bd73-9fe7b3c9964a,a2c2899d-2f10-4056-8e97-95c4de82f3b3,"Snyder, Hudson and Mccullough Vantage Fund",Cash,5687.31,128.39,Quarterly,2021-04-20,2028-05-02,Active
+c344a39a-d29e-41bc-9957-1fc4c5aac0c1,a2c2899d-2f10-4056-8e97-95c4de82f3b3,Wells-Ortiz Global Fund,Cash,6417.8,117.71,Monthly,2019-07-31,2020-08-31,Matured
+55fa13cc-e26f-4169-9b6e-b2da01ddd1f7,a8c59e97-3ab9-44ce-8c2f-86738506d521,"Conway, Morrow and King Pioneer Fund",Cash,19214.17,361.92,Quarterly,2019-07-01,2021-02-10,Matured
+714e0181-6d58-4843-88ce-c1602d43aaa8,6a5f3c1d-b6ec-49da-a75d-eb66a61f44bf,Bradley-Lawrence Strategic Fund,Equity,28773.82,1129.26,Quarterly,2023-09-28,2030-01-26,Settled
+1c710c46-f654-4f46-81dd-dcf44ca70734,28742933-24d3-4c47-a671-77b06afa3b3e,Bishop-Rogers Strategic Fund,Fixed Income,38303.59,1241.88,Annual,2018-05-21,2020-04-28,Matured
+0524ef36-d642-4765-a915-d5f9dd078e74,28742933-24d3-4c47-a671-77b06afa3b3e,Martin and Sons Pioneer Fund,Cash,26620.51,869.38,Monthly,2020-05-10,2024-05-15,Matured
+39c37a85-c56d-4f3b-abdd-0c2edff2e369,453a5bad-3985-472a-aae9-626cb617d93c,"Steele, Owens and Clark Global Fund",Equity,1847.31,66.66,Annual,2021-05-22,2021-07-02,Lapsed
+fb59a965-315f-4038-87c3-24bea1f8d91d,453a5bad-3985-472a-aae9-626cb617d93c,Mason-Garcia Dividend Fund,Fixed Income,2179.86,75.29,Annual,2024-03-30,2029-03-19,Active
+490865fc-90b8-4a1b-a2fb-141228d2f8fa,453a5bad-3985-472a-aae9-626cb617d93c,Saunders and Sons Global Fund,Cash,4854.75,34.98,Monthly,2018-03-12,2024-08-02,Matured
+384b40ef-8e95-45c0-86e1-a078187ef8bd,a2c32083-5665-450c-8231-b7cd5953b8da,"Douglas, Lee and Owens ESG Fund",Fixed Income,2688.4,42.25,Monthly,2020-08-23,2027-02-26,Active
+42bb0625-94a2-4069-bb91-bee9311f2a1a,a2c32083-5665-450c-8231-b7cd5953b8da,Henderson Inc Pioneer Fund,Cash,2917.95,48.44,Quarterly,2017-06-09,2021-04-22,Matured
+2a92db7b-7f16-49e8-b92a-a0f3be9b0481,a2c32083-5665-450c-8231-b7cd5953b8da,Noble-Rich Growth Fund,Fixed Income,1413.2,19.23,Semi-Annual,2022-09-05,2028-10-25,Active
+5ae1035d-a059-4a57-b269-a33661a8a0b0,8a0e07ce-2308-4dec-9b65-fa4aafcd5283,Baker Inc ESG Fund,Equity,12743.08,406.54,Semi-Annual,2018-07-25,2023-08-30,Matured
+d33aa5bf-7902-4e46-939f-4422580fdee4,8a0e07ce-2308-4dec-9b65-fa4aafcd5283,"Smith, Moore and Williams Horizon Fund",Cash,25964.15,239.01,Quarterly,2021-02-18,2030-04-22,Active
+9d191cbf-87df-440b-a86c-47f162a0498a,8a0e07ce-2308-4dec-9b65-fa4aafcd5283,"Diaz, Lozano and Wilson ESG Fund",Fixed Income,16919.65,391.71,Semi-Annual,2025-04-09,2034-09-11,Active
+c987efad-45c1-4f27-aa49-892fe3ebfa9f,8a0e07ce-2308-4dec-9b65-fa4aafcd5283,Campbell-Krause Vantage Fund,Fixed Income,29059.22,155.2,Quarterly,2025-07-12,2031-11-20,Active
+6e585424-c055-4d6c-bad8-13cdc6918ad4,697b64ae-a1fa-430f-b08f-4e2f97dc85ab,Ortega-Bishop ESG Fund,Cash,65453.02,1115.35,Annual,2018-01-20,2020-08-14,Matured
+e89e318b-0ba9-4805-9938-3f4dde6e283b,697b64ae-a1fa-430f-b08f-4e2f97dc85ab,Murphy-Jackson Pioneer Fund,Fixed Income,47768.38,673.46,Semi-Annual,2024-02-11,2025-12-02,Matured
+ed91718a-c601-4e0b-a281-5209cbd2da5c,697b64ae-a1fa-430f-b08f-4e2f97dc85ab,"Dickson, Stephenson and Phillips Strategic Fund",Equity,39179.97,1098.32,Quarterly,2016-05-11,2022-07-19,Matured
+86037e30-9744-4eed-be51-9ffc3944e2f5,f74c7947-8327-4011-9a8f-d98989e053e9,Chen-Stanton Strategic Fund,Cash,5933.16,72.99,Annual,2022-11-20,2028-11-15,Active
+85654d63-ab22-41e9-8a8d-85bd312b0264,f74c7947-8327-4011-9a8f-d98989e053e9,Diaz-Cole Alpha Fund,Fixed Income,3997.9,75.0,Quarterly,2025-10-07,2034-02-08,Active
+d5b512e3-899d-4aec-b660-f43522ffe6ce,f74c7947-8327-4011-9a8f-d98989e053e9,"Dominguez, Johnson and Schmidt Strategic Fund",Equity,6301.41,74.57,Semi-Annual,2022-06-13,2031-03-25,Active
+c2b25da1-a05a-44cf-8787-036d46e9342d,f74c7947-8327-4011-9a8f-d98989e053e9,"Collins, Robles and Pearson Horizon Fund",Equity,4394.86,40.97,Monthly,2023-07-05,2027-11-23,Pending
+0e614830-6673-4de8-80e1-f95075b1be36,098d753d-06db-43ad-b6a3-cd4ef5496d60,Smith-Fletcher Vantage Fund,Fixed Income,3552.76,76.38,Semi-Annual,2020-02-13,2023-05-31,Matured
+ff9abc84-82c8-467e-9ff4-1e73b27be838,098d753d-06db-43ad-b6a3-cd4ef5496d60,Brooks and Sons Dividend Fund,Fixed Income,3297.49,46.3,Semi-Annual,2024-06-11,2029-01-28,Active
+78199ecc-9149-43a0-90d7-914353a74566,6a79b5ac-fe88-4792-8cf4-16a9726138b4,"Bender, Hicks and Houston Strategic Fund",Fixed Income,41923.98,1191.11,Monthly,2026-02-09,2033-04-21,Active
+b2711ac6-a551-44c7-a56a-fd81bd9a133d,6a79b5ac-fe88-4792-8cf4-16a9726138b4,"Smith, Hernandez and Miller Strategic Fund",Cash,45774.54,1154.81,Quarterly,2019-10-11,2022-06-22,Matured
+c990295a-1fc3-4b9d-9a7c-097e997ed790,eb9caacd-809f-4540-88f2-aa47c56ffb2b,Garrett LLC Balanced Fund,Equity,42837.5,538.24,Monthly,2019-10-21,2023-01-28,Matured
+992e666f-a7a9-4efa-9041-4bc827c513f7,eb9caacd-809f-4540-88f2-aa47c56ffb2b,Thornton-Torres Dividend Fund,Cash,54653.53,382.94,Annual,2020-01-08,2025-09-06,Matured
+0e410cd4-f221-43b2-a8da-60aafe886791,eb9caacd-809f-4540-88f2-aa47c56ffb2b,Burgess and Sons Strategic Fund,Fixed Income,73058.62,1058.37,Monthly,2024-08-30,2034-05-13,Active
+5b1da42e-67af-4ae9-acaa-127237e16304,58f17fe6-e038-4b6b-85b7-f6c025051708,"Hill, Griffith and Moran Global Fund",Equity,3273.56,51.31,Semi-Annual,2017-06-05,2024-06-14,Matured
+11b80278-1e50-4aeb-8ca6-b843bdc4a421,58f17fe6-e038-4b6b-85b7-f6c025051708,"Austin, Clark and Ward Horizon Fund",Equity,3684.49,59.13,Monthly,2017-03-22,2022-09-30,Matured
+99fe4605-d872-4d29-b1c6-968e52c0de1d,58f17fe6-e038-4b6b-85b7-f6c025051708,"Mason, Guzman and Davis Dividend Fund",Equity,2022.22,24.99,Monthly,2019-05-21,2021-01-17,Void
+25f8efb9-6061-4ca2-b4a7-77d1e059565f,58f17fe6-e038-4b6b-85b7-f6c025051708,"Garcia, Martinez and Thompson Alpha Fund",Equity,4332.55,54.86,Monthly,2017-03-28,2017-09-24,Lapsed
+23ba0592-a344-42ff-b477-ec0b108af706,bbb0dfa0-0633-487c-adee-3b5963a22ab2,"Chavez, Brown and Gutierrez Balanced Fund",Cash,22664.3,611.38,Monthly,2016-12-13,2017-08-19,Void
+302c7dfa-6d16-4f87-a4ec-d79397fa5fc0,bbb0dfa0-0633-487c-adee-3b5963a22ab2,Neal Inc Growth Fund,Equity,36070.44,775.19,Monthly,2016-07-20,2022-12-02,Matured
+f8d8efe2-1ff5-4b67-a3ee-2f48a514cdaa,bbb0dfa0-0633-487c-adee-3b5963a22ab2,Shaw-Smith Strategic Fund,Fixed Income,43631.58,295.37,Annual,2025-12-10,2029-01-31,Active

@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { useAuth } from '../lib/AuthProvider'
+import { IDLE_LOGOUT_ACK_KEY } from '../lib/useIdleLogout'
 import './Login.css'
 
 const Login: React.FC = () => {
@@ -8,9 +9,21 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [signedOutModal, setSignedOutModal] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
   const { signIn } = useAuth()
+
+  useEffect(() => {
+    if (sessionStorage.getItem(IDLE_LOGOUT_ACK_KEY) === '1') {
+      setSignedOutModal(true)
+    }
+  }, [])
+
+  const dismissSignedOutModal = () => {
+    sessionStorage.removeItem(IDLE_LOGOUT_ACK_KEY)
+    setSignedOutModal(false)
+  }
 
   const from = (location.state as any)?.from?.pathname || '/'
 
@@ -37,6 +50,17 @@ const Login: React.FC = () => {
 
   return (
     <div className="login-page">
+      {signedOutModal && (
+        <div className="idle-warning-overlay" role="dialog" aria-modal="true" aria-labelledby="idle-signedout-title">
+          <div className="idle-warning-popup">
+            <h2 id="idle-signedout-title">You have been signed out</h2>
+            <p>You were signed out due to inactivity. Please sign in again.</p>
+            <button type="button" onClick={dismissSignedOutModal} className="idle-warning-stay">
+              OK
+            </button>
+          </div>
+        </div>
+      )}
       <div className="login-card glass-card animate-fade">
         <header className="login-header">
           <h2>Welcome Back</h2>
@@ -78,6 +102,10 @@ const Login: React.FC = () => {
               />
             </div>
           </label>
+
+          <p className="login-footer-link">
+            <Link to="/forgot-password">Forgot password?</Link>
+          </p>
 
           <button type="submit" className="login-submit" disabled={loading}>
             {loading ? 'Authenticating...' : 'Sign In'}

@@ -1,0 +1,6 @@
+user_id,full_name,email,role,admin
+2c33aa34-05e1-42d5-8a8a-ab8861778a33,Ryan Admin,admin@calibre.com,admin,True
+8f1344cd-30c4-4cee-8251-0f3307cf0cfa,Wei Ming Tan,wei ming.tan@calibre.com,staff,False
+eb99ad2e-5061-45e3-a17e-54cc7907f1b8,Priya Kumar,priya.kumar@calibre.com,staff,False
+eb50e7b4-c4e1-4766-861d-241d1a902838,James Lee,james.lee@calibre.com,staff,False
+2d1dea40-cab8-4219-8420-2f083fae6369,Sarah Wong,sarah.wong@calibre.com,staff,False

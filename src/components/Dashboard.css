@@ -39,8 +39,9 @@
 }
 
 .back-button:hover {
-    background: var(--primary);
-    border-color: transparent;
+    background: var(--primary-glow);
+    border-color: var(--primary);
+    color: var(--primary);
     transform: translateX(-4px);
     box-shadow: 0 0 15px var(--primary-glow);
 }
@@ -101,6 +102,11 @@
     align-items: flex-end;
 }
 
+.stat-group.align-center {
+    align-items: center;
+    text-align: center;
+}
+
 .label {
     font-size: 0.75rem;
     text-transform: uppercase;
@@ -113,9 +119,21 @@
     font-weight: 700;
 }
 
+.value.accent {
+    color: var(--primary);
+}
+
+.value.success {
+    color: var(--success);
+}
+
+.value.warning {
+    color: var(--warning);
+}
+
 .net-worth {
     font-size: 1.75rem;
-    color: var(--accent);
+    color: var(--primary);
 }
 
 .timestamp {
@@ -146,11 +164,13 @@
 }
 
 .quadrant {
-    min-height: 320px;
+    height: 375px;
     display: flex;
     flex-direction: column;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    /* Prevent child overflow from breaking the card */
 }
 
 .quadrant-link:hover .quadrant {
@@ -165,7 +185,7 @@
 }
 
 .focused-view .quadrant {
-    min-height: 600px;
+    height: 650px;
     cursor: default;
 }
 
@@ -300,6 +320,9 @@
 .plans-table-container {
     flex: 1;
     overflow-x: auto;
+    overflow-y: auto;
+    padding-right: 4px;
+    /* Space for scrollbar */
 }
 
 .plans-table {
@@ -347,14 +370,18 @@
     color: var(--warning);
 }
 
+.status-pill.lapsed,
+.status-pill.void {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--danger);
+}
+
+.status-pill.matured,
+.status-pill.settled,
 .status-pill.ended {
     background: rgba(255, 255, 255, 0.1);
     color: var(--text-muted);
-}
-
-.status-pill.grace-period {
-    background: rgba(239, 68, 68, 0.15);
-    color: var(--danger);
+    border: 1px solid var(--border);
 }
 
 .risk-indicator {
@@ -364,12 +391,14 @@
 }
 
 .ai-analysis-content {
-    margin-top: 0.5rem;
+
     padding: 1rem;
     background: #fff;
     border-radius: var(--radius-md);
     border: 1px solid var(--border);
     border-left: 3px solid var(--primary);
+    overflow-y: auto;
+    flex: 1;
 }
 
 .analysis-text {
@@ -386,8 +415,9 @@
 }
 
 .loading-shimmer .line {
-    height: 14px;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+    height: 12px;
+    background: #f0f0f0;
+    background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
     border-radius: 4px;
@@ -430,24 +460,14 @@
     font-size: 0.95rem;
     line-height: 1.6;
     margin-bottom: 0.75rem;
-    padding-left: 1.4rem;
+    padding-left: 1rem;
     position: relative;
     color: var(--text-main);
-}
-
-.analysis-section li::before {
-    content: "→";
-    position: absolute;
-    left: 0;
-    color: var(--primary);
-    font-weight: bold;
+    list-style-type: disc;
+    margin-left: 1.25rem;
 }
 
 .analysis-section.red-flags h4 {
-    color: var(--warning);
-}
-
-.analysis-section.red-flags li::before {
     color: var(--warning);
 }
 
@@ -465,9 +485,7 @@
 .risk-header-info {
     display: flex;
     gap: 2rem;
-    margin-bottom: 0.5rem;
-    padding-bottom: 1.5rem;
-    border-bottom: 1px solid var(--border);
+    margin-bottom: 0.25rem;
 }
 
 .risk-category-display,
@@ -522,7 +540,7 @@
 
 .empty-state-icon {
     font-size: 4rem;
-    opacity: 0.5;
+    opacity: 1;
     filter: drop-shadow(0 0 20px var(--primary-glow));
 }
 
@@ -548,6 +566,20 @@
 
     to {
         transform: rotate(360deg);
+    }
+}
+
+@keyframes hourglassFlip {
+    0% {
+        transform: rotate(0);
+    }
+
+    65% {
+        transform: rotate(0);
+    }
+
+    100% {
+        transform: rotate(180deg);
     }
 }
 

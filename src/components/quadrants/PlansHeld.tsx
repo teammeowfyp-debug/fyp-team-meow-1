@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { CustomizedXAxisTick } from '../ChartUtils';
 
@@ -8,16 +9,28 @@ interface PlanDetailModalProps {
 }
 
 const PlanDetailModal: React.FC<PlanDetailModalProps> = ({ plan, onClose }) => {
+    const isInsurance = plan.asset_class.includes('Insurance');
+
     const valuationData = React.useMemo(() => {
-        if (!plan?.monthly_valuations) return [];
-        return [...plan.monthly_valuations]
+        const sourceData = isInsurance ? plan.insurance_valuations : plan.investment_valuations;
+        if (!sourceData) return [];
+
+        return [...sourceData]
             .sort((a: any, b: any) => new Date(a.as_of_date).getTime() - new Date(b.as_of_date).getTime())
             .map((v: any) => ({
                 date: new Date(v.as_of_date).toLocaleDateString('en-SG', { month: 'short', year: '2-digit' }),
-                fullDate: new Date(v.as_of_date).toLocaleDateString('en-SG', { month: 'long', year: 'numeric' }),
-                value: parseFloat(v.market_value)
+                fullDate: new Date(v.as_of_date).toLocaleDateString('en-SG', { day: '2-digit', month: 'short', year: 'numeric' }),
+                rawDate: v.as_of_date,
+                value: parseFloat(isInsurance ? v.cash_value : v.market_value),
+                // Keep extra fields for insurance
+                ...(isInsurance && {
+                    death: parseFloat(v.death_benefit),
+                    ci: parseFloat(v.critical_illness_benefit),
+                    disability: parseFloat(v.disability_benefit)
+                })
             }));
-    }, [plan]);
+    }, [plan, isInsurance]);
+
 
     const CustomTooltip = ({ active, payload }: any) => {
         if (active && payload && payload.length) {
@@ -31,7 +44,7 @@ const PlanDetailModal: React.FC<PlanDetailModalProps> = ({ plan, onClose }) => {
                 }}>
                     <p style={{ color: 'var(--secondary)', fontWeight: 600, marginBottom: 4 }}>{payload[0].payload.fullDate}</p>
                     <p style={{ color: 'var(--primary)', fontSize: '0.9rem' }}>
-                        Value: <span style={{ fontWeight: 600 }}>${payload[0].value.toLocaleString()}</span>
+                        {isInsurance ? 'Cash Value' : 'Market Value'}: <span style={{ fontWeight: 600 }}>${payload[0].value.toLocaleString()}</span>
                     </p>
                 </div>
             );
@@ -39,26 +52,40 @@ const PlanDetailModal: React.FC<PlanDetailModalProps> = ({ plan, onClose }) => {
         return null;
     };
 
-    return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                <button className="modal-close" onClick={onClose}>&times;</button>
-                <div className="modal-header">
-                    <h2>{plan.plan_name}</h2>
-                    <div className="modal-id">Plan ID: {plan.plan_id}</div>
+    const hasValue = valuationData.some(v => v.value > 0);
+
+    return createPortal(
+        <div className="modal-overlay animate-fade" onClick={onClose} style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(26, 26, 26, 0.6)', backdropFilter: 'blur(6px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999,
+            paddingTop: '70px'
+        }}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{
+                width: '95%', maxWidth: '800px', maxHeight: '90vh', overflowY: 'auto',
+                position: 'relative', padding: '1.5rem 2.5rem 2rem 2.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem',
+                background: '#fff', borderRadius: '16px', boxShadow: 'var(--shadow-xl)'
+            }}>
+                <button
+                    onClick={onClose}
+                    style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'transparent', border: 'none', fontSize: '1.8rem', cursor: 'pointer', color: 'var(--text-muted)', padding: '10px', zIndex: 10 }}
+                >&times;</button>
+                <div className="modal-header" style={{ textAlign: 'center', marginBottom: '0.25rem', marginTop: '0.5rem' }}>
+                    <h2 style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}>{plan.plan_name}</h2>
+                    <div className="modal-id" style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Plan ID: {plan.plan_id}</div>
                 </div>
 
-                <div className="chart-container" style={{ width: '100%', height: '350px', marginTop: '20px' }}>
-                    {valuationData.length > 0 ? (
+                {hasValue ? (
+                    <div className="chart-container" style={{ width: '100%', height: '350px', marginTop: '10px' }}>
                         <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={valuationData} margin={{ top: 10, right: 30, left: 10, bottom: 40 }}>
+                            <LineChart data={valuationData} margin={{ top: 10, right: 30, left: 10, bottom: 20 }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
                                 <XAxis
-                                    dataKey="date"
+                                    dataKey="rawDate"
                                     stroke="var(--text-muted)"
                                     tick={<CustomizedXAxisTick />}
                                     interval={0}
-                                    height={50}
+                                    height={30}
                                     tickLine={false}
                                     axisLine={false}
                                 />
@@ -73,33 +100,134 @@ const PlanDetailModal: React.FC<PlanDetailModalProps> = ({ plan, onClose }) => {
                                 <Line
                                     type="monotone"
                                     dataKey="value"
-                                    name="Market Value"
+                                    name={isInsurance ? "Cash Value" : "Market Value"}
                                     stroke="var(--primary)"
                                     strokeWidth={3}
-                                    dot={{ r: 4, fill: 'var(--primary)', strokeWidth: 0 }}
+                                    dot={{ r: 4, fill: '#fff', stroke: 'var(--primary)', strokeWidth: 2 }}
                                     activeDot={{ r: 6 }}
                                 />
                             </LineChart>
                         </ResponsiveContainer>
-                    ) : (
-                        <div className="error-text" style={{ textAlign: 'center', padding: '2rem' }}>
-                            No valuation history available for this plan.
+                    </div>
+                ) : (
+                    <div className="no-value-info" style={{
+                        padding: '1.5rem',
+                        textAlign: 'center',
+                        color: 'var(--secondary)',
+                        background: 'rgba(0, 0, 0, 0.02)',
+                        borderRadius: 'var(--radius-sm)',
+                        border: '1px solid var(--border)',
+                        marginTop: '1rem',
+                        marginBottom: '1rem',
+                        fontSize: '0.9rem'
+                    }}>
+                        {isInsurance ? "This is a pure protection plan with no cash value." : "No valuation data available for this plan."}
+                    </div>
+                )}
+
+                {isInsurance && (
+                    <div className="insurance-details" style={{ marginTop: '0.5rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1.25rem 1rem' }}>
+                        <div className="stat-group align-center">
+                            <span className="label">Policy Type</span>
+                            <span className="value" style={{ color: 'var(--secondary)', fontWeight: 600 }}>{plan.policy_type || '-'}</span>
                         </div>
-                    )}
+                        <div className="stat-group align-center">
+                            <span className="label">Benefit Type</span>
+                            <span className="value" style={{ color: 'var(--secondary)', fontWeight: 600 }}>{plan.benefit_type || '-'}</span>
+                        </div>
+                        <div className="stat-group align-center">
+                            <span className="label">Sum Assured</span>
+                            <span className="value" style={{ color: 'var(--secondary)', fontWeight: 600 }}>${(plan.sum_assured || 0).toLocaleString()}</span>
+                        </div>
+                        <div className="stat-group align-center">
+                            <span className="label">Premium Amount</span>
+                            <span className="value" style={{ color: 'var(--secondary)', fontWeight: 600 }}>
+                                ${(plan.premium_amount || 0).toLocaleString()}
+                            </span>
+                        </div>
+                        <div className="stat-group align-center">
+                            <span className="label">Payment Term</span>
+                            <span className="value" style={{ color: 'var(--secondary)', fontWeight: 600 }}>
+                                {plan.payment_term ? `${plan.payment_term} Years` : '-'} {plan.payment_frequency ? `(${plan.payment_frequency})` : ''}
+                            </span>
+                        </div>
+                        <div className="stat-group align-center">
+                            <span className="label">Life Assured</span>
+                            <span className="value" style={{ color: 'var(--secondary)', fontWeight: 600 }}>{plan.life_assured || '-'}</span>
+                        </div>
+                        <div className="stat-group align-center">
+                            <span className="label">Start Date</span>
+                            <span className="value" style={{ color: 'var(--secondary)', fontWeight: 600 }}>
+                                {plan.start_date ? new Date(plan.start_date).toLocaleDateString('en-SG', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                            </span>
+                        </div>
+                        <div className="stat-group align-center">
+                            <span className="label">Expiry Date</span>
+                            <span className="value" style={{ color: 'var(--secondary)', fontWeight: 600 }}>
+                                {plan.expiry_date ? new Date(plan.expiry_date).toLocaleDateString('en-SG', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                            </span>
+                        </div>
+                    </div>
+                )}
+
+                {!isInsurance && (
+                    <div className="investment-details" style={{ marginTop: '0.5rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1.25rem 1rem' }}>
+                        <div className="stat-group align-center">
+                            <span className="label">Policy Type</span>
+                            <span className="value" style={{ color: 'var(--secondary)', fontWeight: 600 }}>{plan.policy_type || '-'}</span>
+                        </div>
+                        <div className="stat-group align-center">
+                            <span className="label">Initial Investment</span>
+                            <span className="value" style={{ color: 'var(--secondary)', fontWeight: 600 }}>${(plan.initial_investment || 0).toLocaleString()}</span>
+                        </div>
+                        <div className="stat-group align-center">
+                            <span className="label">Contribution Amount</span>
+                            <span className="value" style={{ color: 'var(--secondary)', fontWeight: 600 }}>
+                                ${(plan.contribution_amount || 0).toLocaleString()}
+                            </span>
+                        </div>
+                        <div className="stat-group align-center">
+                            <span className="label">Contribution Frequency</span>
+                            <span className="value" style={{ color: 'var(--secondary)', fontWeight: 600 }}>{plan.contribution_frequency || '-'}</span>
+                        </div>
+                        <div className="stat-group align-center">
+                            <span className="label">Start Date</span>
+                            <span className="value" style={{ color: 'var(--secondary)', fontWeight: 600 }}>
+                                {plan.start_date ? new Date(plan.start_date).toLocaleDateString('en-SG', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                            </span>
+                        </div>
+                        <div className="stat-group align-center">
+                            <span className="label">End Date</span>
+                            <span className="value" style={{ color: 'var(--secondary)', fontWeight: 600 }}>
+                                {plan.end_date ? new Date(plan.end_date).toLocaleDateString('en-SG', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                            </span>
+                        </div>
+                    </div>
+                )}
+
+                <div className="modal-footer" style={{ marginTop: '1rem', display: 'flex', justifyContent: 'center', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
+                    <div className="stat-group align-center">
+                        <span className="label" style={{ marginBottom: '8px' }}>Plan Status</span>
+                        <span className={`status-pill ${plan.status.toLowerCase()}`} style={{ fontSize: '0.85rem', padding: '6px 16px' }}>
+                            {plan.status}
+                        </span>
+                    </div>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
 
 interface CustomSelectProps {
     label: string;
-    value: string;
+    value: string | string[];
     options: { label: string; value: string }[];
-    onChange: (val: string) => void;
+    onChange: (val: any) => void;
+    multi?: boolean;
 }
 
-const CustomSelect: React.FC<CustomSelectProps> = ({ label, value, options, onChange }) => {
+const CustomSelect: React.FC<CustomSelectProps> = ({ label, value, options, onChange, multi = false }) => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -113,7 +241,41 @@ const CustomSelect: React.FC<CustomSelectProps> = ({ label, value, options, onCh
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const selectedOption = options.find(o => o.value === value);
+    const isSelected = (val: string) => {
+        if (multi && Array.isArray(value)) return value.includes(val);
+        return value === val;
+    };
+
+    const handleSelect = (val: string) => {
+        if (!multi) {
+            onChange(val);
+            setIsOpen(false);
+            return;
+        }
+
+        const currentValues = Array.isArray(value) ? [...value] : [];
+
+        if (val === 'All') {
+            onChange(['All']);
+        } else {
+            const newValues = currentValues.filter(v => v !== 'All');
+            if (newValues.includes(val)) {
+                const filtered = newValues.filter(v => v !== val);
+                onChange(filtered.length === 0 ? ['All'] : filtered);
+            } else {
+                onChange([...newValues, val]);
+            }
+        }
+    };
+
+    const getTriggerLabel = () => {
+        if (!multi) return options.find(o => o.value === value)?.label || value;
+        const currentValues = Array.isArray(value) ? value : [];
+        if (currentValues.includes('All')) return 'All';
+        if (currentValues.length === 0) return 'None';
+        if (currentValues.length === 1) return options.find(o => o.value === currentValues[0])?.label || currentValues[0];
+        return `${currentValues.length} Selected`;
+    };
 
     return (
         <div className="filter-group" ref={dropdownRef}>
@@ -123,7 +285,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({ label, value, options, onCh
                     className={`custom-select-trigger ${isOpen ? 'open' : ''}`}
                     onClick={() => setIsOpen(!isOpen)}
                 >
-                    <span>{selectedOption?.label || value}</span>
+                    <span>{getTriggerLabel()}</span>
                     <svg className="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                     </svg>
@@ -133,12 +295,14 @@ const CustomSelect: React.FC<CustomSelectProps> = ({ label, value, options, onCh
                         {options.map(opt => (
                             <div
                                 key={opt.value}
-                                className={`custom-select-option ${value === opt.value ? 'selected' : ''}`}
-                                onClick={() => {
-                                    onChange(opt.value);
-                                    setIsOpen(false);
-                                }}
+                                className={`custom-select-option ${isSelected(opt.value) ? 'selected' : ''}`}
+                                onClick={() => handleSelect(opt.value)}
                             >
+                                {multi && (
+                                    <div className={`checkbox ${isSelected(opt.value) ? 'checked' : ''}`}>
+                                        {isSelected(opt.value) && <span>✓</span>}
+                                    </div>
+                                )}
                                 {opt.label}
                             </div>
                         ))}
@@ -152,17 +316,16 @@ const CustomSelect: React.FC<CustomSelectProps> = ({ label, value, options, onCh
 interface PlansHeldProps {
     client?: any;
     mode?: 'overview' | 'focused';
+    dateRange?: { startDate: string; endDate: string };
 }
 
-const PlansHeld: React.FC<PlansHeldProps> = ({ client, mode = 'overview' }) => {
+const PlansHeld: React.FC<PlansHeldProps> = ({ client, mode = 'overview', dateRange }) => {
     const rawPlans = client?.client_plans || [];
     const [selectedPlan, setSelectedPlan] = useState<any>(null);
 
     // Filter states
-    const [assetFilter, setAssetFilter] = useState<string>('All');
-    const [statusFilter, setStatusFilter] = useState<string>('All');
-    const [startDateFilter, setStartDateFilter] = useState<string>('');
-    const [endDateFilter, setEndDateFilter] = useState<string>('');
+    const [assetFilter, setAssetFilter] = useState<string[]>(['All']);
+    const [statusFilter, setStatusFilter] = useState<string[]>(['All']);
 
     const formatDate = (dateStr: string | null) => {
         if (!dateStr) return '-';
@@ -173,203 +336,135 @@ const PlansHeld: React.FC<PlansHeldProps> = ({ client, mode = 'overview' }) => {
         });
     };
 
-    const getStatus = (startDate: string, endDate: string | null) => {
-        const today = new Date();
-        const start = new Date(startDate);
-        if (today < start) return 'Pending';
-        if (endDate && today > new Date(endDate)) return 'Ended';
-        return 'Active';
-    };
-
-    const startMonthOptions = React.useMemo(() => {
-        const months = new Set<string>();
-        rawPlans.forEach((plan: any) => {
-            if (plan.start_date) {
-                const date = new Date(plan.start_date);
-                months.add(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-01`);
-            }
-        });
-        const sorted = Array.from(months).sort();
-        return [
-            { label: 'All', value: '' },
-            ...sorted.map(m => ({
-                label: new Date(m).toLocaleDateString('en-SG', { month: 'short', year: 'numeric' }),
-                value: m
-            }))
-        ];
-    }, [rawPlans]);
-
-    const endMonthOptions = React.useMemo(() => {
-        const months = new Set<string>();
-        let hasNull = false;
-        rawPlans.forEach((plan: any) => {
-            if (plan.end_date) {
-                const date = new Date(plan.end_date);
-                months.add(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-01`);
-            } else {
-                hasNull = true;
-            }
-        });
-        const sorted = Array.from(months).sort();
-        const options = [
-            { label: 'All', value: '' },
-            ...sorted.map(m => ({
-                label: new Date(m).toLocaleDateString('en-SG', { month: 'short', year: 'numeric' }),
-                value: m
-            }))
-        ];
-        if (hasNull) {
-            options.push({ label: 'None', value: 'None' });
-        }
-        return options;
-    }, [rawPlans]);
-
     const filteredPlans = React.useMemo(() => {
         return rawPlans.filter((plan: any) => {
             // Asset Class Filter
-            if (assetFilter !== 'All' && plan.asset_class !== assetFilter) return false;
+            if (!assetFilter.includes('All') && !assetFilter.includes(plan.asset_class)) return false;
 
             // Status Filter
-            const status = getStatus(plan.start_date, plan.end_date);
-            if (statusFilter !== 'All' && status !== statusFilter) return false;
+            const status = plan.status;
+            if (!statusFilter.includes('All') && !statusFilter.includes(status)) return false;
 
-            // Start Month Filter (Exact month match)
-            if (startDateFilter) {
-                const pDate = new Date(plan.start_date);
-                const fDate = new Date(startDateFilter);
-                if (pDate.getFullYear() !== fDate.getFullYear() || pDate.getMonth() !== fDate.getMonth()) {
-                    return false;
-                }
-            }
-
-            // End Month Filter (Exact month match or None)
-            if (endDateFilter) {
-                if (endDateFilter === 'None') {
-                    if (plan.end_date) return false;
-                } else {
-                    if (!plan.end_date) return false;
-                    const pDate = new Date(plan.end_date);
-                    const fDate = new Date(endDateFilter);
-                    if (pDate.getFullYear() !== fDate.getFullYear() || pDate.getMonth() !== fDate.getMonth()) {
-                        return false;
-                    }
+            // Global Dashboard Date Range Filter
+            if (dateRange) {
+                const planStart = plan.start_date ? plan.start_date.substring(0, 10) : null;
+                if (planStart) {
+                    if (dateRange.startDate && planStart < dateRange.startDate) return false;
+                    if (dateRange.endDate && planStart > dateRange.endDate) return false;
                 }
             }
 
             return true;
         });
-    }, [rawPlans, assetFilter, statusFilter, startDateFilter, endDateFilter]);
+    }, [rawPlans, assetFilter, statusFilter, dateRange]);
 
     const clearFilters = () => {
-        setAssetFilter('All');
-        setStatusFilter('All');
-        setStartDateFilter('');
-        setEndDateFilter('');
+        setAssetFilter(['All']);
+        setStatusFilter(['All']);
     };
 
     return (
-        <section className="glass-card quadrant">
-            <div className="card-header">
-                <h3>Plans Held</h3>
-            </div>
+        <>
+            <section className="glass-card quadrant">
+                <div className="card-header">
+                    <h3>Plans Held</h3>
+                </div>
 
-            {mode === 'focused' && (
-                <div className="filter-bar animate-fade">
-                    <CustomSelect
-                        label="Asset Class"
-                        value={assetFilter}
-                        onChange={setAssetFilter}
-                        options={[
-                            { label: 'All', value: 'All' },
-                            { label: 'Equity', value: 'Equity' },
-                            { label: 'Fixed Income', value: 'Fixed Income' },
-                            { label: 'Cash', value: 'Cash' }
-                        ]}
-                    />
+                {mode === 'focused' && (
+                    <div className="filter-bar animate-fade">
+                        <CustomSelect
+                            label="Asset Class"
+                            value={assetFilter}
+                            onChange={setAssetFilter}
+                            multi={true}
+                            options={[
+                                { label: 'All', value: 'All' },
+                                { label: 'Equity', value: 'Equity' },
+                                { label: 'Fixed Income', value: 'Fixed Income' },
+                                { label: 'Cash', value: 'Cash' },
+                                { label: 'Life Insurance', value: 'Life Insurance' },
+                                { label: 'Health Insurance', value: 'Health Insurance' },
+                                { label: 'General Insurance', value: 'General Insurance' }
+                            ]}
+                        />
 
-                    <CustomSelect
-                        label="Start Month"
-                        value={startDateFilter}
-                        onChange={setStartDateFilter}
-                        options={startMonthOptions}
-                    />
+                        <CustomSelect
+                            label="Status"
+                            value={statusFilter}
+                            onChange={setStatusFilter}
+                            multi={true}
+                            options={[
+                                { label: 'All', value: 'All' },
+                                { label: 'Pending', value: 'Pending' },
+                                { label: 'Active', value: 'Active' },
+                                { label: 'Lapsed', value: 'Lapsed' },
+                                { label: 'Matured', value: 'Matured' },
+                                { label: 'Settled', value: 'Settled' },
+                                { label: 'Void', value: 'Void' }
+                            ]}
+                        />
 
-                    <CustomSelect
-                        label="End Month"
-                        value={endDateFilter}
-                        onChange={setEndDateFilter}
-                        options={endMonthOptions}
-                    />
+                        {(!assetFilter.includes('All') || !statusFilter.includes('All')) && (
+                            <button className="clear-filters" onClick={clearFilters}>
+                                Clear Filters
+                            </button>
+                        )}
+                    </div>
+                )}
 
-                    <CustomSelect
-                        label="Status"
-                        value={statusFilter}
-                        onChange={setStatusFilter}
-                        options={[
-                            { label: 'All', value: 'All' },
-                            { label: 'Active', value: 'Active' },
-                            { label: 'Pending', value: 'Pending' },
-                            { label: 'Ended', value: 'Ended' }
-                        ]}
-                    />
-
-                    {(assetFilter !== 'All' || statusFilter !== 'All' || startDateFilter || endDateFilter) && (
-                        <button className="clear-filters" onClick={clearFilters}>
-                            Clear Filters
-                        </button>
+                <div className="plans-table-container">
+                    <table className={`plans-table ${mode === 'focused' ? 'interactive' : ''}`}>
+                        <thead>
+                            <tr>
+                                <th>Plan Name</th>
+                                <th>Asset Class</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filteredPlans.map((plan: any, index: number) => {
+                                const status = plan.status;
+                                return (
+                                    <tr key={index} onClick={(e) => {
+                                        if (mode !== 'focused') return;
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        setSelectedPlan(plan);
+                                    }}>
+                                        <td>{plan.plan_name}</td>
+                                        <td>{plan.asset_class}</td>
+                                        <td>{formatDate(plan.start_date)}</td>
+                                        <td>{formatDate(plan.end_date)}</td>
+                                        <td>
+                                            <span className={`status-pill ${status.toLowerCase()}`}>
+                                                {status}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                    {filteredPlans.length === 0 && (
+                        <p style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
+                            No plans found matching your filters.
+                        </p>
                     )}
                 </div>
-            )}
+            </section>
 
-            <div className="plans-table-container">
-                <table className={`plans-table ${mode === 'focused' ? 'interactive' : ''}`}>
-                    <thead>
-                        <tr>
-                            <th>Plan Name</th>
-                            <th>Asset Class</th>
-                            <th>Start Date</th>
-                            <th>End Date</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredPlans.map((plan: any, index: number) => {
-                            const status = getStatus(plan.start_date, plan.end_date);
-                            return (
-                                <tr key={index} onClick={(e) => {
-                                    if (mode !== 'focused') return;
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    setSelectedPlan(plan);
-                                }}>
-                                    <td>{plan.plan_name}</td>
-                                    <td>{plan.asset_class}</td>
-                                    <td>{formatDate(plan.start_date)}</td>
-                                    <td>{formatDate(plan.end_date)}</td>
-                                    <td>
-                                        <span className={`status-pill ${status.toLowerCase()}`}>
-                                            {status}
-                                        </span>
-                                    </td>
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
-                {filteredPlans.length === 0 && (
-                    <p style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
-                        No plans found matching your filters.
-                    </p>
-                )}
-            </div>
-
-            {selectedPlan && (
-                <PlanDetailModal
-                    plan={selectedPlan}
-                    onClose={() => setSelectedPlan(null)}
-                />
-            )}
-        </section>
+            {
+                selectedPlan && createPortal(
+                    <PlanDetailModal
+                        plan={selectedPlan}
+                        onClose={() => setSelectedPlan(null)}
+                    />,
+                    document.body
+                )
+            }
+        </>
     );
 };
 

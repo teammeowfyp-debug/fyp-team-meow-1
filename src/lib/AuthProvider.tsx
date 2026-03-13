@@ -5,12 +5,17 @@ type User = {
   id: string
   email: string | null
   admin?: boolean
+  fullName?: string | null
+  role?: string | null
+  /** public.users.user_id - for filtering clients by assigned_user_id */
+  userId?: string | null
 }
 
 type AuthContextValue = {
   user: User | null
   loading: boolean
   signIn: (email: string, password: string) => Promise<{ success: boolean; message?: string }>
+  signUp: (email: string, password: string, options?: { fullName?: string }) => Promise<{ success: boolean; message?: string; requiresConfirmation?: boolean }>
   signOut: () => Promise<void>
 }
 
@@ -20,17 +25,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
-  // Helper to enrich user with profile data (admin flag)
+  // Helper to enrich user with profile data from public.users
   const fetchUserProfile = async (u: User): Promise<User> => {
     try {
       const { data: profile } = await supabase
         .from('users')
-        .select('admin')
+        .select('user_id, admin, full_name, role')
         .eq('email', u.email ?? '')
         .maybeSingle()
 
       if (profile) {
-        return { ...u, admin: profile.admin }
+        return {
+          ...u,
+          userId: profile.user_id ?? null,
+          admin: profile.admin,
+          fullName: profile.full_name ?? null,
+          role: profile.role ?? null,
+        }
       }
     } catch (e) {
       console.warn('Profile fetch error', e)
@@ -109,13 +120,53 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
+  const signUp = async (
+    email: string,
+    password: string,
+    options?: { fullName?: string }
+  ) => {
+    setLoading(true)
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: options?.fullName ? { full_name: options.fullName } : undefined,
+        },
+      })
+
+      if (error) {
+        console.error('Sign-up error', error)
+        return { success: false, message: error.message }
+      }
+
+      const sUser = data.user
+      if (!sUser) return { success: false, message: 'Unable to create account' }
+
+      // If Supabase has email confirmation enabled, user may not have a session yet
+      if (data.session) {
+        const u: User = { id: sUser.id, email: sUser.email ?? null }
+        const enrichedUser = await fetchUserProfile(u)
+        setUser(enrichedUser)
+        return { success: true }
+      }
+
+      return { success: true, requiresConfirmation: true }
+    } catch (err) {
+      console.error(err)
+      return { success: false, message: 'Unknown error' }
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const signOut = async () => {
     await supabase.auth.signOut()
     setUser(null)
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut }}>
       {children}
     </AuthContext.Provider>
   )
