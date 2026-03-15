@@ -4,6 +4,7 @@ import { useAuth } from '../lib/AuthProvider'
 import { supabase } from '../lib/supabaseClient'
 import logo from '../assets/calibre logo.png'
 import './Navbar.css'
+import { PdfImport } from './PdfImport'
 
 interface SearchResult {
     client_id: string;
@@ -18,6 +19,7 @@ const Navbar: React.FC = () => {
     const [isSearching, setIsSearching] = useState(false)
     const [showResults, setShowResults] = useState(false)
     const searchRef = useRef<HTMLDivElement>(null)
+    const [showPdfImport, setShowPdfImport] = useState(false)
 
     // Close results when clicking outside
     useEffect(() => {
@@ -86,6 +88,7 @@ const Navbar: React.FC = () => {
         .slice(0, 2) || '?'
 
     return (
+        <>
         <nav className="navbar glass">
             <div className="navbar-left">
                 <div className="logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
@@ -153,6 +156,15 @@ const Navbar: React.FC = () => {
                     </svg>
                     Scenario
                 </Link>
+                <button className="navbar-add-user-btn" onClick={() => setShowPdfImport(true)}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="12" y1="18" x2="12" y2="12"></line>
+                        <line x1="9" y1="15" x2="15" y2="15"></line>
+                    </svg>
+                    Create New Client Profile
+                </button>
                 {user?.admin && (
                     <Link to="/admin/manage-users" className="navbar-add-user-btn">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -193,6 +205,16 @@ const Navbar: React.FC = () => {
                 </div>
             </div>
         </nav>
+        {showPdfImport && (
+            <PdfImport
+                onClose={() => setShowPdfImport(false)}
+                onSuccess={(newClientId) => {
+                    setShowPdfImport(false);
+                    if (newClientId) navigate(`/${newClientId}`);
+                }}
+            />
+        )}
+        </>
     )
 }
 

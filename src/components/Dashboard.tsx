@@ -7,6 +7,7 @@ import PlansHeld from './quadrants/PlansHeld';
 import RiskProfile from './quadrants/RiskProfile';
 import Cashflow from './quadrants/Cashflow';
 import AssetAllocation from './quadrants/AssetAllocation';
+import { PdfImport } from './PdfImport';
 import './Dashboard.css';
 
 const Dashboard: React.FC = () => {
@@ -23,6 +24,7 @@ const Dashboard: React.FC = () => {
         focused?: any;
     }>>({});
     const [absoluteBounds, setAbsoluteBounds] = useState<{ start: string; end: string } | null>(null);
+    const [showPdfImport, setShowPdfImport] = useState(false);
 
     const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newStart = e.target.value;
@@ -302,6 +304,7 @@ const Dashboard: React.FC = () => {
                     }
                 }}
                 absoluteBounds={absoluteBounds}
+                onImportPdf={() => setShowPdfImport(true)}
             />
             {isFocused ? (
                 <main className="focused-view">
@@ -311,6 +314,20 @@ const Dashboard: React.FC = () => {
                 <div>
                     {renderFullGrid()}
                 </div>
+            )}
+            {showPdfImport && clientId && (
+                <PdfImport
+                    clientId={clientId}
+                    onClose={() => setShowPdfImport(false)}
+                    onSuccess={() => {
+                        setShowPdfImport(false);
+                        // Refresh client data
+                        setClient(null);
+                        setLoading(true);
+                        // Trigger re-fetch by temporarily clearing clientId effect
+                        window.location.reload();
+                    }}
+                />
             )}
         </div>
     );
