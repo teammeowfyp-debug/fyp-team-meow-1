@@ -193,7 +193,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .card-header h3 {
@@ -317,12 +317,24 @@
     color: var(--text-muted);
 }
 
-.plans-table-container {
+.plans-header-container {
+    overflow: hidden;
+    background: #fff;
+    border-bottom: 2px solid var(--border);
+    position: relative;
+    z-index: 5;
+}
+
+.plans-header-container .plans-table {
+    width: calc(100% - 6px);
+    /* Manually subtract the 6px scrollbar width */
+}
+
+.plans-body-container {
     flex: 1;
-    overflow-x: auto;
-    overflow-y: auto;
-    padding-right: 4px;
-    /* Space for scrollbar */
+    overflow-x: hidden;
+    overflow-y: scroll;
+    background: transparent;
     position: relative;
 }
 
@@ -333,43 +345,54 @@
     border-spacing: 0;
     font-size: 0.9rem;
     color: var(--text-main);
-}
-
-.plans-table thead {
-    position: relative;
+    table-layout: fixed;
+    /* Crucial for aligning split tables */
 }
 
 .plans-table th {
     text-align: left;
-    padding: 1rem 0.75rem;
+    padding: 0rem 0.75rem 0.5rem;
     color: var(--text-muted);
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
     font-size: 0.75rem;
     letter-spacing: 0.05em;
-    position: sticky;
-    top: 0;
     background-color: #fff;
-    border-bottom: 1px solid var(--border);
-    z-index: 10;
 }
 
-/* White cover strip above the sticky header to seal any gap */
-.plans-table thead::before {
-    content: '';
-    position: sticky;
-    top: -1rem;
-    left: 0;
-    right: 0;
-    display: block;
-    height: 0;
-    box-shadow: 0 -1.5rem 0 1.5rem #fff;
-    z-index: 11;
+/* Explicit width synchronization */
+.plans-table th:nth-child(1),
+.plans-table td:nth-child(1) {
+    width: 38%;
+}
+
+.plans-table th:nth-child(2),
+.plans-table td:nth-child(2) {
+    width: 17%;
+}
+
+.plans-table th:nth-child(3),
+.plans-table td:nth-child(3) {
+    width: 15%;
+}
+
+.plans-table th:nth-child(4),
+.plans-table td:nth-child(4) {
+    width: 15%;
+}
+
+.plans-table th:nth-child(5),
+.plans-table td:nth-child(5) {
+    width: 15%;
 }
 
 .plans-table td {
-    padding: 1rem 0.75rem;
+    padding: 0.75rem 0.75rem;
     border-bottom: 1px solid var(--border);
+    line-height: 1.5;
+    /* Good for wrapped text */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .plans-table tr:last-child td {
@@ -411,19 +434,29 @@
 .risk-indicator {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    margin-top: 0rem;
 }
 
 .ai-analysis-content {
-
-    padding: 1rem;
     background: #fff;
     border-radius: var(--radius-md);
     border: 1px solid var(--border);
     border-left: 3px solid var(--primary);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.ai-analysis-scroll-area {
+    padding: 1rem;
     overflow-y: auto;
     flex: 1;
+    min-height: 0;
 }
+
 
 .analysis-text {
     font-size: 0.95rem;
@@ -462,7 +495,7 @@
 }
 
 .analysis-section {
-    margin-bottom: 1.5rem;
+    margin: 0.5rem 0.25rem 1rem 0.25rem;
 }
 
 .analysis-section h4 {
@@ -491,11 +524,9 @@
     margin-left: 1.25rem;
 }
 
-.analysis-section.red-flags h4 {
-    color: var(--warning);
-}
-
-.analysis-section.recommendations p {
+.analysis-section.recommendations p,
+.analysis-section.recommendations ul,
+.analysis-section.recommendations ol {
     font-size: 1rem;
     font-weight: 500;
     line-height: 1.6;
@@ -508,8 +539,6 @@
 
 .risk-header-info {
     display: flex;
-    gap: 2rem;
-    margin-bottom: 0.25rem;
 }
 
 .risk-category-display,
@@ -701,9 +730,13 @@
 .filter-bar {
     display: flex;
     gap: 1.5rem;
-    margin-bottom: 1rem;
+    margin: 0.5rem 0rem 2rem;
     flex-wrap: wrap;
     align-items: center;
+    position: relative;
+    /* Create stacking context for dropdowns */
+    z-index: 50;
+    /* Ensure it stays above the table containers */
 }
 
 .filter-group {
@@ -864,4 +897,60 @@ input[type="date"]::-webkit-datetime-edit-day-field:focus {
 .clear-filters:hover {
     opacity: 1;
     text-decoration: underline;
+}
+/* Insights Quadrant Improvements */
+.meeting-input-container {
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.transcript-textarea {
+    width: 100%;
+    flex: 1;
+    padding: 0.75rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    font-size: 0.85rem;
+    font-family: var(--font-body);
+    outline: none;
+    background: #fff;
+    color: var(--text-main);
+    line-height: 1.6;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+.transcript-textarea:focus {
+    border-color: var(--primary);
+}
+
+.analyse-button {
+    position: absolute;
+    background: linear-gradient(135deg, var(--primary) 0%, #B3A049 100%);
+    color: #fff !important;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+    box-shadow: 0 2px 8px var(--primary-glow);
+}
+
+.analyse-button:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px var(--primary-glow);
+    filter: brightness(1.05);
+}
+
+.analyse-button:disabled {
+    background: rgba(0, 0, 0, 0.05) !important;
+    color: var(--text-muted) !important;
+    cursor: not-allowed;
+    box-shadow: none !important;
+    transform: none !important;
 }

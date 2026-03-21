@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { requireSupabaseAuth } from '../middleware/requireSupabaseAuth.js'
 import { createSupabaseClient, supabase } from '../lib/supabase.js'
 import { generateRiskAnalysis, generateRiskSummary } from '../services/geminiRisk.js'
-import { generateMeetingNotes } from '../services/geminiMeetingNotes.js'
+import { generateMeetingNotes, generateMeetingSummary } from '../services/geminiMeetingNotes.js'
 
 export const insightsRouter = Router()
 
@@ -35,6 +35,17 @@ insightsRouter.post('/meeting-notes', requireSupabaseAuth, async (req, res) => {
     res.status(500).json({ error: e instanceof Error ? e.message : 'Unknown error' })
   }
 })
+
+// POST /ai/meeting-summary
+insightsRouter.post('/meeting-summary', requireSupabaseAuth, async (req, res) => {
+  try {
+    const json = await generateMeetingSummary(req.body)
+    res.json(json)
+  } catch (e) {
+    res.status(500).json({ error: e instanceof Error ? e.message : 'Unknown error' })
+  }
+})
+
 
 // POST /ai/feedback
 insightsRouter.post('/feedback', requireSupabaseAuth, async (req, res) => {

@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { generateRiskAnalysis, generateRiskSummary, generateMeetingNotes, submitAIFeedback } from '../../lib/insightsAI';
+import { generateRiskAnalysis, generateRiskSummary, generateMeetingNotes, generateMeetingSummary, submitAIFeedback } from '../../lib/insightsAI';
 
 interface InsightsProps {
     clientId?: string;
     client?: any;
     mode?: 'overview' | 'focused';
     dateRange?: { startDate: string; endDate: string };
-    cache?: { overview?: string; focused?: any; meetingNotes?: any } | null;
-    onCacheUpdate?: (update: { overview?: string; focused?: any; meetingNotes?: any }) => void;
+    cache?: { overview?: string; focused?: any; meetingNotes?: any; meetingNotesSummary?: string; meetingNotesTranscript?: string } | null;
+    onCacheUpdate?: (update: { overview?: string; focused?: any; meetingNotes?: any; meetingNotesSummary?: string; meetingNotesTranscript?: string }) => void;
     insightsMode?: 'risk-analysis' | 'meeting-notes';
     onInsightsModeChange?: (mode: 'risk-analysis' | 'meeting-notes') => void;
 }
@@ -43,10 +43,10 @@ const RiskLevelInfoModal: React.FC<{ isOpen: boolean; onClose: () => void }> = (
                 <div className="modal-body">
                     {Object.entries(RISK_LEVEL_DESCRIPTIONS).map(([level, desc]) => (
                         <div key={level}>
-                            <h4 style={{ color: 'var(--primary)', fontSize: '1rem', display: 'flex', alignItems: 'center', marginTop: '1.5rem', marginBottom: '4px'}}>
+                            <h4 style={{ color: 'var(--primary)', fontSize: '1rem', display: 'flex', alignItems: 'center', marginTop: '1.5rem', marginBottom: '4px' }}>
                                 {level}
                             </h4>
-                            <p style={{ fontSize: '0.9rem', color: 'var(--secondary)', lineHeight: '1.5', opacity: 0.85}}>{desc}</p>
+                            <p style={{ fontSize: '0.9rem', color: 'var(--secondary)', lineHeight: '1.5', opacity: 0.85 }}>{desc}</p>
                         </div>
                     ))}
                 </div>
@@ -56,7 +56,7 @@ const RiskLevelInfoModal: React.FC<{ isOpen: boolean; onClose: () => void }> = (
     );
 };
 
-const AIInfoModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
+const AIInfoModal: React.FC<{ isOpen: boolean; onClose: () => void; isMeetingNotes?: boolean }> = ({ isOpen, onClose, isMeetingNotes }) => {
     if (!isOpen) return null;
 
     return createPortal(
@@ -72,36 +72,44 @@ const AIInfoModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
 
                 <div className="modal-header">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '0', borderBottom: '1px solid var(--border)', paddingBottom: '0.75rem' }}>
-                        <h2 style={{ fontSize: '1.5rem', color: 'var(--secondary)', margin: 0 }}>How Does AI Generate This Analysis?</h2>
+                        <h2 style={{ fontSize: '1.5rem', color: 'var(--secondary)', margin: 0 }}>
+                            How Does AI Generate This Analysis?
+                        </h2>
                     </div>
                 </div>
 
                 <div className="modal-body">
                     <section style={{ marginBottom: '1.5rem' }}>
-                        <p style={{ fontSize: '0.9rem', color: 'var(--secondary)', lineHeight: '1.5', opacity: 0.85 }}>
-                            Our AI synthesizes real-time data from four key pillars:
+                        <p style={{ fontSize: '0.9rem', color: 'var(--secondary)', lineHeight: '1.5', opacity: 0.85, marginBottom: '1rem' }}>
+                            {isMeetingNotes
+                                ? "Our AI cross-references meeting transcripts with client financial data to deliver five key functions:"
+                                : "Our AI synthesizes client financial data across five core analytical pillars to identify misalignments:"}
                         </p>
-                        <ol style={{ fontSize: '0.85rem', color: 'var(--secondary)', opacity: 0.85, marginTop: '8px', paddingLeft: '20px' }}>
-                            <li><strong>Risk Profile:</strong> Stated risk tolerance levels.</li>
-                            <li><strong>Asset Allocation:</strong> Asset distribution across classes.</li>
-                            <li><strong>Cashflow:</strong> Inflows, outflows, and net surplus capacity.</li>
-                            <li><strong>Plans Held:</strong> Liquidity, lock-in periods, and coverage details.</li>
-                        </ol>
-                    </section>
-
-                    <section style={{ marginBottom: '1rem' }}>
-                        <h4 style={{ color: 'var(--primary)', marginBottom: '8px', fontSize: '1rem' }}>Analysis Logic</h4>
-                        <div style={{ background: 'rgba(0,0,0,0.02)', padding: '15px', borderRadius: '12px', borderLeft: '3px solid var(--primary)' }}>
+                        <div style={{ padding: '0', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                             <p style={{ fontSize: '0.85rem', color: 'var(--secondary)', lineHeight: '1.6', margin: 0 }}>
-                                <strong>Allocation Alignment:</strong> Checks if asset volatility matches expected risk levels.<br />
-                                <strong>Capacity vs. Tolerance:</strong> Verifies if cashflow supports risk appetite.<br />
-                                <strong>Structural Review:</strong> Identifies conflicts between illiquid assets and flexibility needs.<br />
-                                <strong>The Gap:</strong> Pinpoints the exact delta between current reality and profile goals.
+                                <strong style={{ color: 'var(--primary)', fontWeight: 700, marginRight: '6px' }}>{isMeetingNotes ? 'Conversation Synthesis:' : 'Temporal Context:'}</strong>
+                                <span style={{ opacity: 0.85 }}>{isMeetingNotes ? 'Distills lengthy meeting transcripts into a concise, high-level executive summary.' : 'References valuations and cashflows precisely based on the selected analysis period.'}</span>
+                            </p>
+                            <p style={{ fontSize: '0.85rem', color: 'var(--secondary)', lineHeight: '1.6', margin: 0 }}>
+                                <strong style={{ color: 'var(--primary)', fontWeight: 700, marginRight: '6px' }}>{isMeetingNotes ? 'Key Takeaway Extraction:' : 'Allocation Alignment:'}</strong>
+                                <span style={{ opacity: 0.85 }}>{isMeetingNotes ? 'Identifies the most critical decisions and salient points made during the client interaction.' : 'Checks if the volatility of the current portfolio matches the desired risk levels.'}</span>
+                            </p>
+                            <p style={{ fontSize: '0.85rem', color: 'var(--secondary)', lineHeight: '1.6', margin: 0 }}>
+                                <strong style={{ color: 'var(--primary)', fontWeight: 700, marginRight: '6px' }}>{isMeetingNotes ? 'Action Item Tracking:' : 'Risk Capacity:'}</strong>
+                                <span style={{ opacity: 0.85 }}>{isMeetingNotes ? 'Automatically generates a structured list of follow-up tasks and next steps discussed in the meeting.' : 'Determines if there is sufficient liquidity to support the risk suggested by their profile.'}</span>
+                            </p>
+                            <p style={{ fontSize: '0.85rem', color: 'var(--secondary)', lineHeight: '1.6', margin: 0 }}>
+                                <strong style={{ color: 'var(--primary)', fontWeight: 700, marginRight: '6px' }}>{isMeetingNotes ? 'Financial Integration:' : 'Structural Integrity:'}</strong>
+                                <span style={{ opacity: 0.85 }}>{isMeetingNotes ? 'Connects transcript details with the client\'s actual portfolio data to provide deeper financial context.' : 'Identifies conflicts between illiquid assets, plan overlaps, or insurance coverage holes.'}</span>
+                            </p>
+                            <p style={{ fontSize: '0.85rem', color: 'var(--secondary)', lineHeight: '1.6', margin: 0 }}>
+                                <strong style={{ color: 'var(--primary)', fontWeight: 700, marginRight: '6px' }}>{isMeetingNotes ? 'Strategic Alignment:' : 'Gap Synthesis:'}</strong>
+                                <span style={{ opacity: 0.85 }}>{isMeetingNotes ? 'Evaluates how the meeting\'s discussion aligns with the client\'s target goals and risk profile.' : 'Pinpoints the specific delta between the client\'s current reality and their target goals.'}</span>
                             </p>
                         </div>
                     </section>
 
-                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontStyle: 'italic', borderTop: '1px solid var(--border)', paddingTop: '1rem'}}>
+                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontStyle: 'italic', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
                         This analysis is supplementary and should be reviewed by a professional advisor before informing any financial decisions.
                     </p>
                 </div>
@@ -122,7 +130,8 @@ const AIFeedbackModal: React.FC<{
     submitted: boolean;
     onSubmit: () => void;
     error: string | null;
-}> = ({ isOpen, onClose, rating, setRating, feedbackComment, setFeedbackComment, isSubmitting, submitted, onSubmit, error }) => {
+    isMeetingNotes?: boolean;
+}> = ({ isOpen, onClose, rating, setRating, feedbackComment, setFeedbackComment, isSubmitting, submitted, onSubmit, error, isMeetingNotes }) => {
     if (!isOpen) return null;
 
     return createPortal(
@@ -137,12 +146,12 @@ const AIFeedbackModal: React.FC<{
                 >&times;</button>
 
                 <div className="modal-header">
-                    <h2 style={{ fontSize: '1.5rem', color: 'var(--secondary)', borderBottom: '1px solid var(--border)', paddingBottom: '0.75rem'}}>Was This Analysis Helpful?</h2>
+                    <h2 style={{ fontSize: '1.5rem', color: 'var(--secondary)', borderBottom: '1px solid var(--border)', paddingBottom: '0.75rem' }}>Was This Analysis Helpful?</h2>
                 </div>
 
                 <div className="modal-body">
-                    <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '0rem', marginBottom: '2rem', lineHeight: '1.5' }}>
-                        Your feedback helps us improve the relevance and accuracy of our AI-generated risk insights.
+                    <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '0rem', marginBottom: '1.5rem', lineHeight: '1.5' }}>
+                        Your feedback helps us improve the relevance and accuracy of our AI-powered features.
                     </p>
 
                     {!submitted ? (
@@ -266,6 +275,7 @@ const AIFeedbackModal: React.FC<{
 const Insights: React.FC<InsightsProps> = ({
     client,
     mode = 'overview',
+    dateRange,
     cache,
     onCacheUpdate,
     insightsMode = 'risk-analysis',
@@ -312,33 +322,65 @@ const Insights: React.FC<InsightsProps> = ({
     const [feedbackError, setFeedbackError] = useState<string | null>(null);
 
     // Meeting Notes State
-    const [transcript, setTranscript] = useState<string>('');
+    const [transcript, setTranscript] = useState<string>(cache?.meetingNotesTranscript || '');
     const [meetingNotesLoading, setMeetingNotesLoading] = useState<boolean>(false);
     const [meetingNotesError, setMeetingNotesError] = useState<string | null>(null);
+    const [meetingNotesSummary, setMeetingNotesSummary] = useState<string>(cache?.meetingNotesSummary || '');
     const [meetingNotesResult, setMeetingNotesResult] = useState<{
-        "Key Takeaways": string;
-        "Action Items": string;
-        "Financial Insights": string;
+        "Key Takeaways"?: string;
+        "Action Items"?: string;
+        "Financial Insights"?: string;
     } | null>(cache?.meetingNotes || null);
+
+
     const [meetingNotesCopied, setMeetingNotesCopied] = useState<boolean>(false);
+    const [meetingTab, setMeetingTab] = useState<'transcript' | 'generated'>(cache?.meetingNotesSummary ? 'generated' : 'transcript');
+
+    const insightsTabButtonStyle = (isActive: boolean) => ({
+        flex: 1,
+        padding: mode === 'focused' ? '0.5rem 1.5rem' : '0.35rem 1rem',
+        border: 'none',
+        background: isActive ? 'var(--primary)' : 'transparent',
+        color: isActive ? '#fff' : 'var(--text-muted)',
+        borderRadius: '8px',
+        fontWeight: 600,
+        fontSize: mode === 'focused' ? '0.85rem' : '0.75rem',
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+        boxShadow: isActive ? 'var(--shadow-sm)' : 'none',
+        textAlign: 'center' as const
+    });
 
     const handleFeedbackSubmit = async () => {
         if (!client || rating === null) return;
         setIsSubmittingFeedback(true);
         setFeedbackError(null);
         try {
-            const formattedContent = structuredAnalysis
-                ? `Key Insights:\n${structuredAnalysis["Key Insights"]}\n\n` +
-                `Potential Risks:\n${structuredAnalysis["Potential Risks"]}\n\n` +
-                `Recommendations:\n${structuredAnalysis["Recommendations"]}`
-                : '';
+            const isMeeting = insightsMode === 'meeting-notes';
+            let meetingContent = '';
+            if (isMeeting) {
+                if (meetingNotesSummary) meetingContent += `Meeting Summary:\n${meetingNotesSummary}`;
+                if (meetingNotesResult) {
+                    if (meetingContent) meetingContent += '\n\n';
+                    meetingContent += `Key Takeaways:\n${meetingNotesResult["Key Takeaways"]}\n\n` +
+                        `Action Items:\n${meetingNotesResult["Action Items"]}\n\n` +
+                        `Financial Insights:\n${meetingNotesResult["Financial Insights"]}`;
+                }
+            }
+            const formattedContent = isMeeting
+                ? meetingContent
+                : (structuredAnalysis
+                    ? `Key Insights:\n${structuredAnalysis["Key Insights"]}\n\n` +
+                    `Potential Risks:\n${structuredAnalysis["Potential Risks"]}\n\n` +
+                    `Recommendations:\n${structuredAnalysis["Recommendations"]}`
+                    : '');
 
             await submitAIFeedback({
                 client_id: client.client_id,
                 rating,
                 comment: feedbackComment || undefined,
                 generated_content: formattedContent,
-                ai_type: 'risk_analysis'
+                ai_type: isMeeting ? 'meeting_notes' : 'risk_analysis'
             });
             setFeedbackSubmitted(true);
         } catch (err: any) {
@@ -440,7 +482,8 @@ const Insights: React.FC<InsightsProps> = ({
             display: 'flex',
             justifyContent: 'center',
             padding: 0,
-            marginTop: '0'
+            marginTop: 'auto',
+            marginBottom: '-0.5rem'
         }}>
             <button
                 onClick={() => setIsAIModalOpen(true)}
@@ -471,229 +514,55 @@ const Insights: React.FC<InsightsProps> = ({
     useEffect(() => {
         if (!client) return;
 
-        // Reset feedback state on client/mode switch
+        // Reset feedback state on client/mode/date switch
         setRating(null);
         setFeedbackComment('');
         setFeedbackSubmitted(false);
         setFeedbackError(null);
 
-        // Reset local states if cache is null (new client/leaves page)
-        if (!cache) {
+        // Reset local states if cache is null or we're in a new date context (empty object)
+        const isCacheEmpty = !cache || Object.keys(cache).length === 0;
+        if (isCacheEmpty) {
             setSummary('');
             setStructuredAnalysis(null);
+            setMeetingNotesSummary('');
+            setMeetingNotesResult(null);
+            setTranscript('');
+            setError(null);
         }
 
-        const analyze = async () => {
-            // 1. Check if already cached for this mode
-            if (mode === 'overview' && cache?.overview) {
+        if (insightsMode !== 'risk-analysis') return;
+
+        const fetchSummary = async () => {
+            // 1. Check if already cached
+            if (cache?.overview) {
                 setSummary(cache.overview);
                 setClientInfo({
                     category: client.risk_profile || 'Level 2',
                     description: RISK_LEVEL_DESCRIPTIONS[client.risk_profile] || RISK_LEVEL_DESCRIPTIONS['Level 2'],
                     date: client.last_updated || new Date().toISOString()
                 });
-                return;
             }
-            if (mode === 'focused' && cache?.focused) {
+            if (cache?.focused) {
                 setStructuredAnalysis(cache.focused);
-                setClientInfo({
-                    category: client.risk_profile || 'Level 2',
-                    description: RISK_LEVEL_DESCRIPTIONS[client.risk_profile] || RISK_LEVEL_DESCRIPTIONS['Level 2'],
-                    date: client.last_updated || new Date().toISOString()
-                });
-                return;
             }
 
-            setLoading(true);
-            setError(null);
-            // Don't clear if potentially switching back? But analyze is called on mount/prop change.
-            // If we are here, we need a new analysis.
+            // 2. If no summary exists (even in state), generate it
+            if (!cache?.overview && !summary) {
+                setLoading(true);
+                setError(null);
 
-            try {
-                const category = client.risk_profile || 'Level 2';
-                const description = RISK_LEVEL_DESCRIPTIONS[category] || RISK_LEVEL_DESCRIPTIONS['Level 2'];
+                try {
+                    const category = client.risk_profile || 'Level 2';
+                    const description = RISK_LEVEL_DESCRIPTIONS[category] || RISK_LEVEL_DESCRIPTIONS['Level 2'];
 
-                setClientInfo({
-                    category,
-                    description,
-                    date: client.last_updated || new Date().toISOString()
-                });
-
-                // 2. Aggregate Active Plans for Analysis (Concise & Token-Efficient)
-                const activePlans = (client.client_plans || []).filter((p: any) => p.status === 'Active');
-                const allocationMap: Record<string, number> = {};
-                let totalAssetValue = 0;
-                let totalSumAssured = 0;
-                let earliestStart: Date | null = null;
-                let latestEnd: Date | null = null;
-                const activeCategories = new Set<string>();
-
-                activePlans.forEach((plan: any) => {
-                    const isInsurance = plan.asset_class?.includes('Insurance') || plan.sum_assured !== undefined;
-                    const valuations = isInsurance ? (plan.insurance_valuations || []) : (plan.investment_valuations || []);
-                    const valueKey = isInsurance ? 'cash_value' : 'market_value';
-
-                    // 1. Track Types/Categories
-                    const cat = plan.asset_class || plan.policy_type || 'Other';
-                    if (cat) activeCategories.add(cat);
-
-                    // 2. Track Dates
-                    if (plan.start_date) {
-                        const d = new Date(plan.start_date);
-                        if (!earliestStart || d < earliestStart) earliestStart = d;
-                    }
-                    const endDateStr = plan.end_date || plan.expiry_date;
-                    if (endDateStr) {
-                        const d = new Date(endDateStr);
-                        if (!latestEnd || d > latestEnd) latestEnd = d;
-                    }
-
-                    // 3. Track Valuations (Aggregate & Allocation)
-                    const latestVal = valuations?.sort((a: any, b: any) =>
-                        new Date(b.as_of_date).getTime() - new Date(a.as_of_date).getTime()
-                    )[0];
-
-                    if (latestVal) {
-                        const val = parseFloat(latestVal[valueKey] || 0);
-                        if (val > 0) {
-                            totalAssetValue += val;
-                            allocationMap[cat] = (allocationMap[cat] || 0) + val;
-                        }
-                    }
-                    if (isInsurance && plan.sum_assured) {
-                        totalSumAssured += parseFloat(plan.sum_assured);
-                    }
-                });
-
-                // Calculate historical portfolio performance (1 year comparison)
-                let portfolioPerformanceString = '';
-                const activeInvestments = activePlans.filter((p: any) => !p.asset_class?.includes('Insurance') && p.market_value !== undefined);
-                if (activeInvestments.length > 0) {
-                    let pastTotalValue = 0;
-                    let hasPastData = false;
-
-                    activeInvestments.forEach((plan: any) => {
-                        const valuations = plan.investment_valuations || [];
-                        if (valuations.length > 1) {
-                            const sortedVals = valuations.sort((a: any, b: any) =>
-                                new Date(b.as_of_date).getTime() - new Date(a.as_of_date).getTime()
-                            );
-                            
-                            // Get latest value
-                            const latestVal = parseFloat(sortedVals[0].market_value || 0);
-
-                            // Find a valuation closest to 1 year ago (365 days)
-                            const oneYearAgo = new Date();
-                            oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-                            
-                            // Find the first valuation that is older than or equal to 1 year ago
-                            let pastValRecord = sortedVals.find((v: any) => new Date(v.as_of_date) <= oneYearAgo);
-
-                            // If we don't have one that's exactly/older than 1 year, just take the oldest one we have 
-                            // as long as it's not the latest one.
-                            if (!pastValRecord && sortedVals.length > 0) {
-                                pastValRecord = sortedVals[sortedVals.length - 1];
-                            }
-
-                            if (pastValRecord && sortedVals[0].as_of_date !== pastValRecord.as_of_date) {
-                                pastTotalValue += parseFloat(pastValRecord.market_value || 0);
-                                hasPastData = true;
-                            } else {
-                                // If no past data, assume the past value was the same as current for the overall summation
-                                pastTotalValue += latestVal;
-                            }
-                        } else if (valuations.length === 1) {
-                             pastTotalValue += parseFloat(valuations[0].market_value || 0);
-                        }
+                    setClientInfo({
+                        category,
+                        description,
+                        date: client.last_updated || new Date().toISOString()
                     });
 
-                    if (hasPastData && pastTotalValue > 0) {
-                        const diff = totalAssetValue - pastTotalValue;
-                        const percentChange = ((diff / pastTotalValue) * 100).toFixed(1);
-                        const sign = diff >= 0 ? '+' : '';
-                        portfolioPerformanceString = `\n                       - Portfolio Value Change (Last 12 Months): ${sign}${percentChange}%`;
-                    }
-                }
-
-                const allocationString = totalAssetValue > 0
-                    ? Object.entries(allocationMap)
-                        .filter(([_, val]) => val > 0)
-                        .map(([category, val]) => `${Math.round((val / totalAssetValue) * 100)}% ${category}`)
-                        .join(', ')
-                    : 'No allocation data';
-
-                const sortedCashflows = client.cashflow?.sort((a: any, b: any) =>
-                    new Date(b.as_of_date).getTime() - new Date(a.as_of_date).getTime()
-                ) || [];
-                
-                const latestCashflow = sortedCashflows[0];
-
-                // Calculate historical trend and volatility over the last 12 months
-                let historicalTrend = '';
-                const oneYearAgoThreshold = new Date();
-                oneYearAgoThreshold.setFullYear(oneYearAgoThreshold.getFullYear() - 1);
-
-                const recentCashflows = sortedCashflows.filter((cf: any) => new Date(cf.as_of_date) >= oneYearAgoThreshold);
-
-                if (recentCashflows.length > 1) {
-                    const avgSurplus = recentCashflows.reduce((sum: number, cf: any) => sum + (parseFloat(cf.net_surplus) || 0), 0) / recentCashflows.length;
-                    const avgInflow = recentCashflows.reduce((sum: number, cf: any) => sum + (parseFloat(cf.total_inflow) || 0), 0) / recentCashflows.length;
-                    
-                    // Volatility calculation (Standard Deviation of Net Surplus)
-                    let surplusVolatilityInfo = '';
-                    if (recentCashflows.length >= 3) {
-                       const surpluses = recentCashflows.map((cf: any) => parseFloat(cf.net_surplus) || 0);
-                       const variance = surpluses.reduce((sum: number, val: number) => sum + Math.pow(val - avgSurplus, 2), 0) / surpluses.length;
-                       const stdDev = Math.sqrt(variance);
-                       const stdDevPercent = avgSurplus !== 0 ? ((stdDev / Math.abs(avgSurplus)) * 100).toFixed(1) : '0';
-                       surplusVolatilityInfo = `, Net Surplus Std Dev: ${stdDevPercent}%`;
-                    }
-
-                    historicalTrend = `\n                       - Last 12 Months Average: Total Inflow ($${Math.round(avgInflow)}), Net Surplus ($${Math.round(avgSurplus)})${surplusVolatilityInfo}`;
-                }
-
-                const cashflowString = latestCashflow
-                    ? `Current Cashflow Summary:
-                       - Income: Employment ($${latestCashflow.employment_income_gross}), Rental ($${latestCashflow.rental_income}), Investment ($${latestCashflow.investment_income}). Total Inflow: $${latestCashflow.total_inflow}
-                       - Expense: Household ($${latestCashflow.household_expenses}), Tax ($${latestCashflow.income_tax}), Insurance ($${latestCashflow.insurance_premiums}), Property ($${latestCashflow.property_expenses}), Debt/Loan ($${latestCashflow.property_loan_repayment + latestCashflow.non_property_loan_repayment}). Total Expense: $${latestCashflow.total_expense}
-                       - Net State: Wealth Transfers ($${latestCashflow.wealth_transfers}), Net Surplus ($${latestCashflow.net_surplus}), Net Cashflow (post-investment/pensions) ($${latestCashflow.net_cashflow}).${historicalTrend}`
-                    : 'No cashflow data';
-
-                const plansString = activePlans.length > 0
-                    ? `Current Portfolio Summary:
-                       - Total Assets: $${Math.round(totalAssetValue).toLocaleString()}
-                       - Total Insurance Sum Assured: $${Math.round(totalSumAssured).toLocaleString()}
-                       - Holding Period: ${earliestStart ? (earliestStart as Date).toLocaleDateString() : 'Unknown'} to ${latestEnd ? (latestEnd as Date).toLocaleDateString() : 'Ongoing'}
-                       - Plan Distribution: ${Array.from(activeCategories).join(', ')}${portfolioPerformanceString}`
-                    : 'No active plans';
-
-                const params = {
-                    riskProfileDescription: description,
-                    assetAllocation: allocationString,
-                    cashflow: cashflowString,
-                    plansHeld: plansString,
-                };
-
-                // 3. Trigger AI Analysis based on mode
-                if (mode === 'focused') {
-                    const stream = generateRiskAnalysis(params);
-                    let fullText = '';
-                    for await (const chunk of stream) {
-                        fullText += chunk;
-                    }
-
-                    // 4. Parse JSON
-                    try {
-                        const parsed = JSON.parse(fullText);
-                        setStructuredAnalysis(parsed);
-                        if (onCacheUpdate) {
-                            onCacheUpdate({ focused: parsed });
-                        }
-                    } catch (parseErr) {
-                        console.error('JSON Parse Error:', parseErr, 'Raw text:', fullText);
-                        setError('Received invalid data from AI.');
-                    }
-                } else {
+                    const params = buildFinancialContextParams();
                     const stream = generateRiskSummary(params);
                     let fullText = '';
                     for await (const chunk of stream) {
@@ -714,33 +583,72 @@ const Insights: React.FC<InsightsProps> = ({
                             onCacheUpdate({ overview: fullText });
                         }
                     }
+                } catch (err: any) {
+                    console.error('Risk Summary Error:', err);
+                    setError(err.message === 'Load failed' || err.message === 'Failed to fetch' ? 'AI Service unreachable.' : 'Failed to load summary.');
+                } finally {
+                    setLoading(false);
+                }
+            }
+        };
+
+        fetchSummary();
+    }, [client, dateRange?.endDate, cache, insightsMode]);
+
+    // Auto-generate full risk analysis when entering focused mode with a summary but no full analysis
+    // (Matches meeting notes sequential loading behavior)
+    useEffect(() => {
+        if (insightsMode !== 'risk-analysis') return;
+        if (mode !== 'focused') return;
+        if (!client) return;
+        if (!summary) return; // Wait for summary first
+        if (structuredAnalysis) return; // Already have it
+        if (loading) return; // Wait if already loading something
+
+        const generateFullAnalysis = async () => {
+            setLoading(true);
+            setError(null);
+
+            try {
+                const params = buildFinancialContextParams();
+                const stream = generateRiskAnalysis(params);
+                let fullText = '';
+                for await (const chunk of stream) {
+                    fullText += chunk;
+                }
+
+                const parsed = JSON.parse(fullText);
+                setStructuredAnalysis(parsed);
+                if (onCacheUpdate) {
+                    onCacheUpdate({ focused: parsed });
                 }
             } catch (err: any) {
-                console.error('Risk Analysis Error:', err);
-                const errMsg = err.message === 'Load failed' || err.message === 'Failed to fetch'
-                    ? 'AI Service unreachable.'
-                    : 'Failed to load risk analysis.';
-                setError(errMsg);
+                console.error('Full Risk Analysis Error:', err);
+                setError('Failed to generate full risk analysis.');
             } finally {
                 setLoading(false);
             }
         };
 
-        analyze();
-    }, [client, mode]);
+        generateFullAnalysis();
+    }, [mode, insightsMode, summary, structuredAnalysis, client]);
+
 
 
 
     const handleCopy = (e: React.MouseEvent) => {
         e.stopPropagation();
         e.preventDefault();
-        let textToCopy = '';
+        let textToCopy = 'RISK ANALYSIS\n\n';
         if (mode === 'overview') {
-            textToCopy = summary;
-        } else if (mode === 'focused' && structuredAnalysis) {
-            textToCopy = `Key Insights:\n${structuredAnalysis["Key Insights"]}\n\n` +
-                `Potential Risks:\n${structuredAnalysis["Potential Risks"] || 'None identified.'}\n\n` +
-                `Recommendations:\n${structuredAnalysis["Recommendations"]}`;
+            textToCopy += `Summary:\n${summary}`;
+        } else if (mode === 'focused') {
+            if (summary) textToCopy += `Summary:\n${summary}\n\n`;
+            if (structuredAnalysis) {
+                textToCopy += `Key Insights:\n${structuredAnalysis["Key Insights"]}\n\n` +
+                    `Potential Risks:\n${structuredAnalysis["Potential Risks"] || 'None identified.'}\n\n` +
+                    `Recommendations:\n${structuredAnalysis["Recommendations"]}`;
+            }
         }
 
         if (textToCopy) {
@@ -752,12 +660,24 @@ const Insights: React.FC<InsightsProps> = ({
     };
 
     // Helper to build client financial context params (reused by both features)
+    // Helper to build client financial context params (reused by both features)
     const buildFinancialContextParams = () => {
-        if (!client) return null;
-        const category = client.risk_profile || 'Level 2';
+        const referenceDate = dateRange?.endDate ? new Date(dateRange.endDate) : new Date();
+        const oneYearBeforeRef = new Date(referenceDate);
+        oneYearBeforeRef.setFullYear(oneYearBeforeRef.getFullYear() - 1);
+
+        const category = client?.risk_profile || 'Level 2';
         const description = RISK_LEVEL_DESCRIPTIONS[category] || RISK_LEVEL_DESCRIPTIONS['Level 2'];
 
-        const activePlans = (client.client_plans || []).filter((p: any) => p.status === 'Active');
+        const activePlans = (client?.client_plans || []).filter((p: any) => {
+            if (p.status !== 'Active') return false;
+            const startDate = p.start_date ? new Date(p.start_date) : null;
+            const endDate = (p.end_date || p.expiry_date) ? new Date(p.end_date || p.expiry_date) : null;
+            if (startDate && startDate > referenceDate) return false;
+            if (endDate && endDate < referenceDate) return false;
+            return true;
+        });
+
         const allocationMap: Record<string, number> = {};
         let totalAssetValue = 0;
         let totalSumAssured = 0;
@@ -771,6 +691,7 @@ const Insights: React.FC<InsightsProps> = ({
             const valueKey = isInsurance ? 'cash_value' : 'market_value';
             const cat = plan.asset_class || plan.policy_type || 'Other';
             if (cat) activeCategories.add(cat);
+
             if (plan.start_date) {
                 const d = new Date(plan.start_date);
                 if (!earliestStart || d < earliestStart) earliestStart = d;
@@ -780,9 +701,14 @@ const Insights: React.FC<InsightsProps> = ({
                 const d = new Date(endDateStr);
                 if (!latestEnd || d > latestEnd) latestEnd = d;
             }
-            const latestVal = valuations?.sort((a: any, b: any) =>
+
+            const valuationsAtRef = valuations?.filter((v: any) =>
+                new Date(v.as_of_date) <= referenceDate
+            ).sort((a: any, b: any) =>
                 new Date(b.as_of_date).getTime() - new Date(a.as_of_date).getTime()
-            )[0];
+            );
+
+            const latestVal = valuationsAtRef[0];
             if (latestVal) {
                 const val = parseFloat(latestVal[valueKey] || 0);
                 if (val > 0) {
@@ -795,6 +721,46 @@ const Insights: React.FC<InsightsProps> = ({
             }
         });
 
+        // Historical Performance Calculation
+        let portfolioPerformanceString = '';
+        const activeInvestments = activePlans.filter((p: any) => !p.asset_class?.includes('Insurance') && p.market_value !== undefined);
+        if (activeInvestments.length > 0) {
+            let pastTotalValue = 0;
+            let hasPastData = false;
+
+            activeInvestments.forEach((plan: any) => {
+                const valuations = plan.investment_valuations || [];
+                const valuationsAtRef = valuations?.filter((v: any) =>
+                    new Date(v.as_of_date) <= referenceDate
+                ).sort((a: any, b: any) =>
+                    new Date(b.as_of_date).getTime() - new Date(a.as_of_date).getTime()
+                );
+
+                if (valuationsAtRef.length > 1) {
+                    const sortedVals = valuationsAtRef;
+                    const latestVal = parseFloat(sortedVals[0].market_value || 0);
+                    let pastValRecord = sortedVals.find((v: any) => new Date(v.as_of_date) <= oneYearBeforeRef);
+                    if (!pastValRecord && sortedVals.length > 0) {
+                        pastValRecord = sortedVals[sortedVals.length - 1];
+                    }
+                    if (pastValRecord && sortedVals[0].as_of_date !== pastValRecord.as_of_date) {
+                        pastTotalValue += parseFloat(pastValRecord.market_value || 0);
+                        hasPastData = true;
+                    } else {
+                        pastTotalValue += latestVal;
+                    }
+                } else if (valuationsAtRef.length === 1) {
+                    pastTotalValue += parseFloat(valuationsAtRef[0].market_value || 0);
+                }
+            });
+
+            if (hasPastData && pastTotalValue > 0) {
+                const diff = totalAssetValue - pastTotalValue;
+                const percentChange = ((diff / pastTotalValue) * 100).toFixed(1);
+                portfolioPerformanceString = `\n                       - Portfolio Value Change (Last 12 Months from Ref): ${diff >= 0 ? '+' : ''}${percentChange}%`;
+            }
+        }
+
         const allocationString = totalAssetValue > 0
             ? Object.entries(allocationMap)
                 .filter(([_, val]) => val > 0)
@@ -802,23 +768,44 @@ const Insights: React.FC<InsightsProps> = ({
                 .join(', ')
             : 'No allocation data';
 
-        const sortedCashflows = client.cashflow?.sort((a: any, b: any) =>
-            new Date(b.as_of_date).getTime() - new Date(a.as_of_date).getTime()
-        ) || [];
-        const latestCashflow = sortedCashflows[0];
+        const cashflowsAtRef = (client?.cashflow || [])
+            .filter((cf: any) => new Date(cf.as_of_date) <= referenceDate)
+            .sort((a: any, b: any) =>
+                new Date(b.as_of_date).getTime() - new Date(a.as_of_date).getTime()
+            );
 
+        // Cashflow Trends Calculation
+        let historicalTrend = '';
+        const recentCashflows = cashflowsAtRef.filter((cf: any) => new Date(cf.as_of_date) >= oneYearBeforeRef);
+        if (recentCashflows.length > 1) {
+            const avgSurplus = recentCashflows.reduce((sum: number, cf: any) => sum + (parseFloat(cf.net_surplus) || 0), 0) / recentCashflows.length;
+            const avgInflow = recentCashflows.reduce((sum: number, cf: any) => sum + (parseFloat(cf.total_inflow) || 0), 0) / recentCashflows.length;
+            
+            let surplusVolatilityInfo = '';
+            if (recentCashflows.length >= 3) {
+                const surpluses = recentCashflows.map((cf: any) => parseFloat(cf.net_surplus) || 0);
+                const variance = surpluses.reduce((sum: number, val: number) => sum + Math.pow(val - avgSurplus, 2), 0) / surpluses.length;
+                const stdDev = Math.sqrt(variance);
+                const stdDevPercent = avgSurplus !== 0 ? ((stdDev / Math.abs(avgSurplus)) * 100).toFixed(1) : '0';
+                surplusVolatilityInfo = `, Net Surplus Std Dev: ${stdDevPercent}%`;
+            }
+            historicalTrend = `\n                       - Last 12 Months Average: Total Inflow ($${Math.round(avgInflow)}), Net Surplus ($${Math.round(avgSurplus)})${surplusVolatilityInfo}`;
+        }
+
+        const latestCashflow = cashflowsAtRef[0];
         const cashflowString = latestCashflow
-            ? `Current Cashflow Summary:
+            ? `Current Cashflow Summary (at Ref Date):
                    - Income: Employment ($${latestCashflow.employment_income_gross}), Rental ($${latestCashflow.rental_income}), Investment ($${latestCashflow.investment_income}). Total Inflow: $${latestCashflow.total_inflow}
                    - Expense: Household ($${latestCashflow.household_expenses}), Tax ($${latestCashflow.income_tax}), Insurance ($${latestCashflow.insurance_premiums}), Property ($${latestCashflow.property_expenses}), Debt/Loan ($${latestCashflow.property_loan_repayment + latestCashflow.non_property_loan_repayment}). Total Expense: $${latestCashflow.total_expense}
-                   - Net State: Net Surplus ($${latestCashflow.net_surplus}), Net Cashflow ($${latestCashflow.net_cashflow}).`
+                   - Net State: Net Surplus ($${latestCashflow.net_surplus}), Net Cashflow ($${latestCashflow.net_cashflow}).${historicalTrend}`
             : 'No cashflow data';
 
         const plansString = activePlans.length > 0
-            ? `Current Portfolio Summary:
+            ? `Current Portfolio Summary (at Ref Date):
                    - Total Assets: $${Math.round(totalAssetValue).toLocaleString()}
                    - Total Insurance Sum Assured: $${Math.round(totalSumAssured).toLocaleString()}
-                   - Plan Distribution: ${Array.from(activeCategories).join(', ')}`
+                   - Holding Period: ${earliestStart ? (earliestStart as Date).toLocaleDateString() : 'Unknown'} to ${latestEnd ? (latestEnd as Date).toLocaleDateString() : 'Ongoing'}
+                   - Plan Distribution: ${Array.from(activeCategories).join(', ')}${portfolioPerformanceString}`
             : 'No active plans';
 
         return {
@@ -829,11 +816,12 @@ const Insights: React.FC<InsightsProps> = ({
         };
     };
 
+
     const handleMeetingNotesSubmit = async () => {
         if (!transcript.trim() || !client) return;
         setMeetingNotesLoading(true);
+        setMeetingTab('generated');
         setMeetingNotesError(null);
-        setMeetingNotesResult(null);
 
         try {
             const contextParams = buildFinancialContextParams();
@@ -844,16 +832,18 @@ const Insights: React.FC<InsightsProps> = ({
                 transcript: transcript.trim(),
             };
 
-            const stream = generateMeetingNotes(params);
+            // Always generate summary first (just like risk analysis overview)
+            const stream = generateMeetingSummary(params);
             let fullText = '';
             for await (const chunk of stream) {
                 fullText += chunk;
             }
 
             const parsed = JSON.parse(fullText);
-            setMeetingNotesResult(parsed);
+            const summaryText = parsed["Meeting Summary"] || fullText;
+            setMeetingNotesSummary(summaryText);
             if (onCacheUpdate) {
-                onCacheUpdate({ meetingNotes: parsed });
+                onCacheUpdate({ meetingNotesSummary: summaryText, meetingNotesTranscript: transcript.trim() });
             }
         } catch (err: any) {
             console.error('Meeting Notes Error:', err);
@@ -866,13 +856,75 @@ const Insights: React.FC<InsightsProps> = ({
         }
     };
 
+    // Auto-generate full meeting notes when entering focused mode with a summary but no full notes
+    // (mirrors how risk analysis auto-generates the full analysis in focused mode)
+    useEffect(() => {
+        if (insightsMode !== 'meeting-notes') return;
+        if (mode !== 'focused') return;
+        if (!client) return;
+        if (!meetingNotesSummary) return; // No summary yet — nothing to expand
+        if (meetingNotesResult) return;   // Already have full notes
+        if (meetingNotesLoading) return;  // Already in progress
+        if (!transcript.trim()) return;   // No transcript to work with
+
+        const generateFullNotes = async () => {
+            setMeetingNotesLoading(true);
+            setMeetingNotesError(null);
+
+            try {
+                const contextParams = buildFinancialContextParams();
+                if (!contextParams) throw new Error('Could not build financial context.');
+
+                const params = {
+                    ...contextParams,
+                    transcript: transcript.trim(),
+                };
+
+                const stream = generateMeetingNotes(params);
+                let fullText = '';
+                for await (const chunk of stream) {
+                    fullText += chunk;
+                }
+
+                const parsed = JSON.parse(fullText);
+                setMeetingNotesResult(parsed);
+                if (onCacheUpdate) {
+                    onCacheUpdate({ meetingNotes: parsed });
+                }
+            } catch (err: any) {
+                console.error('Meeting Notes Full Error:', err);
+                const errMsg = err.message === 'Load failed' || err.message === 'Failed to fetch'
+                    ? 'AI Service unreachable.'
+                    : 'Failed to generate full meeting notes.';
+                setMeetingNotesError(errMsg);
+            } finally {
+                setMeetingNotesLoading(false);
+            }
+        };
+
+        generateFullNotes();
+    }, [mode, insightsMode, meetingNotesSummary, meetingNotesResult, client]);
+
     const handleMeetingNotesCopy = (e: React.MouseEvent) => {
         e.stopPropagation();
         e.preventDefault();
-        if (!meetingNotesResult) return;
-        const textToCopy = `Key Takeaways:\n${meetingNotesResult["Key Takeaways"]}\n\n` +
-            `Action Items:\n${meetingNotesResult["Action Items"]}\n\n` +
-            `Financial Insights:\n${meetingNotesResult["Financial Insights"]}`;
+        let textToCopy = 'MEETING NOTES\n\n';
+        if (mode === 'overview') {
+            if (meetingNotesSummary) textToCopy += `Summary:\n${meetingNotesSummary}`;
+        } else {
+            // Focused mode (or other) - include everything
+            if (meetingNotesSummary) {
+            textToCopy += `Summary:\n${meetingNotesSummary}`;
+            }
+            if (meetingNotesResult) {
+                if (textToCopy) textToCopy += '\n\n';
+                textToCopy += `Key Takeaways:\n${meetingNotesResult["Key Takeaways"]}\n\n` +
+                    `Action Items:\n${meetingNotesResult["Action Items"]}\n\n` +
+                    `Financial Insights:\n${meetingNotesResult["Financial Insights"]}`;
+            }
+        }
+        if (!textToCopy) return;
+
         navigator.clipboard.writeText(textToCopy).then(() => {
             setMeetingNotesCopied(true);
             setTimeout(() => setMeetingNotesCopied(false), 2000);
@@ -882,6 +934,35 @@ const Insights: React.FC<InsightsProps> = ({
     // Hover state for showing copy buttons inside output boxes
     const [riskOutputHovered, setRiskOutputHovered] = useState(false);
     const [meetingOutputHovered, setMeetingOutputHovered] = useState(false);
+
+    const renderCleanList = (content: string) => {
+        if (!content) return null;
+        // Split by newline and filter out empty lines or lines that are just numbers/dashes (legacy cleanup)
+        const lines = content.split('\n')
+            .map(line => line.trim())
+            .filter(line => line.length > 0)
+            .map(line => line.replace(/^[\d.)\s•\-*→]+/, '').trim()); // Additional safety for legacy cleaning
+
+        return (
+            <ul style={{
+                listStylePosition: 'outside',
+                paddingLeft: '1rem',
+                display: 'flex',
+                flexDirection: 'column'
+            }}>
+                {lines.map((item, idx) => (
+                    <li key={idx} style={{
+                        fontSize: '0.95rem',
+                        lineHeight: '1.6',
+                        color: 'var(--text-main)',
+                        paddingLeft: '0.2rem'
+                    }}>
+                        {item}
+                    </li>
+                ))}
+            </ul>
+        );
+    };
 
     // Reusable inline copy button component
     const InlineCopyButton: React.FC<{ onClick: (e: React.MouseEvent) => void; isCopied: boolean; visible: boolean }> = ({ onClick, isCopied, visible }) => (
@@ -941,11 +1022,11 @@ const Insights: React.FC<InsightsProps> = ({
                         onClick={(e) => { e.stopPropagation(); e.preventDefault(); e.nativeEvent.stopImmediatePropagation(); setIsDropdownOpen(!isDropdownOpen); }}
                         onMouseDown={(e) => e.stopPropagation()}
                         onMouseUp={(e) => e.stopPropagation()}
-                        style={{ 
-                            padding: '4px 10px', 
-                            border: '1px solid var(--border)', 
-                            backgroundColor: 'rgba(0,0,0,0.02)', 
-                            minHeight: 'auto' 
+                        style={{
+                            padding: '4px 10px',
+                            border: '1px solid var(--border)',
+                            backgroundColor: 'rgba(0,0,0,0.02)',
+                            minHeight: 'auto'
                         }}
                     >
                         <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-main)', letterSpacing: '0.01em' }}>
@@ -959,11 +1040,11 @@ const Insights: React.FC<InsightsProps> = ({
                         <div className="custom-select-options glass-card" style={{ marginTop: '4px', padding: '4px' }}>
                             <div
                                 className={`custom-select-option ${insightsMode === 'risk-analysis' ? 'selected' : ''}`}
-                                onClick={(e) => { 
-                                    e.stopPropagation(); 
+                                onClick={(e) => {
+                                    e.stopPropagation();
                                     e.preventDefault();
-                                    onInsightsModeChange?.('risk-analysis'); 
-                                    setIsDropdownOpen(false); 
+                                    onInsightsModeChange?.('risk-analysis');
+                                    setIsDropdownOpen(false);
                                 }}
                                 style={{ fontSize: '0.8rem', padding: '8px 12px' }}
                             >
@@ -971,11 +1052,11 @@ const Insights: React.FC<InsightsProps> = ({
                             </div>
                             <div
                                 className={`custom-select-option ${insightsMode === 'meeting-notes' ? 'selected' : ''}`}
-                                onClick={(e) => { 
-                                    e.stopPropagation(); 
+                                onClick={(e) => {
+                                    e.stopPropagation();
                                     e.preventDefault();
-                                    onInsightsModeChange?.('meeting-notes'); 
-                                    setIsDropdownOpen(false); 
+                                    onInsightsModeChange?.('meeting-notes');
+                                    setIsDropdownOpen(false);
                                 }}
                                 style={{ fontSize: '0.8rem', padding: '8px 12px' }}
                             >
@@ -993,9 +1074,23 @@ const Insights: React.FC<InsightsProps> = ({
                         {clientInfo && (
                             <div className="risk-header-info animate-fade">
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
-                                    <div className="risk-category-display" style={{ alignItems: 'center', textAlign: 'center' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
-                                            <span className="label">Current Category</span>
+                                    <div
+                                        className="risk-category-display"
+                                        style={{
+                                            display: 'flex',
+                                            flexDirection: mode === 'overview' ? 'row' : 'column',
+                                            alignItems: mode === 'overview' ? 'baseline' : 'center',
+                                            justifyContent: mode === 'overview' ? 'center' : 'center',
+                                            textAlign: mode === 'overview' ? 'left' : 'center',
+                                            gap: mode === 'overview' ? '0.75rem' : '0.25rem'
+                                        }}
+                                    >
+                                        <div style={{
+                                            display: 'flex',
+                                            alignItems: mode === 'overview' ? 'baseline' : 'center',
+                                            gap: '8px'
+                                        }}>
+                                            <span className="label" style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>Current Category:</span>
                                             {mode === 'focused' && (
                                                 <button
                                                     onClick={() => setIsInfoModalOpen(true)}
@@ -1032,76 +1127,121 @@ const Insights: React.FC<InsightsProps> = ({
                                                 </button>
                                             )}
                                         </div>
-                                        <span className="value" style={{ fontSize: '2rem' }}>{clientInfo.category}</span>
+                                        <span className="value" style={{
+                                            fontSize: mode === 'overview' ? '1.25rem' : '2rem',
+                                            color: 'var(--accent)',
+                                            fontWeight: 700
+                                        }}>
+                                            {clientInfo.category}
+                                        </span>
                                     </div>
                                 </div>
                             </div>
                         )}
 
-                        <div className="ai-analysis-content" style={{ minHeight: 0, position: 'relative' }}
+                        <div className="ai-analysis-content" style={{ minHeight: 0, flex: 1 }}
                             onMouseEnter={() => setRiskOutputHovered(true)}
                             onMouseLeave={() => setRiskOutputHovered(false)}
                         >
                             {(summary || (mode === 'focused' && structuredAnalysis)) && (
                                 <InlineCopyButton onClick={handleCopy} isCopied={copied} visible={riskOutputHovered} />
                             )}
-                            {loading && (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', padding: '1rem 0' }}>
-                                    <div className="loading-shimmer">
-                                        <div className="line" style={{ width: '90%' }}></div>
-                                        <div className="line" style={{ width: '100%' }}></div>
-                                        <div className="line short"></div>
+                            <div className="ai-analysis-scroll-area">
+                                {/* Focused mode content */}
+                                {mode === 'focused' && (
+                                    <div className="structured-analysis animate-fade">
+                                        {/* 1. Summary always at the top */}
+                                        {summary && (
+                                            <div className="analysis-section">
+                                                <h4 style={{ color: 'var(--primary)', marginBottom: '0.75rem' }}>Summary</h4>
+                                                {renderCleanList(summary)}
+                                            </div>
+                                        )}
+
+                                        {/* 2. Loading state below summary if still generating details */}
+                                        {loading && (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', padding: '1rem 0' }}>
+                                                <div className="loading-shimmer">
+                                                    <div className="line" style={{ width: '90%' }}></div>
+                                                    <div className="line" style={{ width: '100%' }}></div>
+                                                    <div className="line short"></div>
+                                                </div>
+                                                <div style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    gap: '0.75rem',
+                                                    color: 'var(--text-muted)'
+                                                }}>
+                                                    <p style={{ fontSize: '0.9rem', fontWeight: 500, letterSpacing: '0.05em' }}>
+                                                        {!summary ? 'Generating executive summary...' : 'Generating comprehensive analysis...'}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* 3. Detailed analysis below summary (and shimmer) */}
+                                        {structuredAnalysis && (
+                                            <>
+                                                {structuredAnalysis["Key Insights"] && (
+                                                    <div className="analysis-section">
+                                                        <h4>Key Insights</h4>
+                                                        {renderCleanList(structuredAnalysis["Key Insights"])}
+                                                    </div>
+                                                )}
+                                                {structuredAnalysis["Potential Risks"] && (
+                                                    <div className="analysis-section">
+                                                        <h4>Potential Risks</h4>
+                                                        {renderCleanList(structuredAnalysis["Potential Risks"])}
+                                                    </div>
+                                                )}
+                                                {structuredAnalysis.Recommendations && (
+                                                    <div className="analysis-section recommendations">
+                                                        <h4>Recommendations</h4>
+                                                        {renderCleanList(structuredAnalysis.Recommendations)}
+                                                    </div>
+                                                )}
+                                            </>
+                                        )}
                                     </div>
-                                    <div style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        gap: '0.75rem',
-                                        color: 'var(--text-muted)'
-                                    }}>
-                                        <p style={{ fontSize: '0.9rem', fontWeight: 500, letterSpacing: '0.05em' }}>Thinking...</p>
-                                    </div>
-                                </div>
-                            )}
+                                )}
 
-                            {error && <p className="error-text">{error}</p>}
+                                {/* Overview mode content */}
+                                {mode === 'overview' && (
+                                    <>
+                                        {loading && (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', padding: '1rem 0' }}>
+                                                <div className="loading-shimmer">
+                                                    <div className="line" style={{ width: '90%' }}></div>
+                                                    <div className="line" style={{ width: '100%' }}></div>
+                                                    <div className="line short"></div>
+                                                </div>
+                                                <div style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    gap: '0.75rem',
+                                                    color: 'var(--text-muted)'
+                                                }}>
+                                                    <p style={{ fontSize: '0.9rem', fontWeight: 500, letterSpacing: '0.05em' }}>Generating executive summary...</p>
+                                                </div>
+                                            </div>
+                                        )}
+                                        {summary && (
+                                            <div className="analysis-text animate-fade" style={{ opacity: 0.9 }}>
+                                                <h4 style={{ color: 'var(--primary)', fontSize: '0.8rem', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.8, fontWeight: 700 }}>Summary</h4>
+                                                {renderCleanList(summary)}
+                                            </div>
+                                        )}
+                                    </>
+                                )}
 
-                            {mode === 'focused' && structuredAnalysis && (
-                                <div className="structured-analysis animate-fade">
-                                    <div className="analysis-section">
-                                        <h4>Key Insights</h4>
-                                        <p style={{ fontSize: '0.95rem', lineHeight: '1.6', color: 'var(--text-main)', whiteSpace: 'pre-line' }}>
-                                            {structuredAnalysis["Key Insights"].replace(/^[\s*•\-→]|(?:->)+/gm, '').trim()}
-                                        </p>
-                                    </div>
-
-                                    {structuredAnalysis["Potential Risks"] && (
-                                        <div className="analysis-section red-flags">
-                                            <h4>Potential Risks</h4>
-                                            <p style={{ fontSize: '0.95rem', lineHeight: '1.6', color: 'var(--text-main)', whiteSpace: 'pre-line' }}>
-                                                {structuredAnalysis["Potential Risks"].replace(/^[\s*•\-→]|(?:->)+/gm, '').trim()}
-                                            </p>
-                                        </div>
-                                    )}
-
-                                    <div className="analysis-section recommendations">
-                                        <h4>Recommendation</h4>
-                                        <p>{structuredAnalysis["Recommendations"]}</p>
-                                    </div>
-                                </div>
-                            )}
-
-                            {mode === 'overview' && summary && (
-                                <div className="analysis-text animate-fade" style={{ fontSize: '0.9rem', opacity: 0.9 }}>
-                                    {summary}
-                                </div>
-                            )}
-
-                            {!loading && !structuredAnalysis && !summary && !error && (
-                                <p className="risk-description">
-                                    Select a client to see detailed risk alignment analysis.
-                                </p>
-                            )}
+                                {!loading && !structuredAnalysis && !summary && !error && (
+                                    <p className="risk-description">
+                                        Select a client to see detailed risk alignment analysis.
+                                    </p>
+                                )}
+                            </div>
                         </div>
 
                         {mode === 'overview' && aiDisclaimerPill}
@@ -1113,319 +1253,292 @@ const Insights: React.FC<InsightsProps> = ({
 
             {/* ==================== MEETING NOTES MODE ==================== */}
             {insightsMode === 'meeting-notes' && (
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, gap: '1rem' }}>
-                    {mode === 'overview' ? (
-                        // Overview: show cached results, input form, or loading
-                        <>
-                            {!meetingNotesResult && !meetingNotesLoading && (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', flex: 1 }}>
-                                    <textarea
-                                        placeholder="Paste or type your meeting transcript here..."
-                                        value={transcript}
-                                        onChange={(e) => setTranscript(e.target.value)}
-                                        onClick={(e) => e.stopPropagation()}
-                                        onMouseDown={(e) => e.stopPropagation()}
-                                        onMouseUp={(e) => e.stopPropagation()}
-                                        style={{
-                                            width: '100%',
-                                            minHeight: '120px',
-                                            flex: 1,
-                                            padding: '0.75rem',
-                                            borderRadius: 'var(--radius-md, 12px)',
-                                            border: '1px solid var(--border)',
-                                            fontSize: '0.85rem',
-                                            fontFamily: 'inherit',
-                                            resize: 'none',
-                                            outline: 'none',
-                                            boxSizing: 'border-box',
-                                            background: '#fff',
-                                            color: 'var(--text-main)',
-                                            lineHeight: '1.6',
-                                            transition: 'border-color 0.2s',
-                                        }}
-                                        onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary)'}
-                                        onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border)'}
-                                    />
+                <div className="risk-indicator" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, gap: '0.75rem' }}>
+                    {/* Tab Switcher - always visible */}
+                    <div className="tabs-switcher animate-fade" style={{
+                        display: 'flex',
+                        width: '100%',
+                        backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                        borderRadius: '10px',
+                        padding: '3px',
+                        gap: 0
+                    }}>
+                        <button
+                            style={insightsTabButtonStyle(meetingTab === 'transcript')}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setMeetingTab('transcript');
+                            }}
+                        >
+                            Transcript
+                        </button>
+                        <button
+                            style={insightsTabButtonStyle(meetingTab === 'generated')}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setMeetingTab('generated');
+                            }}
+                        >
+                            Meeting Notes
+                        </button>
+                    </div>
+
+                    <div className="ai-analysis-content" style={{ minHeight: 0, flex: 1, position: 'relative' }}
+                        onMouseEnter={() => setMeetingOutputHovered(true)}
+                        onMouseLeave={() => setMeetingOutputHovered(false)}
+                    >
+                        {/* 1. Transcript Tab View */}
+                        {meetingTab === 'transcript' && (
+                            <div
+                                className="meeting-input-container animate-fade"
+                                style={{
+                                    position: 'relative',
+                                    height: '100%',
+                                    display: 'flex',
+                                    flexDirection: 'column'
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <textarea
+                                    placeholder="Paste or type your meeting transcript here..."
+                                    value={transcript}
+                                    onChange={(e) => setTranscript(e.target.value)}
+                                    readOnly={!!(meetingNotesSummary || meetingNotesLoading || meetingNotesResult)}
+                                    style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        flex: 1,
+                                        padding: mode === 'focused' ? '1.25rem' : '1rem',
+                                        paddingBottom: (meetingNotesSummary || meetingNotesLoading || meetingNotesResult) ? '1rem' : (mode === 'focused' ? '60px' : '50px'),
+                                        fontSize: mode === 'focused' ? '0.95rem' : '0.875rem',
+                                        fontFamily: 'inherit',
+                                        resize: 'none',
+                                        outline: 'none',
+                                        border: 'none',
+                                        background: 'transparent',
+                                        color: 'var(--text-main)',
+                                        lineHeight: '1.6',
+                                        boxSizing: 'border-box',
+                                        opacity: (meetingNotesSummary || meetingNotesLoading || meetingNotesResult) ? 0.8 : 1
+                                    }}
+                                />
+                                {!meetingNotesSummary && !meetingNotesLoading && !meetingNotesResult && (
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             e.preventDefault();
+                                            e.nativeEvent.stopImmediatePropagation();
                                             handleMeetingNotesSubmit();
                                         }}
                                         disabled={!transcript.trim() || meetingNotesLoading}
                                         style={{
-                                            padding: '8px 16px',
-                                            borderRadius: 'var(--radius-md, 12px)',
-                                            background: (!transcript.trim()) ? 'rgba(0,0,0,0.05)' : 'var(--primary)',
+                                            position: 'absolute',
+                                            bottom: mode === 'focused' ? '16px' : '12px',
+                                            right: mode === 'focused' ? '16px' : '12px',
+                                            padding: mode === 'focused' ? '10px 24px' : '6px 16px',
+                                            borderRadius: mode === 'focused' ? '10px' : '8px',
+                                            background: (!transcript.trim()) ? 'rgba(0,0,0,0.05)' : 'linear-gradient(135deg, #C5B358 0%, #B3A049 100%)',
                                             color: (!transcript.trim()) ? 'var(--text-muted)' : '#fff',
                                             border: 'none',
-                                            fontWeight: 600,
-                                            fontSize: '0.8rem',
+                                            fontWeight: 700,
+                                            fontSize: mode === 'focused' ? '0.85rem' : '0.75rem',
                                             cursor: (!transcript.trim()) ? 'not-allowed' : 'pointer',
                                             transition: 'all 0.2s',
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
-                                            gap: '6px',
-                                            alignSelf: 'flex-start',
+                                            zIndex: 5,
+                                            boxShadow: (!transcript.trim()) ? 'none' : '0 2px 8px rgba(197, 179, 88, 0.25)',
                                         }}
                                     >
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style={{ opacity: 0.9 }}>
-                                            <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" />
-                                        </svg>
-                                        Generate Notes
+                                        {meetingNotesLoading ? 'Analysing...' : 'Analyse'}
                                     </button>
-                                </div>
-                            )}
+                                )}
+                            </div>
+                        )}
 
-                            {meetingNotesLoading && (
-                                <div className="ai-analysis-content" style={{ minHeight: 0, flex: 1 }}>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', padding: '1rem 0' }}>
-                                        <div className="loading-shimmer">
-                                            <div className="line" style={{ width: '90%' }}></div>
-                                            <div className="line" style={{ width: '100%' }}></div>
-                                            <div className="line short"></div>
-                                        </div>
-                                        <div style={{
+                        {/* 2. Generated Notes Tab View */}
+                        {meetingTab === 'generated' && (
+                            <>
+                                {(meetingNotesSummary || meetingNotesResult) && (
+                                    <InlineCopyButton onClick={handleMeetingNotesCopy} isCopied={meetingNotesCopied} visible={meetingOutputHovered} />
+                                )}
+
+                                <div className="ai-analysis-scroll-area">
+                                    {meetingNotesError && <p className="error-text">{meetingNotesError}</p>}
+
+                                    {/* No content placeholder */}
+                                    {!meetingNotesSummary && !meetingNotesLoading && !meetingNotesResult && (
+                                        <div className="animate-fade" style={{
+                                            height: '100%',
                                             display: 'flex',
+                                            flexDirection: 'column',
                                             alignItems: 'center',
                                             justifyContent: 'center',
-                                            gap: '0.75rem',
-                                            color: 'var(--text-muted)'
-                                        }}>
-                                            <p style={{ fontSize: '0.9rem', fontWeight: 500, letterSpacing: '0.05em' }}>Generating meeting notes...</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {meetingNotesError && <p className="error-text">{meetingNotesError}</p>}
-
-                            {meetingNotesResult && (
-                                <div className="ai-analysis-content" style={{ minHeight: 0, flex: 1, position: 'relative' }}
-                                    onMouseEnter={() => setMeetingOutputHovered(true)}
-                                    onMouseLeave={() => setMeetingOutputHovered(false)}
-                                >
-                                    <InlineCopyButton onClick={handleMeetingNotesCopy} isCopied={meetingNotesCopied} visible={meetingOutputHovered} />
-                                    <div className="animate-fade" style={{ fontSize: '0.9rem', opacity: 0.9 }}>
-                                        <div style={{ marginBottom: '0.75rem' }}>
-                                            <span style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--primary)', fontWeight: 700, letterSpacing: '0.05em' }}>Key Takeaways</span>
-                                            <p style={{ fontSize: '0.9rem', lineHeight: '1.6', color: 'var(--text-main)', whiteSpace: 'pre-line', marginTop: '0.25rem' }}>
-                                                {meetingNotesResult["Key Takeaways"]}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: '0.5rem' }}>
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                e.preventDefault();
-                                                setMeetingNotesResult(null);
-                                                setTranscript('');
-                                                if (onCacheUpdate) onCacheUpdate({ meetingNotes: null });
-                                            }}
-                                            style={{
-                                                fontSize: '0.65rem',
-                                                color: 'var(--text-muted)',
-                                                background: 'rgba(0, 0, 0, 0.03)',
-                                                padding: '4px 10px',
-                                                borderRadius: '20px',
-                                                border: '1px solid var(--border)',
-                                                fontWeight: 700,
-                                                letterSpacing: '0.05em',
-                                                textTransform: 'uppercase',
-                                                cursor: 'pointer',
-                                                transition: 'all 0.2s ease',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '4px',
-                                            }}
-                                            onMouseOver={(e) => {
-                                                e.currentTarget.style.background = 'var(--primary-glow)';
-                                                e.currentTarget.style.color = 'var(--primary)';
-                                                e.currentTarget.style.borderColor = 'var(--primary)';
-                                            }}
-                                            onMouseOut={(e) => {
-                                                e.currentTarget.style.background = 'rgba(0, 0, 0, 0.03)';
-                                                e.currentTarget.style.color = 'var(--text-muted)';
-                                                e.currentTarget.style.borderColor = 'var(--border)';
-                                            }}
-                                        >
-                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                                <line x1="12" y1="5" x2="12" y2="19"></line>
-                                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                                            </svg>
-                                            New Transcript
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </>
-                    ) : (
-                        // Focused: full transcript input + results
-                        <>
-                            {!meetingNotesResult && !meetingNotesLoading && (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                                    <textarea
-                                        placeholder="Paste or type your meeting transcript here..."
-                                        value={transcript}
-                                        onChange={(e) => setTranscript(e.target.value)}
-                                        onClick={(e) => e.stopPropagation()}
-                                        style={{
-                                            width: '100%',
-                                            minHeight: '200px',
-                                            maxHeight: '300px',
-                                            padding: '1rem',
-                                            borderRadius: 'var(--radius-md, 12px)',
-                                            border: '1px solid var(--border)',
+                                            padding: '2rem',
+                                            textAlign: 'center',
+                                            color: 'var(--text-muted)',
                                             fontSize: '0.9rem',
-                                            fontFamily: 'inherit',
-                                            resize: 'vertical',
-                                            outline: 'none',
-                                            boxSizing: 'border-box',
-                                            background: '#fff',
-                                            color: 'var(--text-main)',
-                                            lineHeight: '1.6',
-                                            transition: 'border-color 0.2s',
-                                        }}
-                                        onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary)'}
-                                        onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border)'}
-                                    />
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            e.preventDefault();
-                                            handleMeetingNotesSubmit();
-                                        }}
-                                        disabled={!transcript.trim() || meetingNotesLoading}
-                                        style={{
-                                            padding: '10px 20px',
-                                            borderRadius: 'var(--radius-md, 12px)',
-                                            background: (!transcript.trim()) ? 'rgba(0,0,0,0.05)' : 'var(--primary)',
-                                            color: (!transcript.trim()) ? 'var(--text-muted)' : '#fff',
-                                            border: 'none',
-                                            fontWeight: 600,
-                                            fontSize: '0.85rem',
-                                            cursor: (!transcript.trim()) ? 'not-allowed' : 'pointer',
-                                            transition: 'all 0.2s',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            gap: '8px',
-                                            alignSelf: 'flex-start',
-                                        }}
-                                    >
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{ opacity: 0.9 }}>
-                                            <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" />
-                                        </svg>
-                                        Generate Notes
-                                    </button>
-                                </div>
-                            )}
-
-                            {meetingNotesLoading && (
-                                <div className="ai-analysis-content" style={{ minHeight: 0, flex: 1 }}>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', padding: '1rem 0' }}>
-                                        <div className="loading-shimmer">
-                                            <div className="line" style={{ width: '90%' }}></div>
-                                            <div className="line" style={{ width: '100%' }}></div>
-                                            <div className="line short"></div>
-                                        </div>
-                                        <div style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            gap: '0.75rem',
-                                            color: 'var(--text-muted)'
+                                            opacity: 0.8,
+                                            gap: '1rem'
                                         }}>
-                                            <p style={{ fontSize: '0.9rem', fontWeight: 500, letterSpacing: '0.05em' }}>Generating meeting notes...</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {meetingNotesError && <p className="error-text">{meetingNotesError}</p>}
-
-                            {meetingNotesResult && (
-                                <div className="ai-analysis-content" style={{ minHeight: 0, flex: 1, position: 'relative' }}
-                                    onMouseEnter={() => setMeetingOutputHovered(true)}
-                                    onMouseLeave={() => setMeetingOutputHovered(false)}
-                                >
-                                    <InlineCopyButton onClick={handleMeetingNotesCopy} isCopied={meetingNotesCopied} visible={meetingOutputHovered} />
-                                    <div className="structured-analysis animate-fade">
-                                        <div className="analysis-section">
-                                            <h4>Key Takeaways</h4>
-                                            <p style={{ fontSize: '0.95rem', lineHeight: '1.6', color: 'var(--text-main)', whiteSpace: 'pre-line' }}>
-                                                {meetingNotesResult["Key Takeaways"].replace(/^[\s*•\-→]|(?:->)+/gm, '').trim()}
-                                            </p>
-                                        </div>
-
-                                        <div className="analysis-section">
-                                            <h4>Action Items</h4>
-                                            <p style={{ fontSize: '0.95rem', lineHeight: '1.6', color: 'var(--text-main)', whiteSpace: 'pre-line' }}>
-                                                {meetingNotesResult["Action Items"].replace(/^[\s*•\-→]|(?:->)+/gm, '').trim()}
-                                            </p>
-                                        </div>
-
-                                        <div className="analysis-section recommendations">
-                                            <h4>Financial Insights</h4>
-                                            <p>{meetingNotesResult["Financial Insights"]}</p>
-                                        </div>
-                                    </div>
-
-                                    {/* New Notes button */}
-                                    <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: '1rem' }}>
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                e.preventDefault();
-                                                setMeetingNotesResult(null);
-                                                setTranscript('');
-                                                if (onCacheUpdate) onCacheUpdate({ meetingNotes: null });
-                                            }}
-                                            style={{
-                                                fontSize: '0.7rem',
-                                                color: 'var(--text-muted)',
-                                                background: 'rgba(0, 0, 0, 0.03)',
-                                                padding: '6px 14px',
-                                                borderRadius: '20px',
-                                                border: '1px solid var(--border)',
-                                                fontWeight: 700,
-                                                letterSpacing: '0.05em',
-                                                textTransform: 'uppercase',
-                                                cursor: 'pointer',
-                                                transition: 'all 0.2s ease',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '6px',
-                                            }}
-                                            onMouseOver={(e) => {
-                                                e.currentTarget.style.background = 'var(--primary-glow)';
-                                                e.currentTarget.style.color = 'var(--primary)';
-                                                e.currentTarget.style.borderColor = 'var(--primary)';
-                                            }}
-                                            onMouseOut={(e) => {
-                                                e.currentTarget.style.background = 'rgba(0, 0, 0, 0.03)';
-                                                e.currentTarget.style.color = 'var(--text-muted)';
-                                                e.currentTarget.style.borderColor = 'var(--border)';
-                                            }}
-                                        >
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                                <line x1="12" y1="5" x2="12" y2="19"></line>
-                                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.5 }}>
+                                                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                                                <polyline points="14 2 14 8 20 8"></polyline>
+                                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                                <line x1="10" y1="9" x2="8" y2="9"></line>
                                             </svg>
-                                            New Transcript
-                                        </button>
-                                    </div>
+                                            <p>No meeting notes generated yet. <br />Please submit a transcript to begin.</p>
+                                        </div>
+                                    )}
+
+                                    {/* Focused mode content */}
+                                    {mode === 'focused' && (meetingNotesSummary || meetingNotesLoading || meetingNotesResult) && (
+                                        <div className="structured-analysis animate-fade">
+                                            {/* 1. Summary always at the top */}
+                                            {meetingNotesSummary && (
+                                                <div className="analysis-section">
+                                                    <h4 style={{ color: 'var(--primary)', marginBottom: '0.75rem' }}>Summary</h4>
+                                                    {renderCleanList(meetingNotesSummary)}
+                                                </div>
+                                            )}
+
+                                            {/* 2. Loading state below summary if still generating details */}
+                                            {meetingNotesLoading && (
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', padding: '1rem 0' }}>
+                                                    <div className="loading-shimmer">
+                                                        <div className="line" style={{ width: '90%' }}></div>
+                                                        <div className="line" style={{ width: '100%' }}></div>
+                                                        <div className="line short"></div>
+                                                    </div>
+                                                    <div style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        gap: '0.75rem',
+                                                        color: 'var(--text-muted)'
+                                                    }}>
+                                                        <p style={{ fontSize: '0.9rem', fontWeight: 500, letterSpacing: '0.05em' }}>
+                                                            {!meetingNotesSummary ? 'Generating executive summary...' : 'Generating comprehensive analysis...'}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* 3. Detailed results below summary (and shimmer) */}
+                                            {meetingNotesResult && (
+                                                <>
+                                                    {meetingNotesResult["Key Takeaways"] && (
+                                                        <div className="analysis-section">
+                                                            <h4>Key Takeaways</h4>
+                                                            {renderCleanList(meetingNotesResult["Key Takeaways"])}
+                                                        </div>
+                                                    )}
+                                                    {meetingNotesResult["Action Items"] && (
+                                                        <div className="analysis-section">
+                                                            <h4>Action Items</h4>
+                                                            {renderCleanList(meetingNotesResult["Action Items"])}
+                                                        </div>
+                                                    )}
+                                                    {meetingNotesResult["Financial Insights"] && (
+                                                        <div className="analysis-section recommendations">
+                                                            <h4>Financial Insights</h4>
+                                                            {renderCleanList(meetingNotesResult["Financial Insights"])}
+                                                        </div>
+                                                    )}
+                                                </>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* Overview mode content */}
+                                    {mode === 'overview' && (meetingNotesSummary || meetingNotesLoading) && (
+                                        <div className="animate-fade">
+                                            {meetingNotesLoading && (
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', padding: '1rem 0' }}>
+                                                    <div className="loading-shimmer">
+                                                        <div className="line" style={{ width: '90%' }}></div>
+                                                        <div className="line" style={{ width: '100%' }}></div>
+                                                        <div className="line short"></div>
+                                                    </div>
+                                                    <div style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        gap: '0.75rem',
+                                                        color: 'var(--text-muted)'
+                                                    }}>
+                                                        <p style={{ fontSize: '0.9rem', fontWeight: 500, letterSpacing: '0.05em' }}>Generating executive summary...</p>
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {meetingNotesSummary && !meetingNotesLoading && (
+                                                <div className="analysis-text animate-fade" style={{ opacity: 0.9 }}>
+                                                    <h4 style={{ color: 'var(--primary)', fontSize: '0.8rem', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.8, fontWeight: 700 }}>Summary</h4>
+                                                    {renderCleanList(meetingNotesSummary)}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
-                            )}
-                        </>
-                    )}
+                            </>
+                        )}
+
+                        {/* 3. Global Reset Button (show on either tab if work has been done) */}
+                        {(meetingNotesSummary || meetingNotesResult) && !meetingNotesLoading && (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    setMeetingNotesSummary('');
+                                    setMeetingNotesResult(null);
+                                    setTranscript('');
+                                    setMeetingTab('transcript'); // Return to transcript for new input
+                                    if (onCacheUpdate) onCacheUpdate({ meetingNotes: null, meetingNotesSummary: '', meetingNotesTranscript: '' });
+                                }}
+                                style={{
+                                    position: 'absolute',
+                                    bottom: mode === 'focused' ? '12px' : '10px',
+                                    right: mode === 'focused' ? '12px' : '10px',
+                                    fontSize: '0.65rem',
+                                    color: '#fff',
+                                    background: 'linear-gradient(135deg, #C5B358 0%, #B3A049 100%)',
+                                    padding: mode === 'focused' ? '8px 20px' : '4px 10px',
+                                    borderRadius: mode === 'focused' ? '10px' : '20px',
+                                    border: 'none',
+                                    fontWeight: 700,
+                                    letterSpacing: '0.05em',
+                                    textTransform: 'uppercase',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: mode === 'focused' ? '6px' : '4px',
+                                    zIndex: 10,
+                                    boxShadow: mode === 'focused' ? '0 3px 12px rgba(197, 179, 88, 0.3)' : '0 2px 8px rgba(197, 179, 88, 0.25)',
+                                }}
+                            >
+                                <svg width={mode === 'focused' ? '12' : '10'} height={mode === 'focused' ? '12' : '10'} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                New Transcript
+                            </button>
+                        )}
+                    </div>
+                    {mode === 'overview' && aiDisclaimerPill}
                 </div>
             )}
 
+            {insightsMode === 'meeting-notes' && mode === 'focused' && aiDisclaimerPill}
+
             <RiskLevelInfoModal isOpen={isInfoModalOpen} onClose={() => setIsInfoModalOpen(false)} />
-            <AIInfoModal isOpen={isAIModalOpen} onClose={() => setIsAIModalOpen(false)} />
+            <AIInfoModal
+                isOpen={isAIModalOpen}
+                onClose={() => setIsAIModalOpen(false)}
+                isMeetingNotes={insightsMode === 'meeting-notes'}
+            />
             <AIFeedbackModal
                 isOpen={isFeedbackModalOpen}
                 onClose={handleCloseFeedbackModal}
@@ -1437,6 +1550,7 @@ const Insights: React.FC<InsightsProps> = ({
                 submitted={feedbackSubmitted}
                 onSubmit={handleFeedbackSubmit}
                 error={feedbackError}
+                isMeetingNotes={insightsMode === 'meeting-notes'}
             />
         </section>
     );

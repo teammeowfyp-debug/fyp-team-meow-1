@@ -23,6 +23,8 @@ const Dashboard: React.FC = () => {
         overview?: string;
         focused?: any;
         meetingNotes?: any;
+        meetingNotesSummary?: string;
+        meetingNotesTranscript?: string;
     }>>({});
     const [absoluteBounds, setAbsoluteBounds] = useState<{ start: string; end: string } | null>(null);
     const [showPdfImport, setShowPdfImport] = useState(false);
@@ -45,6 +47,22 @@ const Dashboard: React.FC = () => {
             setStartDate(newEnd);
         }
     };
+
+    // Clear Insights cache for the current client when the date range changes
+    // This allows re-analysis for the new time context
+    useEffect(() => {
+        if (!clientId) return;
+        setRiskAnalysisCache(prev => {
+            const clientCache = prev[clientId];
+            if (!clientCache) return prev;
+
+            // Only clear the cache if we have one for this specific client
+            return {
+                ...prev,
+                [clientId]: {} // Reset the cache object for this client
+            };
+        });
+    }, [startDate, endDate, clientId]);
 
     useEffect(() => {
         const fetchClientData = async () => {
@@ -257,7 +275,11 @@ const Dashboard: React.FC = () => {
             <Link to={`/${clientId}/plans`} className="quadrant-link">
                 <PlansHeld client={client} mode="overview" dateRange={dateRange} />
             </Link>
-            <Link to={`/${clientId}/risk`} className="quadrant-link">
+            <div
+                onClick={() => navigate(`/${clientId}/risk`)}
+                className="quadrant-link"
+                style={{ cursor: 'pointer', textDecoration: 'none' }}
+            >
                 <Insights
                     clientId={clientId}
                     client={client}
@@ -268,7 +290,7 @@ const Dashboard: React.FC = () => {
                     insightsMode={insightsMode}
                     onInsightsModeChange={setInsightsMode}
                 />
-            </Link>
+            </div>
         </main>
     );
 

@@ -48,6 +48,11 @@ export async function* generateMeetingNotes(params: MeetingNotesParams) {
   yield* baseGenerateStream(params, '/ai/meeting-notes');
 }
 
+export async function* generateMeetingSummary(params: MeetingNotesParams) {
+  yield* baseGenerateStream(params, '/ai/meeting-summary');
+}
+
+
 export async function submitAIFeedback(payload: {
 
   client_id: string;

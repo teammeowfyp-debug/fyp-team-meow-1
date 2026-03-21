@@ -377,7 +377,7 @@ const PlansHeld: React.FC<PlansHeldProps> = ({ client, mode = 'overview', dateRa
                 </div>
 
                 {mode === 'focused' && (
-                    <div className="filter-bar animate-fade">
+                    <div className="filter-bar">
                         <CustomSelect
                             label="Asset Class"
                             value={assetFilter}
@@ -418,8 +418,8 @@ const PlansHeld: React.FC<PlansHeldProps> = ({ client, mode = 'overview', dateRa
                     </div>
                 )}
 
-                <div className="plans-table-container">
-                    <table className={`plans-table ${mode === 'focused' ? 'interactive' : ''}`}>
+                <div className="plans-header-container">
+                    <table className="plans-table">
                         <thead>
                             <tr>
                                 <th>Plan Name</th>
@@ -429,6 +429,11 @@ const PlansHeld: React.FC<PlansHeldProps> = ({ client, mode = 'overview', dateRa
                                 <th>Status</th>
                             </tr>
                         </thead>
+                    </table>
+                </div>
+
+                <div className="plans-body-container">
+                    <table className={`plans-table ${mode === 'focused' ? 'interactive' : ''}`}>
                         <tbody>
                             {filteredPlans.map((plan: any, index: number) => {
                                 const status = plan.status;
