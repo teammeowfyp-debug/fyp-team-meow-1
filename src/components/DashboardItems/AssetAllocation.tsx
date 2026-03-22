@@ -19,9 +19,10 @@ interface AssetAllocationProps {
     client?: any;
     mode?: 'overview' | 'focused';
     dateRange?: { startDate: string; endDate: string };
+    isExporting?: boolean;
 }
 
-const AssetAllocation: React.FC<AssetAllocationProps> = ({ client, mode = 'overview', dateRange }) => {
+const AssetAllocation: React.FC<AssetAllocationProps> = ({ client, mode = 'overview', dateRange, isExporting = false }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedSnapshot, setSelectedSnapshot] = useState<any>(null);
     const [activeCategory, setActiveCategory] = useState<string | null>(null);
@@ -234,6 +235,7 @@ const AssetAllocation: React.FC<AssetAllocationProps> = ({ client, mode = 'overv
                                     stackId="a"
                                     fill={ALLOCATION_COLORS[cls] || FALLBACK_COLORS[i % FALLBACK_COLORS.length]}
                                     radius={i === assetClasses.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]}
+                                    isAnimationActive={!isExporting}
                                 />
                             ))}
                         </BarChart>

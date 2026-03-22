@@ -159,6 +159,10 @@ const Dashboard: React.FC = () => {
                 onSetMaxRange={handleSetMaxRange}
                 absoluteBounds={absoluteBounds}
                 onImportPdf={() => setShowPdfImport(true)}
+                cache={clientId ? riskAnalysisCache[clientId] : null}
+                dashboardStartDate={startDate}
+                dashboardEndDate={endDate}
+                onFocusQuadrant={(quadId) => navigate(`/${clientId}/${quadId}`)}
             />
             {isFocused ? (
                 <main className="focused-view">

@@ -42,6 +42,12 @@ export const RiskAnalysis: React.FC<InsightsProps> = ({
     const [isAIModalOpen, setIsAIModalOpen] = useState<boolean>(false);
     const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState<boolean>(false);
     const [riskOutputHovered, setRiskOutputHovered] = useState(false);
+    const [hasInitiated, setHasInitiated] = useState(false);
+
+    useEffect(() => {
+        const isCacheEmpty = !cache || Object.keys(cache).length === 0;
+        setHasInitiated(!isCacheEmpty);
+    }, [client?.client_id, dateRange?.startDate, dateRange?.endDate]);
 
     useEffect(() => {
         if (!client) return;
@@ -54,6 +60,8 @@ export const RiskAnalysis: React.FC<InsightsProps> = ({
             if (cache?.overview) setSummary(cache.overview);
             if (cache?.focused) setStructuredAnalysis(cache.focused);
         }
+
+        if (!hasInitiated) return;
 
         const fetchSummary = async () => {
             if (cache?.overview) {
@@ -104,11 +112,12 @@ export const RiskAnalysis: React.FC<InsightsProps> = ({
         };
 
         fetchSummary();
-    }, [client, dateRange?.endDate, cache]);
+    }, [client, dateRange?.endDate, cache, hasInitiated]);
 
     useEffect(() => {
         if (mode !== 'focused') return;
         if (!client || !summary || structuredAnalysis || loading) return;
+        if (!hasInitiated) return;
 
         const generateFullAnalysis = async () => {
             setLoading(true);
@@ -132,7 +141,7 @@ export const RiskAnalysis: React.FC<InsightsProps> = ({
         };
 
         generateFullAnalysis();
-    }, [mode, summary, structuredAnalysis, client]);
+    }, [mode, summary, structuredAnalysis, client, hasInitiated, loading]);
 
     const onCopyClicked = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -324,10 +333,34 @@ export const RiskAnalysis: React.FC<InsightsProps> = ({
                             </>
                         )}
 
-                        {!loading && !structuredAnalysis && !summary && !error && (
-                            <p className="risk-description">
-                                Select a client to see detailed risk alignment analysis.
-                            </p>
+                        {!hasInitiated && !loading && !error && (
+                            <div className="animate-fade" style={{
+                                height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                                padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem', opacity: 0.8, gap: '0.5rem'
+                            }}>
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.5 }}>
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <circle cx="12" cy="12" r="6"></circle>
+                                    <circle cx="12" cy="12" r="2"></circle>
+                                </svg>
+                                <p>Click below to analyse the client's risk alignment.</p>
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); setHasInitiated(true); }}
+                                    style={{
+                                        padding: '10px 24px', borderRadius: '10px',
+                                        background: 'linear-gradient(135deg, #C5B358 0%, #B3A049 100%)',
+                                        color: '#fff', border: 'none', fontWeight: 700,
+                                        fontSize: '0.85rem', cursor: 'pointer',
+                                        transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        boxShadow: '0 2px 8px rgba(197, 179, 88, 0.25)',
+                                        marginTop: '0.5rem'
+                                    }}
+                                    onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                                    onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                                >
+                                    Generate Analysis
+                                </button>
+                            </div>
                         )}
                     </div>
                 </div>

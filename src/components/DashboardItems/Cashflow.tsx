@@ -7,9 +7,10 @@ interface CashflowProps {
     client?: any;
     mode?: 'overview' | 'focused';
     dateRange?: { startDate: string; endDate: string };
+    isExporting?: boolean;
 }
 
-const Cashflow: React.FC<CashflowProps> = ({ client, mode = 'overview', dateRange }) => {
+const Cashflow: React.FC<CashflowProps> = ({ client, mode = 'overview', dateRange, isExporting = false }) => {
     // State to track which lines are visible
     const [visibleLines, setVisibleLines] = useState<Record<string, boolean>>({
         inflow: true,
@@ -139,11 +140,11 @@ const Cashflow: React.FC<CashflowProps> = ({ client, mode = 'overview', dateRang
 
                                         return (
                                             <>
-                                                {visibleLines.inflow && <Line type="monotone" dataKey="inflow" stroke="#719266" strokeWidth={1.5} dot={dotStyle} activeDot={activeDotStyle} animationDuration={800} />}
-                                                {visibleLines.expense && <Line type="monotone" dataKey="expense" stroke="#9B2226" strokeWidth={1.5} dot={dotStyle} activeDot={activeDotStyle} animationDuration={800} />}
-                                                {visibleLines.wealthTransfers && <Line type="monotone" dataKey="wealthTransfers" stroke="#3C5A82" strokeWidth={1.5} dot={dotStyle} activeDot={activeDotStyle} animationDuration={800} />}
-                                                {visibleLines.netSurplus && <Line type="monotone" dataKey="netSurplus" stroke="#BC6C25" strokeWidth={1.5} dot={dotStyle} activeDot={activeDotStyle} animationDuration={800} />}
-                                                {visibleLines.netCashflow && <Line type="monotone" dataKey="netCashflow" stroke="#C5B358" strokeWidth={1.5} dot={dotStyle} activeDot={activeDotStyle} animationDuration={800} />}
+                                                {visibleLines.inflow && <Line type="monotone" dataKey="inflow" stroke="#719266" strokeWidth={1.5} dot={dotStyle} activeDot={activeDotStyle} isAnimationActive={!isExporting} animationDuration={800} />}
+                                                {visibleLines.expense && <Line type="monotone" dataKey="expense" stroke="#9B2226" strokeWidth={1.5} dot={dotStyle} activeDot={activeDotStyle} isAnimationActive={!isExporting} animationDuration={800} />}
+                                                {visibleLines.wealthTransfers && <Line type="monotone" dataKey="wealthTransfers" stroke="#3C5A82" strokeWidth={1.5} dot={dotStyle} activeDot={activeDotStyle} isAnimationActive={!isExporting} animationDuration={800} />}
+                                                {visibleLines.netSurplus && <Line type="monotone" dataKey="netSurplus" stroke="#BC6C25" strokeWidth={1.5} dot={dotStyle} activeDot={activeDotStyle} isAnimationActive={!isExporting} animationDuration={800} />}
+                                                {visibleLines.netCashflow && <Line type="monotone" dataKey="netCashflow" stroke="#C5B358" strokeWidth={1.5} dot={dotStyle} activeDot={activeDotStyle} isAnimationActive={!isExporting} animationDuration={800} />}
                                             </>
                                         );
                                     })()}

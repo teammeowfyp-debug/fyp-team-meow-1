@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import '../Dashboard.css';
 import { FocusModal } from '../UI/FocusModal';
 import { PdfImport } from './PdfImport';
+import ExportReportModal from './ExportReportModal';
 
 interface ClientDetailModalProps {
     client: any;
@@ -301,6 +302,10 @@ interface ClientHeaderProps {
     onSetMaxRange: () => void;
     absoluteBounds: { start: string; end: string } | null;
     onImportPdf?: () => void;
+    cache?: any;
+    dashboardStartDate?: string;
+    dashboardEndDate?: string;
+    onFocusQuadrant?: (quadId: string) => void;
 }
 
 const ClientHeader: React.FC<ClientHeaderProps> = ({
@@ -313,9 +318,14 @@ const ClientHeader: React.FC<ClientHeaderProps> = ({
     onEndDateChange,
     onSetMaxRange,
     absoluteBounds,
-    onImportPdf
+    onImportPdf,
+    cache,
+    dashboardStartDate,
+    dashboardEndDate,
+    onFocusQuadrant
 }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
     if (!client) return null;
 
@@ -357,7 +367,15 @@ const ClientHeader: React.FC<ClientHeaderProps> = ({
                     <div className="client-avatar">{initials}</div>
                     <div className="client-details">
                         <h1 style={{ fontSize: '1.5rem', margin: 0 }}>{client.full_name}</h1>
-                        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>Click for profile details</p>
+                        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem', fontWeight: 500 }}>
+                            <span style={{ opacity: 0.8 }}>Last Updated:</span> <span style={{ color: 'var(--secondary)' }}>{client.last_updated ? new Date(client.last_updated).toLocaleDateString('en-SG', {
+                                day: '2-digit',
+                                month: 'short',
+                                year: 'numeric'
+                            }) : 'Never'}</span>
+                            <span style={{ margin: '0 8px', opacity: 0.3 }}>|</span>
+                            <span style={{ opacity: 0.8 }}>Click for profile details</span>
+                        </p>
                     </div>
                 </div>
 
@@ -512,16 +530,45 @@ const ClientHeader: React.FC<ClientHeaderProps> = ({
                 </div>
 
                 <div className="header-stats" style={{ flex: '0 0 auto' }}>
-                    <div className="stat-group align-end">
-                        <span className="label">Last Updated</span>
-                        <span className="value" style={{ fontSize: '0.9rem' }}>
-                            {client.last_updated ? new Date(client.last_updated).toLocaleDateString('en-SG', {
-                                day: '2-digit',
-                                month: 'short',
-                                year: 'numeric'
-                            }) : 'Never'}
-                        </span>
-                    </div>
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setIsExportModalOpen(true);
+                        }}
+                        style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: '6px 14px',
+                            background: 'var(--primary)',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '8px',
+                            fontSize: '0.8rem',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            boxShadow: '0 2px 8px rgba(197, 179, 88, 0.2)',
+                            transition: 'all 0.2s',
+                            letterSpacing: '0.02em',
+                            marginLeft: '1rem',
+                            gap: '6px'
+                        }}
+                        onMouseOver={(e) => {
+                            e.currentTarget.style.transform = 'translateY(-1px)';
+                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(197, 179, 88, 0.3)';
+                        }}
+                        onMouseOut={(e) => {
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow = '0 2px 8px rgba(197, 179, 88, 0.2)';
+                        }}
+                    >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        Export Report
+                    </button>
                 </div>
             </header>
 
@@ -530,6 +577,19 @@ const ClientHeader: React.FC<ClientHeaderProps> = ({
                     client={client}
                     onClose={() => setIsModalOpen(false)}
                     onUpdate={onImportPdf}
+                />
+            )}
+            
+            {isExportModalOpen && (
+                <ExportReportModal
+                    client={client}
+                    startDate={startDate}
+                    endDate={endDate}
+                    dashboardStartDate={dashboardStartDate || startDate}
+                    dashboardEndDate={dashboardEndDate || endDate}
+                    cache={cache}
+                    onClose={() => setIsExportModalOpen(false)}
+                    onFocusQuadrant={onFocusQuadrant}
                 />
             )}
         </>
