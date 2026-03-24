@@ -1,6 +1,20 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { normalizeExtractedData, handleDatabaseError } from '../lib/pdfImport';
 import type { PdfExtractedData } from '../lib/pdfImport';
+
+// Mock the Supabase client to prevent actual initialization and CI errors
+vi.mock('../lib/supabaseClient', () => ({
+    supabase: {
+        from: vi.fn().mockReturnThis(), // Return this to allow chaining like .select() or .insert()
+        select: vi.fn().mockReturnThis(),
+        insert: vi.fn().mockReturnThis(),
+        update: vi.fn().mockReturnThis(),
+        delete: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: null, error: null }),
+        maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+    },
+}));
 
 describe('normalizeExtractedData', () => {
     it('normalizes common family relationship aliases', () => {
