@@ -44,18 +44,17 @@ const CLIENT_FIELDS: Array<keyof PdfExtractedData['client']> = [
   'risk_profile',
 ];
 
-const INFLOW_FIELDS: string[] = [
-  'employment_income_gross', 'rental_income', 'investment_income'
+const MANDATORY_CLIENT_FIELDS = [
+  'name_as_per_id', 'gender', 'marital_status', 'smoker_status',
+  'race', 'nationality', 'singapore_pr', 'id_type', 'employment_status', 'id_no'
 ];
 
-const OUTFLOW_FIELDS: string[] = [
-  'household_expenses', 'property_loan_repayment', 'property_expenses',
-  'income_tax', 'insurance_premiums', 'non_property_loan_repayment', 'regular_investments'
-];
+const FAMILY_FIELDS = ['family_member_name', 'relationship', 'gender', 'date_of_birth', 'age'];
+const INFLOW_FIELDS = ['employment_income_gross', 'rental_income', 'investment_income', 'cpf_contribution_total'];
+const OUTFLOW_FIELDS = ['household_expenses', 'income_tax', 'insurance_premiums', 'property_expenses', 'property_loan_repayment', 'non_property_loan_repayment', 'regular_investments', 'wealth_transfers'];
+const INSURANCE_FIELDS = ['policy_name', 'policy_type', 'life_assured', 'sum_assured', 'premium_amount', 'payment_frequency', 'payment_term', 'benefit_type', 'start_date', 'expiry_date', 'status'];
+const INVESTMENT_FIELDS = ['policy_name', 'policy_type', 'initial_investment', 'contribution_amount', 'contribution_frequency', 'start_date', 'status'];
 
-const SUPPLEMENTARY_FIELDS: string[] = [
-  'cpf_contribution_total'
-];
 
 const ENUMS = {
   gender: ['Male', 'Female'],
@@ -68,13 +67,15 @@ const ENUMS = {
   employment_status: ['Full-time', 'Part-time', 'Contract', 'Self-employed', 'Freelance', 'Student', 'Unemployed', 'Retired'],
   address_type: ['Local', 'Overseas'],
   risk_profile: ['Level 1', 'Level 2', 'Level 3', 'Level 4'],
-  qualification: ['Primary', 'Secondary', 'Diploma', 'Degree', 'Masters', 'PhD', 'Others'],
+  investment_policy_type: ['Equity', 'Fixed Income', 'Cash'],
+  qualification: ['Primary', 'Secondary', 'Diploma', 'Degree & Above', 'Post-Graduate', 'Others'],
   nationality: ['Singaporean', 'Malaysian', 'Indonesian', 'Indian', 'Chinese', 'British', 'American', 'Australian', 'Others'],
   languages: ['English', 'Mandarin', 'Malay', 'Tamil', 'Hindi', 'Others'],
   relationship: ['Spouse', 'Child', 'Parent'],
   policy_type: ['Life Insurance', 'Health Insurance', 'General Insurance'],
   investment_type: ['Equity', 'Fixed Income', 'Cash', 'Bonds'],
   payment_frequency: ['Monthly', 'Quarterly', 'Semi-Annual', 'Annual'],
+  contribution_frequency: ['Monthly', 'Quarterly', 'Semi-Annual', 'Annual'],
   status: ['Pending', 'Active', 'Lapsed', 'Matured', 'Settled', 'Void']
 };
 
@@ -91,7 +92,7 @@ export const PdfImport: React.FC<PdfImportProps> = ({ clientId, onSuccess, onClo
   const [isNewClient, setIsNewClient] = useState(!clientId);
 
   // Selected sections for writing
-  const [includeClient, setIncludeClient] = useState(true);
+  const [includeClient] = useState(true);
   const [includedClientFields, setIncludedClientFields] = useState<Set<string>>(new Set());
   const [includeFamily, setIncludeFamily] = useState(true);
   const [includeCashflow, setIncludeCashflow] = useState(true);
@@ -131,12 +132,11 @@ export const PdfImport: React.FC<PdfImportProps> = ({ clientId, onSuccess, onClo
       setStep('review');
       setIsNewClient(true);
 
-      // Pre-select mandatory fields for new client
-      const MANDATORY_CLIENT_FIELDS = [
-        'name_as_per_id', 'gender', 'marital_status', 'smoker_status',
-        'race', 'nationality', 'singapore_pr', 'id_type', 'employment_status'
+      // Pre-select all client fields for new client
+      const ALL_CLIENT_FIELDS = [
+        ...CLIENT_FIELDS
       ];
-      setIncludedClientFields(new Set(MANDATORY_CLIENT_FIELDS.map(f => `client.${f}`)));
+      setIncludedClientFields(new Set(ALL_CLIENT_FIELDS.map(f => `client.${f}`)));
     }
   }, [clientId]);
 
@@ -199,26 +199,12 @@ export const PdfImport: React.FC<PdfImportProps> = ({ clientId, onSuccess, onClo
       }
       setExtracted(data);
 
-      // Initialize fields where AI found something OR mandatory DB fields
-      const autoIncluded = new Set<string>();
-      const MANDATORY_CLIENT_FIELDS = [
-        'name_as_per_id', 'gender', 'marital_status', 'smoker_status',
-        'race', 'nationality', 'singapore_pr', 'id_type', 'employment_status'
-      ];
+      // Initialize all client fields
+      const allFields = new Set<string>();
       CLIENT_FIELDS.forEach(f => {
-        const rawVal = rawData.client[f as keyof typeof rawData.client];
-        const hasSomething = rawVal !== null && rawVal !== undefined && rawVal !== '';
-        if (hasSomething || MANDATORY_CLIENT_FIELDS.includes(f)) {
-          autoIncluded.add(`client.${f}`);
-        }
+        allFields.add(`client.${f}`);
       });
-      setIncludedClientFields(autoIncluded);
-
-      // Initialize sections
-      setIncludeFamily(data.family?.length > 0);
-      setIncludeInsurance(data.insurance_plans?.length > 0);
-      setIncludeInvestments(data.investments?.length > 0);
-      setIncludeCashflow(!!data.cashflow || true); // Always offer cashflow if they want it
+      setIncludedClientFields(allFields);
 
       setErrorFields(new Set());
 
@@ -274,21 +260,19 @@ export const PdfImport: React.FC<PdfImportProps> = ({ clientId, onSuccess, onClo
       if (includeInsurance) selectedFields.add('insurance');
       if (includeInvestments) selectedFields.add('investments');
 
-      // Validation: "don't allow blanks" for included fields
+      // Validation: "don't allow blanks" for mandatory fields
       if (includeClient) {
         const errors = new Set<string>();
-        for (const f of CLIENT_FIELDS) {
+        for (const f of MANDATORY_CLIENT_FIELDS) {
           const key = `client.${f}`;
-          if (includedClientFields.has(key)) {
-            const val = extracted.client[f];
-            if (val === null || val === undefined || val === '') {
-              errors.add(key);
-            }
+          const val = extracted.client[f as keyof PdfExtractedData['client']];
+          if (val === null || val === undefined || val === '') {
+            errors.add(key);
           }
         }
         if (errors.size > 0) {
           setErrorFields(errors);
-          throw new Error(`Some included fields are blank. They have been highlighted in red. Please fill them or uncheck to exclude.`);
+          throw new Error(`Mandatory fields are blank. They have been highlighted in red. Please fill them before proceeding.`);
         }
       }
 
@@ -400,65 +384,109 @@ export const PdfImport: React.FC<PdfImportProps> = ({ clientId, onSuccess, onClo
     });
   };
 
-  const handleFamilyMemberChange = (index: number, field: string, newVal: any) => {
+  const handleFamilyMemberChange = (index: number, field: string, value: any) => {
+    setExtracted(prev => {
+      if (!prev) return prev;
+      const newList = [...(prev.family || [])];
+      newList[index] = { ...newList[index], [field]: value };
+      return { ...prev, family: newList };
+    });
     setErrorFields(prev => {
       const next = new Set(prev);
       next.delete(`family.${index}.${field}`);
       return next;
     });
-    setExtracted(prev => {
-      if (!prev) return prev;
-      const nextFamily = [...prev.family];
-      nextFamily[index] = { ...nextFamily[index], [field]: newVal };
-      return { ...prev, family: nextFamily };
-    });
   };
 
-  const handleCashflowChange = (field: string, newVal: any) => {
-    setErrorFields(prev => {
-      const next = new Set(prev);
-      next.delete(`cashflow.${field}`);
-      return next;
-    });
+  const addFamilyMember = () => {
     setExtracted(prev => {
-      if (!prev || !prev.cashflow) return prev;
+      if (!prev) return prev;
       return {
         ...prev,
-        cashflow: {
-          ...prev.cashflow,
-          [field]: newVal,
-        },
+        family: [...(prev.family || []), { family_member_name: '', relationship: '', gender: 'Male' }]
       };
     });
   };
 
-  const handleInsurancePlanChange = (index: number, field: string, newVal: any) => {
+  const removeFamilyMember = (index: number) => {
+    setExtracted(prev => {
+      if (!prev) return prev;
+      return { ...prev, family: prev.family.filter((_, i) => i !== index) };
+    });
+  };
+
+  const handleCashflowChange = (field: string, value: any) => {
+    setExtracted(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        cashflow: { ...prev.cashflow, [field]: value }
+      };
+    });
+  };
+
+  const handleInsurancePlanChange = (index: number, field: string, value: any) => {
+    setExtracted(prev => {
+      if (!prev) return prev;
+      const newList = [...(prev.insurance_plans || [])];
+      newList[index] = { ...newList[index], [field]: value };
+      return { ...prev, insurance_plans: newList };
+    });
     setErrorFields(prev => {
       const next = new Set(prev);
       next.delete(`insurance.${index}.${field}`);
       return next;
     });
+  };
+
+  const addInsurancePlan = () => {
     setExtracted(prev => {
       if (!prev) return prev;
-      const nextInsurance = [...prev.insurance_plans];
-      nextInsurance[index] = { ...nextInsurance[index], [field]: newVal };
-      return { ...prev, insurance_plans: nextInsurance };
+      return {
+        ...prev,
+        insurance_plans: [...(prev.insurance_plans || []), { policy_name: '', policy_type: 'Life Insurance', status: 'Active' }]
+      };
     });
   };
 
-  const handleInvestmentChange = (index: number, field: string, newVal: any) => {
+  const removeInsurancePlan = (index: number) => {
+    setExtracted(prev => {
+      if (!prev) return prev;
+      return { ...prev, insurance_plans: prev.insurance_plans.filter((_, i) => i !== index) };
+    });
+  };
+
+  const handleInvestmentChange = (index: number, field: string, value: any) => {
+    setExtracted(prev => {
+      if (!prev) return prev;
+      const newList = [...(prev.investments || [])];
+      newList[index] = { ...newList[index], [field]: value };
+      return { ...prev, investments: newList };
+    });
     setErrorFields(prev => {
       const next = new Set(prev);
       next.delete(`investments.${index}.${field}`);
       return next;
     });
+  };
+
+  const addInvestment = () => {
     setExtracted(prev => {
       if (!prev) return prev;
-      const nextInvestments = [...prev.investments];
-      nextInvestments[index] = { ...nextInvestments[index], [field]: newVal };
-      return { ...prev, investments: nextInvestments };
+      return {
+        ...prev,
+        investments: [...(prev.investments || []), { policy_name: '', policy_type: 'Equity', status: 'Pending' }]
+      };
     });
   };
+
+  const removeInvestment = (index: number) => {
+    setExtracted(prev => {
+      if (!prev) return prev;
+      return { ...prev, investments: prev.investments.filter((_, i) => i !== index) };
+    });
+  };
+
 
   const modalContent = (
     <>
@@ -633,8 +661,9 @@ export const PdfImport: React.FC<PdfImportProps> = ({ clientId, onSuccess, onClo
             {/* Client Details section - Grouped */}
             <Section
               title="Client Information"
-              enabled={includeClient}
-              onToggle={() => setIncludeClient(v => !v)}
+              enabled={true}
+              onToggle={() => {}}
+              hideCheckbox
             >
               <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                 {/* Basic Group */}
@@ -642,7 +671,18 @@ export const PdfImport: React.FC<PdfImportProps> = ({ clientId, onSuccess, onClo
                   <h4 style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '1rem', borderBottom: '1px solid var(--border)', paddingBottom: '4px' }}>Basic Details</h4>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem 1.5rem' }}>
                     {['name_as_per_id', 'id_type', 'id_no', 'title', 'gender', 'date_of_birth', 'age', 'nationality', 'singapore_pr'].map(field => (
-                      <FieldRow key={field} field={field as any} extracted={extracted} includedClientFields={includedClientFields} toggleClientField={toggleClientField} handleClientFieldChange={handleClientFieldChange} includeClient={includeClient} existingClient={existingClient} errorFields={errorFields} isNewClient={isNewClient} />
+                      <FieldRow 
+                        key={field} 
+                        field={field as any} 
+                        extracted={extracted} 
+                        includedClientFields={includedClientFields} 
+                        toggleClientField={toggleClientField} 
+                        handleClientFieldChange={handleClientFieldChange} 
+                        includeClient={true} 
+                        existingClient={existingClient} 
+                        errorFields={errorFields} 
+                        isNewClient={isNewClient} 
+                      />
                     ))}
                   </div>
                 </div>
@@ -652,7 +692,18 @@ export const PdfImport: React.FC<PdfImportProps> = ({ clientId, onSuccess, onClo
                   <h4 style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '1rem', borderBottom: '1px solid var(--border)', paddingBottom: '4px' }}>Personal Profile</h4>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem 1.5rem' }}>
                     {['marital_status', 'smoker_status', 'race', 'qualification', 'languages_spoken', 'languages_written', 'risk_profile'].map(field => (
-                      <FieldRow key={field} field={field as any} extracted={extracted} includedClientFields={includedClientFields} toggleClientField={toggleClientField} handleClientFieldChange={handleClientFieldChange} includeClient={includeClient} existingClient={existingClient} errorFields={errorFields} isNewClient={isNewClient} />
+                      <FieldRow 
+                        key={field} 
+                        field={field as any} 
+                        extracted={extracted} 
+                        includedClientFields={includedClientFields} 
+                        toggleClientField={toggleClientField} 
+                        handleClientFieldChange={handleClientFieldChange} 
+                        includeClient={true} 
+                        existingClient={existingClient} 
+                        errorFields={errorFields} 
+                        isNewClient={isNewClient} 
+                      />
                     ))}
                   </div>
                 </div>
@@ -662,7 +713,18 @@ export const PdfImport: React.FC<PdfImportProps> = ({ clientId, onSuccess, onClo
                   <h4 style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '1rem', borderBottom: '1px solid var(--border)', paddingBottom: '4px' }}>Contact Information</h4>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem 1.5rem' }}>
                     {['email', 'mobile_no', 'home_no', 'office_no'].map(field => (
-                      <FieldRow key={field} field={field as any} extracted={extracted} includedClientFields={includedClientFields} toggleClientField={toggleClientField} handleClientFieldChange={handleClientFieldChange} includeClient={includeClient} existingClient={existingClient} errorFields={errorFields} isNewClient={isNewClient} />
+                      <FieldRow 
+                        key={field} 
+                        field={field as any} 
+                        extracted={extracted} 
+                        includedClientFields={includedClientFields} 
+                        toggleClientField={toggleClientField} 
+                        handleClientFieldChange={handleClientFieldChange} 
+                        includeClient={true} 
+                        existingClient={existingClient} 
+                        errorFields={errorFields} 
+                        isNewClient={isNewClient} 
+                      />
                     ))}
                   </div>
                 </div>
@@ -672,7 +734,18 @@ export const PdfImport: React.FC<PdfImportProps> = ({ clientId, onSuccess, onClo
                   <h4 style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '1rem', borderBottom: '1px solid var(--border)', paddingBottom: '4px' }}>Employment Details</h4>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem 1.5rem' }}>
                     {['employment_status', 'occupation'].map(field => (
-                      <FieldRow key={field} field={field as any} extracted={extracted} includedClientFields={includedClientFields} toggleClientField={toggleClientField} handleClientFieldChange={handleClientFieldChange} includeClient={includeClient} existingClient={existingClient} errorFields={errorFields} isNewClient={isNewClient} />
+                      <FieldRow 
+                        key={field} 
+                        field={field as any} 
+                        extracted={extracted} 
+                        includedClientFields={includedClientFields} 
+                        toggleClientField={toggleClientField} 
+                        handleClientFieldChange={handleClientFieldChange} 
+                        includeClient={true} 
+                        existingClient={existingClient} 
+                        errorFields={errorFields} 
+                        isNewClient={isNewClient} 
+                      />
                     ))}
                   </div>
                 </div>
@@ -682,343 +755,162 @@ export const PdfImport: React.FC<PdfImportProps> = ({ clientId, onSuccess, onClo
                   <h4 style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '1rem', borderBottom: '1px solid var(--border)', paddingBottom: '4px' }}>Residential Address</h4>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem 1.5rem' }}>
                     {['address_type', 'postal_district', 'house_block_no', 'street_name', 'building_name', 'unit_no'].map(field => (
-                      <FieldRow key={field} field={field as any} extracted={extracted} includedClientFields={includedClientFields} toggleClientField={toggleClientField} handleClientFieldChange={handleClientFieldChange} includeClient={includeClient} existingClient={existingClient} errorFields={errorFields} isNewClient={isNewClient} />
+                      <FieldRow 
+                        key={field} 
+                        field={field as any} 
+                        extracted={extracted} 
+                        includedClientFields={includedClientFields} 
+                        toggleClientField={toggleClientField} 
+                        handleClientFieldChange={handleClientFieldChange} 
+                        includeClient={true} 
+                        existingClient={existingClient} 
+                        errorFields={errorFields} 
+                        isNewClient={isNewClient} 
+                      />
                     ))}
                   </div>
                 </div>
               </div>
             </Section>
 
-            {/* Family section */}
-            {extracted.family?.length > 0 && (
-              <Section
-                title={`Family Members (${extracted.family.length})`}
-                enabled={includeFamily}
-                onToggle={() => setIncludeFamily(v => !v)}
-              >
-                {extracted.family.map((m, i) => (
-                  <div key={i} style={{
-                    padding: '0.75rem', borderRadius: '10px',
-                    background: 'rgba(0,0,0,0.02)', border: '1px solid var(--border, #eee)',
-                    marginBottom: '0.5rem',
-                  }}>
-                    <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                      <EditableSmallField
-                        label="Name"
-                        val={m.family_member_name}
-                        onChange={v => handleFamilyMemberChange(i, 'family_member_name', v)}
-                        disabled={!includeFamily}
-                        error={errorFields.has(`family.${i}.family_member_name`)}
-                      />
-                      <EditableSmallField
-                        label="Relationship"
-                        val={m.relationship}
-                        fieldKey="relationship"
-                        onChange={v => handleFamilyMemberChange(i, 'relationship', v)}
-                        disabled={!includeFamily}
-                        error={errorFields.has(`family.${i}.relationship`)}
-                      />
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem 1rem' }}>
-                      <EditableSmallField
-                        label="Gender"
-                        val={m.gender}
-                        fieldKey="gender"
-                        onChange={v => handleFamilyMemberChange(i, 'gender', v)}
-                        disabled={!includeFamily}
-                        error={errorFields.has(`family.${i}.gender`)}
-                      />
-                      <EditableSmallField
-                        label="DOB"
-                        val={m.date_of_birth}
-                        fieldKey="date_of_birth"
-                        onChange={v => handleFamilyMemberChange(i, 'date_of_birth', v)}
-                        disabled={!includeFamily}
-                        error={errorFields.has(`family.${i}.date_of_birth`)}
-                      />
-                      <EditableSmallField
-                        label="Age"
-                        val={m.age}
-                        type="number"
-                        onChange={v => handleFamilyMemberChange(i, 'age', v)}
-                        disabled={!includeFamily}
-                        error={errorFields.has(`family.${i}.age`)}
-                      />
-                      <EditableSmallField
-                        label="Monthly Upkeep"
-                        val={m.monthly_upkeep}
-                        type="number"
-                        onChange={v => handleFamilyMemberChange(i, 'monthly_upkeep', v)}
-                        disabled={!includeFamily}
-                        error={errorFields.has(`family.${i}.monthly_upkeep`)}
-                      />
-                      <EditableSmallField
-                        label="Support until"
-                        val={m.support_until_age}
-                        type="number"
-                        onChange={v => handleFamilyMemberChange(i, 'support_until_age', v)}
-                        disabled={!includeFamily}
-                        error={errorFields.has(`family.${i}.support_until_age`)}
-                      />
-                      <EditableSmallField
-                        label="Years to support"
-                        val={m.years_to_support}
-                        type="number"
-                        onChange={v => handleFamilyMemberChange(i, 'years_to_support', v)}
-                        disabled={!includeFamily}
-                        error={errorFields.has(`family.${i}.years_to_support`)}
-                      />
+            {/* Family Members Section */}
+            <Section
+              title="Family Members"
+              enabled={includeFamily}
+              onToggle={() => setIncludeFamily(!includeFamily)}
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {(extracted.family || []).map((member, i) => (
+                  <div key={i} style={{ padding: '1rem', border: '1px solid #eee', borderRadius: '8px', position: 'relative' }}>
+                    <button 
+                      onClick={() => removeFamilyMember(i)}
+                      style={{ position: 'absolute', top: '8px', right: '8px', background: 'none', border: 'none', color: '#e74c3c', cursor: 'pointer', fontSize: '1.2rem' }}
+                    >×</button>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem 1.5rem' }}>
+                      {FAMILY_FIELDS.map(f => (
+                        <EditableFieldRow
+                          key={f}
+                          fieldKey={f}
+                          label={formatLabel(f)}
+                          val={(member as any)[f]}
+                          included={true}
+                          onChange={(val) => handleFamilyMemberChange(i, f, val)}
+                          error={errorFields.has(`family.${i}.${f}`)}
+                        />
+                      ))}
                     </div>
                   </div>
                 ))}
-              </Section>
-            )}
+                <button onClick={addFamilyMember} style={{ ...secondaryBtnStyle, width: '100%', marginTop: '0.5rem' }}>+ Add Family Member</button>
+              </div>
+            </Section>
 
-            {/* Cashflow section */}
-            {includeCashflow && (
-              <Section
-                title="Cashflow (Annual)"
-                enabled={includeCashflow}
-                onToggle={() => setIncludeCashflow(v => !v)}
-              >
-                {(() => {
-                  const cf = extracted.cashflow as any || {};
-                  const totalInflow = INFLOW_FIELDS.reduce((s, k) => s + (Number(cf[k]) || 0), 0);
-                  // Property Expenses are often included in the Loan Repayment header per user request, 
-                  // so we sum them correctly.
-                  const totalOutflow = OUTFLOW_FIELDS.reduce((s, k) => s + (Number(cf[k]) || 0), 0);
-
-                  const netSurplus = totalInflow - totalOutflow;
-
-                  return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                      {/* Inflows */}
-                      <div>
-                        <h4 style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#719266', marginBottom: '0.5rem', borderBottom: '1px solid #71926633', paddingBottom: '2px' }}>Inflows</h4>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem 1.25rem' }}>
-                          {INFLOW_FIELDS.map(k => (
-                            <EditableSmallField
-                              key={k}
-                              label={formatLabel(k)}
-                              val={cf[k] || 0}
-                              fieldKey={k}
-                              type="number"
-                              onChange={newVal => handleCashflowChange(k, newVal)}
-                              disabled={!includeCashflow}
-                              error={errorFields.has(`cashflow.${k}`)}
-                            />
-                          ))}
-                        </div>
-                        <div style={{ textAlign: 'right', marginTop: '0.4rem', fontWeight: 700, fontSize: '0.8rem', color: '#719266' }}>
-                          Total Inflow: ${totalInflow.toLocaleString()}
-                        </div>
-                      </div>
-
-                      {/* Outflows */}
-                      <div>
-                        <h4 style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#9B2226', marginBottom: '0.5rem', borderBottom: '1px solid #9B222633', paddingBottom: '2px' }}>Outflows</h4>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem 1.25rem' }}>
-                          {OUTFLOW_FIELDS.map(k => (
-                            <EditableSmallField
-                              key={k}
-                              label={formatLabel(k)}
-                              val={cf[k] || 0}
-                              fieldKey={k}
-                              type="number"
-                              onChange={newVal => handleCashflowChange(k, newVal)}
-                              disabled={!includeCashflow}
-                              error={errorFields.has(`cashflow.${k}`)}
-                            />
-                          ))}
-                        </div>
-                        <div style={{ textAlign: 'right', marginTop: '0.4rem', fontWeight: 700, fontSize: '0.8rem', color: '#9B2226' }}>
-                          Total Outflow: ${totalOutflow.toLocaleString()}
-                        </div>
-                      </div>
-
-                      {/* CPF Detail (Non-additive to totals) */}
-                      <div style={{ background: '#f1f3f5', padding: '0.6rem 0.8rem', borderRadius: '6px' }}>
-                        <h4 style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: '#495057', marginBottom: '0.4rem' }}>CPF & Savings (Info Only)</h4>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem 1.25rem' }}>
-                          {SUPPLEMENTARY_FIELDS.map(k => (
-                            <EditableSmallField
-                              key={k}
-                              label={formatLabel(k)}
-                              val={cf[k] || 0}
-                              fieldKey={k}
-                              type="number"
-                              onChange={newVal => handleCashflowChange(k, newVal)}
-                              disabled={!includeCashflow}
-                              error={errorFields.has(`cashflow.${k}`)}
-                            />
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Summary */}
-                      <div style={{
-                        padding: '0.75rem',
-                        background: netSurplus >= 0 ? 'rgba(113, 146, 102, 0.08)' : 'rgba(155, 34, 38, 0.08)',
-                        borderRadius: '8px',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        border: `1px solid ${netSurplus >= 0 ? '#71926633' : '#9B222633'}`
-                      }}>
-                        <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>NET SURPLUS (Cash & CPF)</span>
-                        <span style={{ fontWeight: 800, fontSize: '1.2rem', color: netSurplus >= 0 ? '#719266' : '#9B2226' }}>
-                          ${netSurplus.toLocaleString()}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })()}
-              </Section>
-            )}
-
-            {/* Investments section */}
-            {extracted.investments?.length > 0 && (
-              <Section
-                title={`Investments (${extracted.investments.length})`}
-                enabled={includeInvestments}
-                onToggle={() => setIncludeInvestments(v => !v)}
-              >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                  {extracted.investments.map((inv, i) => (
-                    <div key={i} style={{ padding: '1rem', background: 'rgba(0,0,0,0.02)', borderRadius: '10px', border: '1px solid var(--border, #eee)' }}>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem 1rem' }}>
-                        <EditableSmallField
-                          label="Policy Name"
-                          val={inv.policy_name}
-                          fieldKey="policy_name"
-                          onChange={v => handleInvestmentChange(i, 'policy_name', v)}
-                          disabled={!includeInvestments}
-                          error={errorFields.has(`investments.${i}.policy_name`)}
-                        />
-                        <EditableSmallField
-                          label="Type"
-                          val={inv.policy_type}
-                          fieldKey="policy_type"
-                          options={ENUMS.investment_type}
-                          onChange={v => handleInvestmentChange(i, 'policy_type', v)}
-                          disabled={!includeInvestments}
-                          error={errorFields.has(`investments.${i}.policy_type`)}
-                        />
-                        <EditableSmallField
-                          label="Initial Investment"
-                          val={inv.initial_investment}
-                          fieldKey="initial_investment"
-                          type="number"
-                          onChange={v => handleInvestmentChange(i, 'initial_investment', v)}
-                          disabled={!includeInvestments}
-                        />
-                        <EditableSmallField
-                          label="Start Date"
-                          val={inv.start_date}
-                          fieldKey="start_date"
-                          type="date"
-                          onChange={v => handleInvestmentChange(i, 'start_date', v)}
-                          disabled={!includeInvestments}
-                          error={errorFields.has(`investments.${i}.start_date`)}
-                        />
-                      </div>
-                    </div>
-                  ))}
+            {/* Cashflow Section */}
+            <Section
+              title="Cashflow & Expenses"
+              enabled={includeCashflow}
+              onToggle={() => setIncludeCashflow(!includeCashflow)}
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                <div>
+                  <h4 style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '1rem', borderBottom: '1px solid var(--border)', paddingBottom: '4px' }}>Inflow (Annual)</h4>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem 1.5rem' }}>
+                    {INFLOW_FIELDS.map(f => (
+                      <EditableFieldRow
+                        key={f}
+                        fieldKey={f}
+                        label={formatLabel(f)}
+                        val={(extracted.cashflow as any)?.[f]}
+                        included={true}
+                        onChange={(val) => handleCashflowChange(f, val)}
+                      />
+                    ))}
+                  </div>
                 </div>
-              </Section>
-            )}
+                <div>
+                  <h4 style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '1rem', borderBottom: '1px solid var(--border)', paddingBottom: '4px' }}>Outflow (Annual)</h4>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem 1.5rem' }}>
+                    {OUTFLOW_FIELDS.map(f => (
+                      <EditableFieldRow
+                        key={f}
+                        fieldKey={f}
+                        label={formatLabel(f)}
+                        val={(extracted.cashflow as any)?.[f]}
+                        included={true}
+                        onChange={(val) => handleCashflowChange(f, val)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </Section>
 
-            {/* Insurance plans section */}
-            {extracted.insurance_plans?.length > 0 && (
-              <Section
-                title={`Recommended Plans (${extracted.insurance_plans.length}) — status: Pending`}
-                enabled={includeInsurance}
-                onToggle={() => setIncludeInsurance(v => !v)}
-              >
-                {extracted.insurance_plans.map((p, i) => (
-                  <div key={i} style={{
-                    padding: '0.75rem', borderRadius: '10px',
-                    background: 'rgba(0,0,0,0.02)', border: '1px solid var(--border, #eee)',
-                    marginBottom: '0.5rem',
-                  }}>
-                    <div style={{ marginBottom: '0.5rem' }}>
-                      <EditableSmallField
-                        label="Policy Name"
-                        val={p.policy_name}
-                        onChange={v => handleInsurancePlanChange(i, 'policy_name', v)}
-                        disabled={!includeInsurance}
-                        error={errorFields.has(`insurance.${i}.policy_name`)}
-                      />
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem 1rem' }}>
-                      <EditableSmallField
-                        label="Type"
-                        val={p.policy_type}
-                        fieldKey="policy_type"
-                        onChange={v => handleInsurancePlanChange(i, 'policy_type', v)}
-                        disabled={!includeInsurance}
-                        error={errorFields.has(`insurance.${i}.policy_type`)}
-                      />
-                      <EditableSmallField
-                        label="Life Assured"
-                        val={p.life_assured}
-                        onChange={v => handleInsurancePlanChange(i, 'life_assured', v)}
-                        disabled={!includeInsurance}
-                        error={errorFields.has(`insurance.${i}.life_assured`)}
-                      />
-                      <EditableSmallField
-                        label="Sum Assured"
-                        val={p.sum_assured}
-                        type="number"
-                        onChange={v => handleInsurancePlanChange(i, 'sum_assured', v)}
-                        disabled={!includeInsurance}
-                        error={errorFields.has(`insurance.${i}.sum_assured`)}
-                      />
-                      <EditableSmallField
-                        label="Start Date"
-                        val={p.start_date}
-                        type="date"
-                        fieldKey="start_date"
-                        onChange={v => handleInsurancePlanChange(i, 'start_date', v)}
-                        disabled={!includeInsurance}
-                        error={errorFields.has(`insurance.${i}.start_date`)}
-                      />
-                      <EditableSmallField
-                        label="Premium"
-                        val={p.premium_amount}
-                        type="number"
-                        onChange={v => handleInsurancePlanChange(i, 'premium_amount', v)}
-                        disabled={!includeInsurance}
-                        error={errorFields.has(`insurance.${i}.premium_amount`)}
-                      />
-                      <EditableSmallField
-                        label="Frequency"
-                        val={p.payment_frequency}
-                        fieldKey="payment_frequency"
-                        onChange={v => handleInsurancePlanChange(i, 'payment_frequency', v)}
-                        disabled={!includeInsurance}
-                        error={errorFields.has(`insurance.${i}.payment_frequency`)}
-                      />
-                      <EditableSmallField
-                        label="Term"
-                        val={p.payment_term}
-                        type="number"
-                        onChange={v => handleInsurancePlanChange(i, 'payment_term', v)}
-                        disabled={!includeInsurance}
-                        error={errorFields.has(`insurance.${i}.payment_term`)}
-                      />
-                      <EditableSmallField
-                        label="Benefit"
-                        val={p.benefit_type}
-                        onChange={v => handleInsurancePlanChange(i, 'benefit_type', v)}
-                        disabled={!includeInsurance}
-                        error={errorFields.has(`insurance.${i}.benefit_type`)}
-                      />
+            {/* Insurance Plans Section */}
+            <Section
+              title="Insurance Plans"
+              enabled={includeInsurance}
+              onToggle={() => setIncludeInsurance(!includeInsurance)}
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {(extracted.insurance_plans || []).map((plan, i) => (
+                  <div key={i} style={{ padding: '1rem', border: '1px solid #eee', borderRadius: '8px', position: 'relative' }}>
+                    <button 
+                      onClick={() => removeInsurancePlan(i)}
+                      style={{ position: 'absolute', top: '8px', right: '8px', background: 'none', border: 'none', color: '#e74c3c', cursor: 'pointer', fontSize: '1.2rem' }}
+                    >×</button>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem 1.5rem' }}>
+                      {INSURANCE_FIELDS.map(f => (
+                        <EditableFieldRow
+                          key={f}
+                          fieldKey={f}
+                          label={formatLabel(f)}
+                          val={(plan as any)[f]}
+                          included={true}
+                          onChange={(val) => handleInsurancePlanChange(i, f, val)}
+                          error={errorFields.has(`insurance.${i}.${f}`)}
+                          customOptions={f === 'policy_type' ? ENUMS.policy_type : undefined}
+                        />
+                      ))}
                     </div>
                   </div>
                 ))}
-              </Section>
-            )}
+                <button onClick={addInsurancePlan} style={{ ...secondaryBtnStyle, width: '100%', marginTop: '0.5rem' }}>+ Add Insurance Plan</button>
+              </div>
+            </Section>
+
+            {/* Investments Section */}
+            <Section
+              title="Investments"
+              enabled={includeInvestments}
+              onToggle={() => setIncludeInvestments(!includeInvestments)}
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {(extracted.investments || []).map((inv, i) => (
+                  <div key={i} style={{ padding: '1rem', border: '1px solid #eee', borderRadius: '8px', position: 'relative' }}>
+                    <button 
+                      onClick={() => removeInvestment(i)}
+                      style={{ position: 'absolute', top: '8px', right: '8px', background: 'none', border: 'none', color: '#e74c3c', cursor: 'pointer', fontSize: '1.2rem' }}
+                    >×</button>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem 1.5rem' }}>
+                      {INVESTMENT_FIELDS.map(f => (
+                        <EditableFieldRow
+                          key={f}
+                          fieldKey={f}
+                          label={formatLabel(f)}
+                          val={(inv as any)[f]}
+                          included={true}
+                          onChange={(val) => handleInvestmentChange(i, f, val)}
+                          error={errorFields.has(`investments.${i}.${f}`)}
+                          customOptions={f === 'policy_type' ? ENUMS.investment_policy_type : undefined}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+                <button onClick={addInvestment} style={{ ...secondaryBtnStyle, width: '100%', marginTop: '0.5rem' }}>+ Add Investment</button>
+              </div>
+            </Section>
+
           </div>
         )}
 
@@ -1116,7 +1008,7 @@ export const PdfImport: React.FC<PdfImportProps> = ({ clientId, onSuccess, onClo
   }
 
   return (
-    <FocusModal isOpen={true} onClose={onClose}>
+    <FocusModal isOpen={true} onClose={onClose} closeOnBackdropClick={false}>
       {modalContent}
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </FocusModal>
@@ -1135,11 +1027,10 @@ const FieldRow: React.FC<{
   existingClient: any;
   errorFields: Set<string>;
   isNewClient: boolean;
-}> = ({ field, extracted, includedClientFields, toggleClientField, handleClientFieldChange, includeClient, existingClient, errorFields, isNewClient }) => {
+}> = ({ field, extracted, handleClientFieldChange, includeClient, existingClient, errorFields, isNewClient }) => {
   if (!extracted) return null;
   const val = extracted.client[field];
   const key = `client.${field}`;
-  const isIncluded = includedClientFields.has(key);
   const oldVal = existingClient?.[field];
 
   return (
@@ -1149,11 +1040,11 @@ const FieldRow: React.FC<{
       label={formatLabel(field)}
       val={val}
       oldVal={!isNewClient && oldVal != null ? formatValue(oldVal) : undefined}
-      included={isIncluded}
-      onToggle={() => toggleClientField(key)}
+      included={true}
       onChange={(newVal) => handleClientFieldChange(field, newVal)}
       disabled={!includeClient}
       error={errorFields.has(key)}
+      required={MANDATORY_CLIENT_FIELDS.includes(String(field))}
     />
   );
 };
@@ -1163,7 +1054,8 @@ const Section: React.FC<{
   enabled: boolean;
   onToggle: () => void;
   children: React.ReactNode;
-}> = ({ title, enabled, onToggle, children }) => (
+  hideCheckbox?: boolean;
+}> = ({ title, enabled, onToggle, children, hideCheckbox }) => (
   <div style={{
     border: '1px solid var(--border, #eee)',
     borderRadius: '14px', overflow: 'hidden',
@@ -1178,10 +1070,12 @@ const Section: React.FC<{
       <span style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--secondary, #333)' }}>
         {title}
       </span>
-      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '0.8rem', color: 'var(--text-muted, #888)' }}>
-        <input type="checkbox" checked={enabled} onChange={onToggle} />
-        Include
-      </label>
+      {!hideCheckbox && (
+        <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '0.8rem', color: 'var(--text-muted, #888)' }}>
+          <input type="checkbox" checked={enabled} onChange={onToggle} />
+          Include
+        </label>
+      )}
     </div>
     <div style={{ padding: '0.75rem 1rem' }}>{children}</div>
   </div>
@@ -1193,12 +1087,13 @@ const EditableFieldRow: React.FC<{
   val: any;
   oldVal?: string;
   included: boolean;
-  onToggle: () => void;
   onChange: (newVal: any) => void;
   disabled?: boolean;
   error?: boolean;
-}> = ({ fieldKey, label, val, oldVal, included, onToggle, onChange, disabled, error }) => {
-  const options = ENUMS[fieldKey as keyof typeof ENUMS] || (fieldKey.includes('language') ? ENUMS.languages : undefined);
+  required?: boolean;
+  customOptions?: string[];
+}> = ({ fieldKey, label, val, oldVal, included, onChange, disabled, error, required, customOptions }) => {
+  const options = customOptions || ENUMS[fieldKey as keyof typeof ENUMS] || (fieldKey.includes('language') ? ENUMS.languages : undefined);
   const isDate = fieldKey.includes('date');
   const isArray = Array.isArray(val) || fieldKey.includes('language');
 
@@ -1207,17 +1102,18 @@ const EditableFieldRow: React.FC<{
     border: `1px solid ${error ? '#e74c3c' : 'var(--border, #ddd)'}`,
     borderRadius: '4px',
     fontSize: '0.85rem',
-    color: 'var(--secondary, #333)',
-    background: error ? '#fdecea' : (disabled || !included ? '#f5f5f5' : '#fff'),
     width: '100%',
-    boxSizing: 'border-box' as any
+    boxSizing: 'border-box' as any,
+    color: val ? 'var(--secondary, #333)' : 'var(--text-muted, #888)',
+    background: error ? '#fdecea' : (disabled || !included ? '#f5f5f5' : '#fff'),
   };
 
   return (
     <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', padding: '3px 0' }}>
-      <input type="checkbox" checked={included} onChange={onToggle} disabled={disabled} style={{ marginTop: '5px', flexShrink: 0 }} />
       <div style={{ fontSize: '0.8rem', minWidth: 0, flex: 1 }}>
-        <span style={{ color: 'var(--text-muted, #888)', display: 'block', marginBottom: '2px' }}>{label}: </span>
+        <span style={{ color: 'var(--text-muted, #888)', display: 'block', marginBottom: '2px' }}>
+          {label}{required && <span style={{ color: '#e74c3c', marginLeft: '2px' }}>*</span>}:
+        </span>
         {oldVal !== undefined && oldVal !== String(val) && (
           <div style={{ color: '#c0392b', textDecoration: 'line-through', marginBottom: '4px', fontSize: '0.75rem' }}>Prev: {oldVal}</div>
         )}
@@ -1231,16 +1127,14 @@ const EditableFieldRow: React.FC<{
               error={error}
             />
           ) : (
-            <select
+            <SingleCustomSelect
+              options={options}
               value={val || ''}
-              onChange={e => onChange(e.target.value)}
+              onChange={onChange}
               disabled={disabled || !included}
-              style={inputStyle}
-              required={included}
-            >
-              <option value="" disabled>Select {label}</option>
-              {options.map(o => <option key={o} value={o}>{o}</option>)}
-            </select>
+              error={error}
+              placeholder="Select"
+            />
           )
         ) : isDate ? (
           <input
@@ -1250,6 +1144,16 @@ const EditableFieldRow: React.FC<{
             disabled={disabled || !included}
             style={inputStyle}
             required={included}
+          />
+        ) : typeof val === 'number' || fieldKey.includes('amount') || fieldKey.includes('income') || fieldKey.includes('expense') || fieldKey.includes('repayment') || fieldKey.includes('investment') || fieldKey.includes('value') || fieldKey.includes('assured') || fieldKey.includes('upkeep') || fieldKey.includes('premium') ? (
+          <input
+            type="number"
+            value={val === null || val === undefined ? '' : val}
+            onChange={e => onChange(e.target.value === '' ? null : Number(e.target.value))}
+            disabled={disabled || !included}
+            style={inputStyle}
+            required={included}
+            placeholder={label}
           />
         ) : (
           <input
@@ -1310,7 +1214,7 @@ const MultiPillSelect: React.FC<{
   return (
     <div style={{ position: 'relative' }}>
       <div style={containerStyle} onClick={toggleOpen}>
-        {values.length === 0 && <span style={{ color: '#aaa', fontSize: '0.8rem', paddingLeft: '4px' }}>Select...</span>}
+        {values.length === 0 && <span style={{ color: 'var(--text-muted, #888)', fontSize: '0.8rem', paddingLeft: '4px' }}>Select</span>}
         {values.map(v => (
           <div key={v} style={{
             background: 'var(--primary, #c5b358)', color: '#fff',
@@ -1321,8 +1225,17 @@ const MultiPillSelect: React.FC<{
             {!disabled && <span onClick={(e) => removeVal(v, e)} style={{ cursor: 'pointer', fontWeight: 800 }}>×</span>}
           </div>
         ))}
-        <div style={{ marginLeft: 'auto', paddingRight: '4px', color: '#888' }}>
-          {isOpen ? '▲' : '▼'}
+        <div style={{ marginLeft: 'auto', paddingRight: '4px', color: '#888', display: 'flex', alignItems: 'center' }}>
+          <svg 
+            width="12" height="12" viewBox="0 0 24 24" fill="none" 
+            stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
+            style={{ 
+              transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+              transition: 'transform 0.2s'
+            }}
+          >
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
         </div>
       </div>
 
@@ -1354,107 +1267,6 @@ const MultiPillSelect: React.FC<{
   );
 };
 
-// ── Formatting Helpers ───────────────────────────────────────────────────────
-
-const formatCurrency = (val: any) => {
-  if (val === null || val === undefined || val === '') return '';
-  const str = String(val).replace(/,/g, '');
-  if (isNaN(Number(str))) return str;
-  const parts = str.split('.');
-  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  return parts.slice(0, 2).join('.');
-};
-
-const parseCurrency = (val: string) => {
-  return val.replace(/,/g, '');
-};
-
-const EditableSmallField: React.FC<{
-  label: string;
-  val: any;
-  onChange: (newVal: any) => void;
-  fieldKey?: string;
-  type?: 'text' | 'number' | 'date';
-  isCurrency?: boolean;
-  options?: string[];
-  disabled?: boolean;
-  error?: boolean;
-}> = ({ label, val, onChange, fieldKey, type, isCurrency, options: propOptions, disabled, error }) => {
-  const options = propOptions || (fieldKey ? ENUMS[fieldKey as keyof typeof ENUMS] : undefined);
-  const isDate = type === 'date' || (fieldKey && fieldKey.includes('date'));
-  const isNumber = type === 'number';
-  // Treat as currency if explicitly requested OR if label/key implies it's a dollar value
-  const isDollar = isCurrency || (isNumber && (
-    label.toLowerCase().includes('income') ||
-    label.toLowerCase().includes('amount') ||
-    label.toLowerCase().includes('premium') ||
-    label.toLowerCase().includes('sum') ||
-    label.toLowerCase().includes('expense') ||
-    label.toLowerCase().includes('investment') ||
-    label.toLowerCase().includes('repayment') ||
-    label.toLowerCase().includes('upkeep') ||
-    label.toLowerCase().includes('surplus') ||
-    label.toLowerCase().includes('total') ||
-    label.toLowerCase().includes('cashflow')
-  ));
-
-  const style: React.CSSProperties = {
-    padding: '4px 6px',
-    border: `1px solid ${error ? '#e74c3c' : 'var(--border, #eee)'}`,
-    borderRadius: '4px',
-    fontSize: '0.75rem',
-    width: '100%',
-    boxSizing: 'border-box',
-    background: error ? '#fdecea' : (disabled ? '#f9f9f9' : '#fff'),
-    color: 'var(--secondary, #333)',
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let raw = e.target.value;
-    if (isDollar) {
-      raw = parseCurrency(raw);
-    }
-
-    if (isNumber) {
-      if (raw === '') {
-        onChange(null);
-      } else {
-        const num = Number(raw);
-        if (!isNaN(num)) onChange(num);
-      }
-    } else {
-      onChange(raw);
-    }
-  };
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flex: 1, minWidth: 0 }}>
-      <label style={{ fontSize: '0.65rem', color: 'var(--text-muted, #888)', fontWeight: 600 }}>{label}</label>
-      {options ? (
-        <select
-          value={val || ''}
-          onChange={e => onChange(e.target.value)}
-          disabled={disabled}
-          style={style}
-          required
-        >
-          <option value="" disabled>Select</option>
-          {options.map(o => <option key={o} value={o}>{o}</option>)}
-        </select>
-      ) : (
-        <input
-          type={isDate ? 'date' : (isDollar ? 'text' : (isNumber ? 'number' : 'text'))}
-          value={isDollar ? formatCurrency(val) : (val ?? '')}
-          onChange={handleChange}
-          disabled={disabled}
-          style={style}
-          required
-          placeholder={isDollar ? '0' : ''}
-        />
-      )}
-    </div>
-  );
-};
 
 const primaryBtnStyle: React.CSSProperties = {
   padding: '10px 24px',
@@ -1466,6 +1278,104 @@ const primaryBtnStyle: React.CSSProperties = {
   fontSize: '0.9rem',
   cursor: 'pointer',
   minWidth: '150px',
+};
+
+const SingleCustomSelect: React.FC<{
+  options: string[];
+  value: string;
+  onChange: (val: string) => void;
+  disabled?: boolean;
+  error?: boolean;
+  placeholder?: string;
+}> = ({ options, value, onChange, disabled, error, placeholder }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const toggleOpen = () => {
+    if (!disabled) setIsOpen(!isOpen);
+  };
+
+  const handleSelect = (v: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    onChange(v);
+    setIsOpen(false);
+  };
+
+  const containerStyle: React.CSSProperties = {
+    border: `1px solid ${error ? '#e74c3c' : '#ddd'}`,
+    borderRadius: '4px',
+    padding: '4px 8px',
+    background: error ? '#fdecea' : (disabled ? '#f5f5f5' : '#fff'),
+    minHeight: '32px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+    position: 'relative',
+    cursor: disabled ? 'default' : 'pointer',
+    fontSize: '0.85rem'
+  };
+
+  return (
+    <div style={{ position: 'relative' }} ref={dropdownRef}>
+      <div style={containerStyle} onClick={toggleOpen}>
+        {!value && (
+          <span style={{ color: 'var(--text-muted, #888)', fontSize: '0.85rem' }}>
+            {placeholder || 'Select'}
+          </span>
+        )}
+        {value && <span style={{ color: 'var(--secondary, #333)', fontSize: '0.85rem' }}>{value}</span>}
+        
+        <div style={{ marginLeft: 'auto', color: '#888', display: 'flex', alignItems: 'center' }}>
+          <svg 
+            width="12" height="12" viewBox="0 0 24 24" fill="none" 
+            stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
+            style={{ 
+              transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+              transition: 'transform 0.2s'
+            }}
+          >
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+      </div>
+
+      {isOpen && !disabled && (
+        <div style={{
+          position: 'absolute', top: '100%', left: 0, right: 0,
+          background: '#fff', border: '1px solid #ddd', borderRadius: '6px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.1)', zIndex: 10,
+          maxHeight: '150px', overflowY: 'auto', marginTop: '4px'
+        }}>
+          {options.map(o => (
+            <div
+              key={o}
+              onClick={(e) => handleSelect(o, e)}
+              style={{
+                padding: '8px 10px', fontSize: '0.85rem',
+                background: value === o ? 'rgba(197,179,88,0.1)' : 'transparent',
+                color: value === o ? 'var(--primary, #c5b358)' : '#333',
+                cursor: 'pointer', display: 'flex', justifyContent: 'space-between',
+                transition: 'background 0.2s'
+              }}
+            >
+              {o}
+              {value === o && <span>✓</span>}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 };
 
 const secondaryBtnStyle: React.CSSProperties = {

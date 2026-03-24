@@ -71,7 +71,7 @@ export interface PdfExtractedData {
     benefit_type?: string | null;
     start_date?: string | null;
     expiry_date?: string | null;
-    status: 'Pending';
+    status: string;
   }>;
   investments: Array<{
     policy_name: string;
@@ -80,7 +80,7 @@ export interface PdfExtractedData {
     contribution_amount?: number | null;
     contribution_frequency?: string | null;
     start_date?: string | null;
-    status: 'Pending';
+    status: string;
   }>;
 }
 
@@ -159,9 +159,15 @@ export function normalizeExtractedData(data: PdfExtractedData): PdfExtractedData
   const normalize = (val: any, target: string[], strict = true) => {
     let sVal = val;
     if (typeof val === 'boolean') sVal = val ? 'Yes' : 'No';
-    if (sVal === null || sVal === undefined) return null;
+    if (sVal === null || sVal === undefined || sVal === '') return null;
     
     const s = String(sVal).trim().toLowerCase().replace(/-/g, ' ');
+    
+    // Custom aliases for common variations
+    if (target.includes('Spouse') && (s === 'wife' || s === 'husband' || s === 'partner')) return 'Spouse';
+    if (target.includes('Child') && (s === 'son' || s === 'daughter' || s === 'children')) return 'Child';
+    if (target.includes('Parent') && (s === 'father' || s === 'mother' || s === 'parents')) return 'Parent';
+
     const match = target.find(option => 
       option.toLowerCase().replace(/-/g, ' ') === s ||
       option.toLowerCase().replace(/-/g, '').replace(/\s+/g, '') === s.replace(/\s+/g, '')
@@ -172,40 +178,66 @@ export function normalizeExtractedData(data: PdfExtractedData): PdfExtractedData
   // 1. Client Details
   if (d.client) {
     const c = d.client;
-    if (c.title) c.title = normalize(c.title, ['Mr.', 'Ms.', 'Mrs.']);
-    if (c.gender) c.gender = normalize(c.gender, ['Male', 'Female']);
-    if (c.smoker_status) c.smoker_status = normalize(c.smoker_status, ['Smoker', 'Non-smoker']);
-    if (c.marital_status) c.marital_status = normalize(c.marital_status, ['Single', 'Married', 'Divorced', 'Widowed']);
-    if (c.race) c.race = normalize(c.race, ['Chinese', 'Malay', 'Indian', 'Caucasian', 'Others']);
-    if (c.employment_status) c.employment_status = normalize(c.employment_status, ['Full-time', 'Part-time', 'Contract', 'Self-employed', 'Freelance', 'Student', 'Unemployed', 'Retired']);
-    if (c.address_type) c.address_type = normalize(c.address_type, ['Local', 'Overseas']);
-    if (c.risk_profile) c.risk_profile = normalize(c.risk_profile, ['Level 1', 'Level 2', 'Level 3', 'Level 4']);
-    if (c.qualification) c.qualification = normalize(c.qualification, ['Primary', 'Secondary', 'Diploma', 'Degree', 'Masters', 'PhD', 'Others'], false);
+    if (c.title !== undefined) c.title = normalize(c.title, ['Mr.', 'Ms.', 'Mrs.']);
+    if (c.gender !== undefined) c.gender = normalize(c.gender, ['Male', 'Female']);
+    if (c.smoker_status !== undefined) c.smoker_status = normalize(c.smoker_status, ['Smoker', 'Non-smoker']);
+    if (c.marital_status !== undefined) c.marital_status = normalize(c.marital_status, ['Single', 'Married', 'Divorced', 'Widowed']);
+    if (c.race !== undefined) c.race = normalize(c.race, ['Chinese', 'Malay', 'Indian', 'Caucasian', 'Others']);
+    if (c.employment_status !== undefined) c.employment_status = normalize(c.employment_status, ['Full-time', 'Part-time', 'Contract', 'Self-employed', 'Freelance', 'Student', 'Unemployed', 'Retired']);
+    if (c.address_type !== undefined) c.address_type = normalize(c.address_type, ['Local', 'Overseas']);
+    if (c.risk_profile !== undefined) c.risk_profile = normalize(c.risk_profile, ['Level 1', 'Level 2', 'Level 3', 'Level 4']);
+    if (c.qualification !== undefined) c.qualification = normalize(c.qualification, ['Primary', 'Secondary', 'Diploma', 'Degree', 'Masters', 'PhD', 'Others'], false);
     
-    if (c.singapore_pr) c.singapore_pr = normalize(c.singapore_pr, ['Yes', 'No']);
-    if (c.id_type) c.id_type = normalize(c.id_type, ['NRIC', 'Passport']);
+    if (c.singapore_pr !== undefined) c.singapore_pr = normalize(c.singapore_pr, ['Yes', 'No']);
+    if (c.id_type !== undefined) c.id_type = normalize(c.id_type, ['NRIC', 'Passport']);
   }
 
   // 2. Family Members
   if (d.family) {
     d.family.forEach((m: any) => {
-      if (m.gender) m.gender = normalize(m.gender, ['Male', 'Female']);
-      if (m.relationship) m.relationship = normalize(m.relationship, ['Spouse', 'Child', 'Parent']);
+      if (m.gender !== undefined) m.gender = normalize(m.gender, ['Male', 'Female']);
+      if (m.relationship !== undefined) m.relationship = normalize(m.relationship, ['Spouse', 'Child', 'Parent']);
+      if (m.monthly_upkeep != null) m.monthly_upkeep = Math.max(0, Number(m.monthly_upkeep || 0));
+      if (m.support_until_age != null) m.support_until_age = Math.max(0, Number(m.support_until_age || 0));
+      if (m.age != null) m.age = Math.max(0, Number(m.age || 0));
     });
   }
 
-  // 3. Insurance Plans
+  // 3. Cashflow
+  if (d.cashflow) {
+    Object.keys(d.cashflow).forEach(k => {
+      if (k !== 'as_of_date' && typeof d.cashflow[k] === 'number') {
+        d.cashflow[k] = Math.max(0, d.cashflow[k]);
+      } else if (k !== 'as_of_date' && !isNaN(Number(d.cashflow[k]))) {
+        d.cashflow[k] = Math.max(0, Number(d.cashflow[k]));
+      }
+    });
+  }
+
+  // 4. Insurance Plans
   if (d.insurance_plans) {
     d.insurance_plans.forEach((p: any) => {
-      if (p.policy_type) p.policy_type = normalize(p.policy_type, ['Life Insurance', 'Health Insurance', 'General Insurance']);
+      if (p.policy_type !== undefined) p.policy_type = normalize(p.policy_type, ['Life Insurance', 'Health Insurance', 'General Insurance']);
+      if (p.payment_frequency !== undefined) p.payment_frequency = normalize(p.payment_frequency, ['Monthly', 'Quarterly', 'Semi-Annual', 'Annual']);
+      
+      if (p.sum_assured != null) p.sum_assured = Math.max(0, Number(p.sum_assured || 0));
+      if (p.premium_amount != null) p.premium_amount = Math.max(0, Number(p.premium_amount || 0));
+      if (p.payment_term != null) p.payment_term = Math.max(0, Number(p.payment_term || 0));
+
       p.status = 'Pending';
     });
   }
 
-  // 4. Investments
+  // 5. Investments
   if (d.investments) {
     d.investments.forEach((inv: any) => {
-      if (inv.policy_type) inv.policy_type = normalize(inv.policy_type, ['Equity', 'Fixed Income', 'Cash', 'Bonds']);
+      // DB check constraint: 'Equity', 'Fixed Income', 'Cash'
+      if (inv.policy_type !== undefined) inv.policy_type = normalize(inv.policy_type, ['Equity', 'Fixed Income', 'Cash']);
+      if (inv.contribution_frequency !== undefined) inv.contribution_frequency = normalize(inv.contribution_frequency, ['Monthly', 'Quarterly', 'Semi-Annual', 'Annual']);
+      
+      if (inv.initial_investment != null) inv.initial_investment = Math.max(0, Number(inv.initial_investment || 0));
+      if (inv.contribution_amount != null) inv.contribution_amount = Math.max(0, Number(inv.contribution_amount || 0));
+
       inv.status = 'Pending';
     });
   }
@@ -308,9 +340,12 @@ function buildClientRow(clientData: PdfExtractedData['client'], selectedFields: 
       if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
         age--;
       }
-      row.age = age;
+      row.age = Math.max(0, age);
     }
   }
+
+  // Ensure all numeric fields are >= 0 for DB check constraints
+  if (row.age !== undefined && row.age < 0) row.age = 0;
 
   // Ensure these fields are explicitly initialized to empty arrays instead of null/undefined
   if (selectedFields.has('client.languages_spoken') && !row.languages_spoken) {
@@ -320,21 +355,13 @@ function buildClientRow(clientData: PdfExtractedData['client'], selectedFields: 
     row.languages_written = [];
   }
 
-  // Strict ENUM coercion (AI sometimes ignores exact prompt casing if the PDF literally says something else)
-  if (row.smoker_status === 'Non-Smoker' || row.smoker_status === 'Non-smoker' || row.smoker_status === 'Non Smoker') {
-    row.smoker_status = 'Non-smoker';
-  } else if (row.smoker_status === 'Smoker') {
-    row.smoker_status = 'Smoker';
-  }
-
-  if (row.employment_status === 'Full Time') row.employment_status = 'Full-time';
-  if (row.employment_status === 'Part Time') row.employment_status = 'Part-time';
-  if (row.employment_status === 'Self Employed' || row.employment_status === 'Self employed') row.employment_status = 'Self-employed';
-
+  // The clientData is already normalized by normalizeExtractedData before being passed here.
+  // We just ensure numeric types and mandatory field presence.
+  
   return row;
 }
 
-function handleDatabaseError(error: any): Error {
+export function handleDatabaseError(error: any): Error {
   const msg = error.message || '';
   
   if (msg.includes('no unique or exclusion constraint matching the ON CONFLICT specification')) {
@@ -351,7 +378,9 @@ function handleDatabaseError(error: any): Error {
   }
 
   if (msg.includes('violates check constraint')) {
-    return new Error('One of the fields (like Smoker Status or Gender) has an invalid value for our system. Please check the dropdowns in the review screen and ensure a valid option is selected.');
+    const parts = msg.split('"');
+    const constraint = parts[3] || parts[1] || 'a database rule';
+    return new Error(`Invalid value for ${constraint}. Please check your entries (especially negative numbers or dropdown options) and try again.`);
   }
 
   if (msg.includes('duplicate key value violates unique constraint')) {
@@ -374,6 +403,12 @@ async function writeRelatedData(
     for (const member of data.family) {
       // years_to_support is a generated column in Supabase
       const { years_to_support, ...memberToInsert } = member; // eslint-disable-line @typescript-eslint/no-unused-vars
+      
+      // Sanitize numeric fields for DB check constraints (>= 0)
+      if (memberToInsert.monthly_upkeep != null) memberToInsert.monthly_upkeep = Math.max(0, memberToInsert.monthly_upkeep);
+      if (memberToInsert.support_until_age != null) memberToInsert.support_until_age = Math.max(0, memberToInsert.support_until_age);
+      if (memberToInsert.age != null) memberToInsert.age = Math.max(0, memberToInsert.age);
+
       promises.push(
         Promise.resolve(
           supabase
@@ -396,7 +431,8 @@ async function writeRelatedData(
       if (k === 'as_of_date') {
         sanitizedCf[k] = v;
       } else {
-        sanitizedCf[k] = (v === null || v === undefined) ? 0 : v;
+        // DB check constraints require values >= 0
+        sanitizedCf[k] = Math.max(0, (v === null || v === undefined) ? 0 : Number(v));
       }
     }
 
@@ -424,10 +460,10 @@ async function writeRelatedData(
       policy_name: p.policy_name,
       policy_type: p.policy_type || 'Life Insurance',
       life_assured: p.life_assured || null,
-      sum_assured: p.sum_assured || 0,
-      premium_amount: p.premium_amount || 0,
+      sum_assured: Math.max(0, Number(p.sum_assured || 0)),
+      premium_amount: Math.max(0, Number(p.premium_amount || 0)),
       payment_frequency: p.payment_frequency || null,
-      payment_term: p.payment_term || null,
+      payment_term: Math.max(0, Number(p.payment_term || 0)),
       benefit_type: p.benefit_type || null,
       start_date: p.start_date || now,
       status: p.status || 'Pending'
@@ -442,8 +478,8 @@ async function writeRelatedData(
       client_id: clientId,
       policy_name: inv.policy_name,
       policy_type: inv.policy_type || 'Equity',
-      initial_investment: inv.initial_investment || 0,
-      contribution_amount: inv.contribution_amount || 0,
+      initial_investment: Math.max(0, Number(inv.initial_investment || 0)),
+      contribution_amount: Math.max(0, Number(inv.contribution_amount || 0)),
       contribution_frequency: inv.contribution_frequency || null,
       start_date: inv.start_date || now,
       status: inv.status || 'Pending'

@@ -8,6 +8,7 @@ interface FocusModalProps {
     modalContentStyle?: React.CSSProperties;
     modalContentClassName?: string;
     closeButtonStyle?: React.CSSProperties;
+    closeOnBackdropClick?: boolean;
 }
 
 export const FocusModal: React.FC<FocusModalProps> = ({
@@ -16,7 +17,8 @@ export const FocusModal: React.FC<FocusModalProps> = ({
     children,
     modalContentStyle = {},
     modalContentClassName = "",
-    closeButtonStyle = {}
+    closeButtonStyle = {},
+    closeOnBackdropClick = true
 }) => {
     // Prevent body scroll when modal is open
     useEffect(() => {
@@ -34,7 +36,7 @@ export const FocusModal: React.FC<FocusModalProps> = ({
     return createPortal(
         <div 
             className="modal-overlay animate-fade" 
-            onClick={onClose} 
+            onClick={closeOnBackdropClick ? onClose : undefined} 
             style={{ zIndex: 9999 }}
         >
             <div 
