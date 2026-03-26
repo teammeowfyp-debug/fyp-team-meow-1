@@ -338,13 +338,13 @@ const CashflowBreakdown: React.FC<CashflowBreakdownProps> = ({
                                 transform: activeItemName === 'Net Cashflow' ? 'scale(1.05)' : 'scale(1)'
                             }}
                         >
-                            <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: selectedSnapshot.netCashflow >= 0 ? 'var(--primary)' : '#D62828', fontWeight: 700 }}>Net Cashflow</div>
-                            <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--secondary)' }}>${selectedSnapshot.netCashflow.toLocaleString()}</div>
+                            <div style={{ fontSize: 'var(--text-xs)', textTransform: 'uppercase', color: selectedSnapshot.netCashflow >= 0 ? 'var(--primary)' : '#D62828', fontWeight: 700 }}>Net Cashflow</div>
+                            <div style={{ fontSize: 'var(--text-3xl)', fontWeight: 800, color: 'var(--secondary)' }}>${selectedSnapshot.netCashflow.toLocaleString()}</div>
                         </div>
                     </div>
 
                     <div style={{ flex: '1', minWidth: '350px' }}>
-                        <h4 style={{ fontSize: '0.85rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '1.5rem', letterSpacing: '0.05em', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem' }}>Details by Category</h4>
+                        <h4 style={{ fontSize: 'var(--text-sm)', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '1.5rem', letterSpacing: '0.05em', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem' }}>Details by Category</h4>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                             {getPieGroups(selectedSnapshot).map((group) => {
                                 const groupColor = CASHFLOW_COLORS[group.name];
@@ -370,7 +370,7 @@ const CashflowBreakdown: React.FC<CashflowBreakdownProps> = ({
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                                 <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: total === 0 ? '#ccc' : groupColor }} />
-                                                <span style={{ fontWeight: 800, color: total === 0 ? 'var(--text-muted)' : 'var(--secondary)', fontSize: '0.95rem' }}>{group.name}</span>
+                                                <span style={{ fontWeight: 800, color: total === 0 ? 'var(--text-muted)' : 'var(--secondary)', fontSize: 'var(--text-base)' }}>{group.name}</span>
                                             </div>
                                             <span style={{ fontWeight: 700, color: total === 0 ? 'var(--text-muted)' : 'var(--secondary)' }}>${total.toLocaleString()}</span>
                                         </div>
@@ -389,7 +389,7 @@ const CashflowBreakdown: React.FC<CashflowBreakdownProps> = ({
                                                         style={{
                                                             display: 'flex',
                                                             justifyContent: 'space-between',
-                                                            fontSize: '0.85rem',
+                                                            fontSize: 'var(--text-sm)',
                                                             color: isZero ? 'var(--text-muted)' : (isItemActive ? 'var(--secondary)' : 'var(--text-muted)'),
                                                             opacity: isZero ? 0.35 : 1,
                                                             fontWeight: isItemActive ? 700 : 400,

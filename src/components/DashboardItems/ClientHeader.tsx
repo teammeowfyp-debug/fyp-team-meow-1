@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import '../Dashboard.css';
 import { FocusModal } from '../UI/FocusModal';
-import { PdfImport } from './PdfImport';
+import PdfImport from './PdfImport';
 import ExportReportModal from './ExportReportModal';
+import { Button } from '../UI/Button';
 
 interface ClientDetailModalProps {
     client: any;
@@ -10,17 +11,30 @@ interface ClientDetailModalProps {
     onUpdate?: () => void;
 }
 
+const formatDate = (dateString: string | null | undefined) => {
+    if (!dateString) return 'Never';
+    try {
+        return new Date(dateString).toLocaleDateString('en-SG', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric'
+        });
+    } catch {
+        return 'Invalid Date';
+    }
+};
+
+// Helper to format labels
+const formatLabel = (key: string) => {
+    if (key === 'address_type') return 'Type of Address';
+    if (key === 'house_block_no') return 'House / Block No.';
+    const label = key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    return label.endsWith(' No') ? label + '.' : label;
+};
+
 const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, onClose }) => {
     const [activeTab, setActiveTab] = useState<'personal' | 'family'>('personal');
     const [mode, setMode] = useState<'view' | 'update'>('view');
-
-    // Helper to format labels
-    const formatLabel = (key: string) => {
-        if (key === 'address_type') return 'Type of Address';
-        if (key === 'house_block_no') return 'House / Block No.';
-        const label = key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-        return label.endsWith(' No') ? label + '.' : label;
-    };
 
     // Define Groups
     const contactFields = ['email', 'employment_status', 'occupation', 'mobile_no', 'home_no', 'office_no'];
@@ -53,7 +67,7 @@ const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, onClose }
     const renderSection = (title: string, fields: string[]) => (
         <div className="modal-section" style={{ marginBottom: '1.5rem' }}>
             <h3 style={{
-                fontSize: '0.85rem',
+                fontSize: 'var(--text-sm)',
                 color: 'var(--secondary)',
                 borderBottom: '1px solid var(--border)',
                 paddingBottom: '8px',
@@ -71,7 +85,7 @@ const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, onClose }
                     <div key={key} className="info-item">
                         <label style={{
                             display: 'block',
-                            fontSize: '0.65rem',
+                            fontSize: 'var(--text-xs)',
                             textTransform: 'uppercase',
                             color: 'var(--text-muted)',
                             fontWeight: 700,
@@ -81,7 +95,7 @@ const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, onClose }
                             {formatLabel(key)}
                         </label>
                         <div style={{
-                            fontSize: '0.95rem',
+                            fontSize: 'var(--text-base)',
                             color: 'var(--secondary)',
                             fontWeight: 500
                         }}>
@@ -93,27 +107,11 @@ const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, onClose }
         </div>
     );
 
-    // Filter for basic info (everything else)
     const basicFields = Object.keys(client).filter(key =>
         !contactFields.includes(key) &&
         !addressFields.includes(key) &&
         !technicalFields.includes(key)
     );
-
-    const tabButtonStyle = (isActive: boolean) => ({
-        flex: 1,
-        padding: '0.75rem 2rem',
-        border: 'none',
-        background: isActive ? 'var(--primary)' : 'transparent',
-        color: isActive ? '#fff' : 'var(--text-muted)',
-        borderRadius: '10px',
-        fontWeight: 600,
-        fontSize: '0.9rem',
-        cursor: 'pointer',
-        transition: 'all 0.2s ease',
-        boxShadow: isActive ? 'var(--shadow-sm)' : 'none',
-        textAlign: 'center' as const
-    });
 
     if (mode === 'update') {
         return (
@@ -140,44 +138,18 @@ const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, onClose }
             <div className="modal-header">
                 <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div style={{ flex: 1 }}>
-                        <h2 style={{ fontSize: '1.8rem', color: 'var(--secondary)', marginBottom: '8px' }}>{client.full_name}</h2>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', letterSpacing: '0.02em', margin: 0 }}>
-                                Client ID: <span style={{ color: 'var(--secondary)', fontWeight: 600 }}>{client.client_id}</span>
+                        <h2 style={{ fontSize: 'var(--text-3xl)', color: 'var(--secondary)', marginBottom: '8px' }}>{client.full_name}</h2>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                            <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)', margin: 0 }}>
+                                {client.client_id}
                             </p>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Last Updated:</span>
-                                    <span style={{ fontSize: '0.9rem', color: 'var(--secondary)', fontWeight: 600 }}>
-                                        {renderValue('last_updated', client.last_updated)}
+                            <div style={{ display: 'flex', alignItems: 'center', borderLeft: '1px solid var(--border)', paddingLeft: '0.75rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)' }}>Last Updated:</span>
+                                    <span style={{ fontSize: 'var(--text-sm)', color: 'var(--secondary)', fontWeight: 600 }}>
+                                        {formatDate(client.last_updated)}
                                     </span>
                                 </div>
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setMode('update');
-                                    }}
-                                    style={{
-                                        display: 'inline-flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        padding: '2px 12px',
-                                        background: 'var(--primary, #c5b358)',
-                                        color: '#fff',
-                                        border: 'none',
-                                        borderRadius: '6px',
-                                        fontSize: '0.75rem',
-                                        fontWeight: 600,
-                                        cursor: 'pointer',
-                                        boxShadow: '0 2px 8px rgba(197, 179, 88, 0.2)',
-                                        transition: 'all 0.2s',
-                                        letterSpacing: '0.02em',
-                                    }}
-                                    onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-1px)'}
-                                    onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-                                >
-                                    Update
-                                </button>
                             </div>
                         </div>
                     </div>
@@ -193,18 +165,20 @@ const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, onClose }
                     padding: '4px',
                     gap: 0
                 }}>
-                    <button
-                        style={tabButtonStyle(activeTab === 'personal')}
+                    <Button
+                        variant="tab"
+                        isActive={activeTab === 'personal'}
                         onClick={() => setActiveTab('personal')}
                     >
                         Personal
-                    </button>
-                    <button
-                        style={tabButtonStyle(activeTab === 'family')}
+                    </Button>
+                    <Button
+                        variant="tab"
+                        isActive={activeTab === 'family'}
                         onClick={() => setActiveTab('family')}
                     >
                         Family
-                    </button>
+                    </Button>
                 </div>
             </div>
 
@@ -215,6 +189,16 @@ const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, onClose }
                         {renderSection('Basic Information', basicFields)}
                         {renderSection('Contact Information and Other Information', contactFields)}
                         {renderSection('Residential Address', addressFields)}
+                        
+                        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '2rem' }}>
+                            <Button
+                                variant="outline"
+                                size="medium"
+                                onClick={() => setMode('update')}
+                            >
+                                Update Profile
+                            </Button>
+                        </div>
                     </>
                 ) : (
                     <div className="family-section">
@@ -232,7 +216,7 @@ const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, onClose }
                                         border: '1px solid var(--border)'
                                     }}>
                                         <div style={{ marginBottom: '1.25rem', borderBottom: '1px solid var(--border)', paddingBottom: '0.75rem' }}>
-                                            <h4 style={{ fontSize: '1.2rem', color: 'var(--secondary)', margin: 0 }}>{member.family_member_name}</h4>
+                                            <h4 style={{ fontSize: 'var(--text-xl)', color: 'var(--secondary)', margin: 0 }}>{member.family_member_name}</h4>
                                         </div>
 
                                         <div style={{
@@ -241,18 +225,18 @@ const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, onClose }
                                             gap: '1.25rem 2rem'
                                         }}>
                                             {[
-                                                { label: 'Relationship', value: member.relationship },
-                                                { label: 'Gender', value: member.gender },
-                                                { label: 'Date of Birth', value: renderValue('date_of_birth', member.date_of_birth) },
-                                                { label: 'Age', value: member.age },
+                                                { mkey: 'relationship', label: 'Relationship', value: member.relationship },
+                                                { mkey: 'gender', label: 'Gender', value: member.gender },
+                                                { mkey: 'date_of_birth', label: 'Date of Birth', value: renderValue('date_of_birth', member.date_of_birth) },
+                                                { mkey: 'age', label: 'Age', value: member.age },
                                                 {
-                                                    label: 'Monthly Upkeep',
+                                                    mkey: 'monthly_upkeep', label: 'Monthly Upkeep',
                                                     value: (member.support_until_age && member.age >= member.support_until_age) || !member.monthly_upkeep || member.monthly_upkeep <= 0
                                                         ? '-'
                                                         : `$${(member.monthly_upkeep || 0).toLocaleString()}`
                                                 },
                                                 {
-                                                    label: 'Support Until Age',
+                                                    mkey: 'support_until_age', label: 'Support Until Age',
                                                     value: member.support_until_age
                                                         ? `${member.support_until_age} (${member.age >= member.support_until_age ? 'Completed' : `${member.years_to_support} Yrs Left`})`
                                                         : '-'
@@ -261,21 +245,21 @@ const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, onClose }
                                                 <div key={fIdx} className="info-item">
                                                     <label style={{
                                                         display: 'block',
-                                                        fontSize: '0.65rem',
+                                                        fontSize: 'var(--text-xs)',
                                                         textTransform: 'uppercase',
                                                         color: 'var(--text-muted)',
                                                         fontWeight: 700,
                                                         letterSpacing: '0.05em',
                                                         marginBottom: '4px'
                                                     }}>
-                                                        {field.label}
+                                                        {formatLabel(field.mkey)}
                                                     </label>
                                                     <div style={{
-                                                        fontSize: '0.95rem',
+                                                        fontSize: 'var(--text-base)',
                                                         color: 'var(--secondary)',
                                                         fontWeight: 500
                                                     }}>
-                                                        {field.value}
+                                                        {renderValue(field.mkey, member[field.mkey])}
                                                     </div>
                                                 </div>
                                             ))}
@@ -305,7 +289,7 @@ interface ClientHeaderProps {
     cache?: any;
     dashboardStartDate?: string;
     dashboardEndDate?: string;
-    onFocusQuadrant?: (quadId: string) => void;
+    onFocusQuadrant?: (quadId: string, mode?: string) => void;
 }
 
 const ClientHeader: React.FC<ClientHeaderProps> = ({
@@ -326,18 +310,11 @@ const ClientHeader: React.FC<ClientHeaderProps> = ({
 }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+    const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
 
     if (!client) return null;
 
-    // Generate initials for avatar
-    const initials = client.full_name
-        ? client.full_name
-            .split(' ')
-            .map((n: string) => n[0])
-            .join('')
-            .toUpperCase()
-            .slice(0, 2)
-        : '--';
+
 
     return (
         <>
@@ -364,115 +341,107 @@ const ClientHeader: React.FC<ClientHeaderProps> = ({
                             </svg>
                         </button>
                     )}
-                    <div className="client-avatar">{initials}</div>
+                    <div style={{ 
+                        background: 'var(--primary-glow)', 
+                        padding: '0.75rem', 
+                        borderRadius: '50%', 
+                        color: 'var(--primary)',
+                        width: '64px',
+                        height: '64px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0 
+                    }}>
+                        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
                     <div className="client-details">
-                        <h1 style={{ fontSize: '1.5rem', margin: 0 }}>{client.full_name}</h1>
-                        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem', fontWeight: 500 }}>
-                            <span style={{ opacity: 0.8 }}>Last Updated:</span> <span style={{ color: 'var(--secondary)' }}>{client.last_updated ? new Date(client.last_updated).toLocaleDateString('en-SG', {
-                                day: '2-digit',
-                                month: 'short',
-                                year: 'numeric'
-                            }) : 'Never'}</span>
-                            <span style={{ margin: '0 8px', opacity: 0.3 }}>|</span>
-                            <span style={{ opacity: 0.8 }}>Click for profile details</span>
-                        </p>
+                        <h1 style={{ fontSize: 'var(--text-2xl)', margin: 0 }}>{client.full_name}</h1>
+                        <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
+                                <Button
+                                    variant="outline"
+                                    size="medium"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setIsUpdateModalOpen(true);
+                                    }}
+                                    style={{ padding: '6px 14px' }}
+                                >
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                                    </svg>
+                                    Update Profile
+                                </Button>
+                            <Button
+                                variant="outline"
+                                size="medium"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setIsExportModalOpen(true);
+                                }}
+                                style={{ padding: '6px 14px' }}
+                            >
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                Export Report
+                            </Button>
+                        </div>
                     </div>
                 </div>
 
                 {/* Integrated Date Filter */}
                 <div
                     className="header-date-filter-container"
-                    style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '320px' }}
+                    onClick={(e) => e.stopPropagation()}
+                    style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '300px' }}
                 >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 8px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: '0.05em' }}>
-                                Analysis Period
-                            </span>
-                            <div style={{ display: 'flex', gap: '4px', marginLeft: '4px' }}>
-                                {[
-                                    { label: '3Y', years: 3 },
-                                    { label: '5Y', years: 5 }
-                                ].map(p => (
-                                    <button
-                                        key={p.label}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            const end = new Date();
-                                            const start = new Date();
-                                            start.setFullYear(end.getFullYear() - p.years);
-
-                                            // Format to YYYY-MM-DD for input type="date"
-                                            const formatDateStr = (d: Date) => d.toISOString().split('T')[0];
-
-                                            // We need to bypass the React.ChangeEvent<HTMLInputElement> type since we're calling directly
-                                            // but the implementation in Dashboard.tsx just takes e.target.value
-                                            onStartDateChange({ target: { value: formatDateStr(start) } } as any);
-                                            onEndDateChange({ target: { value: formatDateStr(end) } } as any);
-                                        }}
-                                        style={{
-                                            background: (startDate && new Date(startDate).getFullYear() === new Date().getFullYear() - p.years) ? 'var(--primary)' : 'rgba(0,0,0,0.03)',
-                                            border: '1px solid var(--border)',
-                                            color: (startDate && new Date(startDate).getFullYear() === new Date().getFullYear() - p.years) ? '#fff' : 'var(--text-muted)',
-                                            fontSize: '0.6rem',
-                                            fontWeight: 700,
-                                            padding: '2px 6px',
-                                            borderRadius: '4px',
-                                            cursor: 'pointer',
-                                            transition: 'all 0.2s'
-                                        }}
-                                        onMouseOver={(e) => {
-                                            if (e.currentTarget.style.background !== 'var(--primary)') {
-                                                e.currentTarget.style.background = 'rgba(0,0,0,0.08)';
-                                            }
-                                        }}
-                                        onMouseOut={(e) => {
-                                            if (e.currentTarget.style.background !== 'var(--primary)') {
-                                                e.currentTarget.style.background = 'rgba(0,0,0,0.03)';
-                                            }
-                                        }}
-                                    >
-                                        {p.label}
-                                    </button>
-                                ))}
-                                <button
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 4px', marginBottom: '0.25rem'}}>
+                        <span style={{ fontSize: 'var(--text-xs)', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: '0.05em' }}>
+                            Analysis Period
+                        </span>
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            {[
+                                { label: '3Y', years: 3},
+                                { label: '5Y', years: 5}
+                            ].map(p => (
+                                <Button
+                                    key={p.label}
+                                    variant="mode"
+                                    size="small"
+                                    isActive={!!(startDate && new Date(startDate).getFullYear() === new Date().getFullYear() - p.years)}
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        onSetMaxRange();
+                                        const end = new Date();
+                                        const start = new Date();
+                                        start.setFullYear(end.getFullYear() - p.years);
+                                        const formatDateStr = (d: Date) => d.toISOString().split('T')[0];
+                                        onStartDateChange({ target: { value: formatDateStr(start) } } as any);
+                                        onEndDateChange({ target: { value: formatDateStr(end) } } as any);
                                     }}
-                                    style={{
-                                        background: (absoluteBounds && startDate === absoluteBounds.start && endDate === absoluteBounds.end) ? 'var(--primary)' : 'rgba(0,0,0,0.03)',
-                                        border: '1px solid var(--border)',
-                                        color: (absoluteBounds && startDate === absoluteBounds.start && endDate === absoluteBounds.end) ? '#fff' : 'var(--text-muted)',
-                                        fontSize: '0.6rem',
-                                        fontWeight: 700,
-                                        padding: '2px 6px',
-                                        borderRadius: '4px',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s'
-                                    }}
-                                >MAX</button>
-                            </div>
-                        </div>
-                        {absoluteBounds && (startDate !== absoluteBounds.start || endDate !== absoluteBounds.end) && (
-                            <button
+                                    style={{ padding: '2px 10px' }}
+                                >
+                                    {p.label}
+                                </Button>
+                            ))}
+                            <Button
+                                variant="mode"
+                                size="small"
+                                isActive={!!(absoluteBounds && startDate === absoluteBounds.start && endDate === absoluteBounds.end)}
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     onSetMaxRange();
                                 }}
-                                style={{
-                                    background: 'transparent',
-                                    border: 'none',
-                                    fontSize: '0.65rem',
-                                    textTransform: 'uppercase',
-                                    cursor: 'pointer',
-                                    color: 'var(--secondary)',
-                                    fontWeight: 700,
-                                    letterSpacing: '0.05em',
-                                    padding: 0
-                                }}
-                            >Reset</button>
-                        )}
+                                style={{ padding: '2px 10px' }}
+                            >
+                                MAX
+                            </Button>
+                        </div>
                     </div>
                     <div
                         className="header-date-filter"
@@ -480,96 +449,69 @@ const ClientHeader: React.FC<ClientHeaderProps> = ({
                         style={{
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '1rem',
+                            gap: '0.75rem',
                             padding: '0.5rem 1rem',
-                            backgroundColor: 'rgba(255, 255, 255, 0.5)',
+                            backgroundColor: '#FFFFFF',
                             borderRadius: '12px',
                             border: '1px solid var(--border)',
-                            height: '42px', // Fixed height to prevent shift
+                            boxShadow: 'var(--shadow-sm)',
                             boxSizing: 'border-box'
                         }}
                     >
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flex: 1 }}>
-                            <label style={{ fontSize: '0.6rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 700 }}>Start Date</label>
-                            <input
-                                type="date"
-                                value={startDate}
-                                onChange={onStartDateChange}
-                                style={{
-                                    background: 'transparent',
-                                    border: 'none',
-                                    outline: 'none',
-                                    color: 'var(--secondary)',
-                                    fontSize: '0.85rem',
-                                    fontWeight: 500,
-                                    cursor: 'pointer',
-                                    width: '100%'
-                                }}
-                            />
-                        </div>
-                        <div style={{ color: 'var(--border)', height: '24px', width: '1px', backgroundColor: 'var(--border)' }}></div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flex: 1 }}>
-                            <label style={{ fontSize: '0.6rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 700 }}>End Date</label>
-                            <input
-                                type="date"
-                                value={endDate}
-                                onChange={onEndDateChange}
-                                style={{
-                                    background: 'transparent',
-                                    border: 'none',
-                                    outline: 'none',
-                                    color: 'var(--secondary)',
-                                    fontSize: '0.85rem',
-                                    fontWeight: 500,
-                                    cursor: 'pointer',
-                                    width: '100%'
-                                }}
-                            />
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.85, flexShrink: 0, marginLeft: '0.25rem' }}>
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginLeft: '0.75rem' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                                <label style={{ fontSize: '9px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 800, letterSpacing: '0.06em'}}>Start Date</label>
+                                <input
+                                    type="date"
+                                    value={startDate}
+                                    onChange={onStartDateChange}
+                                    style={{
+                                        background: 'transparent',
+                                        border: 'none',
+                                        outline: 'none',
+                                        color: 'var(--secondary)',
+                                        fontSize: 'var(--text-sm)',
+                                        fontWeight: 600,
+                                        cursor: 'pointer',
+                                        width: '100%',
+                                        marginLeft: '-2px' // Adjustment for browser default internal padding
+                                    }}
+                                />
+                            </div>
+
+                            <div style={{ color: 'var(--primary)', height: '18px', width: '2px', backgroundColor: 'var(--primary-glow)', borderRadius: '4px', opacity: 0.5}}></div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                                <label style={{ fontSize: '9px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 800, letterSpacing: '0.06em'}}>End Date</label>
+                                <input
+                                    type="date"
+                                    value={endDate}
+                                    onChange={onEndDateChange}
+                                    style={{
+                                        background: 'transparent',
+                                        border: 'none',
+                                        outline: 'none',
+                                        color: 'var(--secondary)',
+                                        fontSize: 'var(--text-sm)',
+                                        fontWeight: 600,
+                                        cursor: 'pointer',
+                                        width: '100%',
+                                        marginLeft: '-2px' // Adjustment for browser default internal padding
+                                    }}
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="header-stats" style={{ flex: '0 0 auto' }}>
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            setIsExportModalOpen(true);
-                        }}
-                        style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            padding: '6px 14px',
-                            background: 'var(--primary)',
-                            color: '#fff',
-                            border: 'none',
-                            borderRadius: '8px',
-                            fontSize: '0.8rem',
-                            fontWeight: 700,
-                            cursor: 'pointer',
-                            boxShadow: '0 2px 8px rgba(197, 179, 88, 0.2)',
-                            transition: 'all 0.2s',
-                            letterSpacing: '0.02em',
-                            marginLeft: '1rem',
-                            gap: '6px'
-                        }}
-                        onMouseOver={(e) => {
-                            e.currentTarget.style.transform = 'translateY(-1px)';
-                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(197, 179, 88, 0.3)';
-                        }}
-                        onMouseOut={(e) => {
-                            e.currentTarget.style.transform = 'translateY(0)';
-                            e.currentTarget.style.boxShadow = '0 2px 8px rgba(197, 179, 88, 0.2)';
-                        }}
-                    >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="7 10 12 15 17 10"></polyline>
-                            <line x1="12" y1="15" x2="12" y2="3"></line>
-                        </svg>
-                        Export Report
-                    </button>
-                </div>
+
             </header>
 
             {isModalOpen && (
@@ -591,6 +533,20 @@ const ClientHeader: React.FC<ClientHeaderProps> = ({
                     onClose={() => setIsExportModalOpen(false)}
                     onFocusQuadrant={onFocusQuadrant}
                 />
+            )}
+
+            {isUpdateModalOpen && (
+                <FocusModal isOpen={true} onClose={() => setIsUpdateModalOpen(false)} modalContentStyle={{ gap: 0 }}>
+                    <PdfImport
+                        clientId={client.client_id}
+                        variant="inline"
+                        onClose={() => setIsUpdateModalOpen(false)}
+                        onCancel={() => setIsUpdateModalOpen(false)}
+                        onSuccess={() => {
+                            window.location.reload();
+                        }}
+                    />
+                </FocusModal>
             )}
         </>
     );

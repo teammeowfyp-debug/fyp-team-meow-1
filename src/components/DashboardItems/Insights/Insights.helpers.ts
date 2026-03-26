@@ -10,8 +10,22 @@ export interface InsightsProps {
     client?: any;
     mode?: 'overview' | 'focused';
     dateRange?: { startDate: string; endDate: string };
-    cache?: { overview?: string; focused?: any; meetingNotes?: any; meetingNotesSummary?: string; meetingNotesTranscript?: string } | null;
-    onCacheUpdate?: (update: { overview?: string; focused?: any; meetingNotes?: any; meetingNotesSummary?: string; meetingNotesTranscript?: string }) => void;
+    cache?: {
+        overview?: string;
+        focused?: any;
+        meetingNotes?: any;
+        meetingNotesSummary?: string;
+        meetingNotesTranscript?: string;
+        generatedPeriod?: { startDate: string; endDate: string };
+    } | null;
+    onCacheUpdate?: (update: {
+        overview?: string;
+        focused?: any;
+        meetingNotes?: any;
+        meetingNotesSummary?: string;
+        meetingNotesTranscript?: string;
+        generatedPeriod?: { startDate: string; endDate: string };
+    }) => void;
     insightsMode?: 'risk-analysis' | 'meeting-notes';
     onInsightsModeChange?: (mode: 'risk-analysis' | 'meeting-notes') => void;
 }
@@ -170,4 +184,29 @@ export const buildFinancialContextParams = (client: any, dateRange?: { startDate
         cashflow: cashflowString,
         plansHeld: plansString,
     };
+};
+
+export const getStandardButtonStyle = (mode: 'overview' | 'focused' = 'focused') => {
+    return {
+        padding: mode === 'focused' ? '10px 24px' : '6px 16px',
+        borderRadius: mode === 'focused' ? '10px' : '8px',
+        background: 'transparent',
+        color: 'var(--primary)',
+        border: '1px solid var(--primary)',
+        fontWeight: 'var(--font-semibold)',
+        fontSize: mode === 'focused' ? 'var(--text-sm)' : 'var(--text-xs)',
+        transition: 'all 0.2s',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        cursor: 'pointer' as const,
+        textTransform: 'uppercase' as const,
+        letterSpacing: '0.05em'
+    };
+};
+
+export const handleButtonHover = (e: any, isHovering: boolean) => {
+    if (e && e.currentTarget) {
+        e.currentTarget.style.transform = isHovering ? 'translateY(-2px)' : 'translateY(0)';
+    }
 };

@@ -3,6 +3,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { CustomizedXAxisTick } from '../UI/ChartUtils';
 import { FocusModal } from '../UI/FocusModal';
 import CustomSelect from '../UI/CustomSelect';
+import { Button } from '../UI/Button';
 
 interface PlansHeldProps {
     client?: any;
@@ -98,9 +99,9 @@ const PlansHeld: React.FC<PlansHeldProps> = ({ client, mode = 'overview', dateRa
                         />
 
                         {(!assetFilter.includes('All') || !statusFilter.includes('All')) && (
-                            <button className="clear-filters" onClick={clearFilters}>
+                            <Button variant="outline" size="small" onClick={clearFilters} style={{ marginLeft: '10px', height: 'fit-content', alignSelf: 'center' }}>
                                 Clear Filters
-                            </button>
+                            </Button>
                         )}
                     </div>
                 )}
@@ -205,7 +206,7 @@ const PlanDetailView: React.FC<PlanDetailViewProps> = ({ plan }) => {
                     boxShadow: 'var(--shadow-lg)',
                 }}>
                     <p style={{ color: 'var(--secondary)', fontWeight: 600, marginBottom: 4 }}>{payload[0].payload.fullDate}</p>
-                    <p style={{ color: 'var(--primary)', fontSize: '0.9rem' }}>
+                    <p style={{ color: 'var(--primary)', fontSize: 'var(--text-sm)' }}>
                         {isInsurance ? 'Cash Value' : 'Market Value'}: <span style={{ fontWeight: 600 }}>${payload[0].value.toLocaleString()}</span>
                     </p>
                 </div>
@@ -219,10 +220,10 @@ const PlanDetailView: React.FC<PlanDetailViewProps> = ({ plan }) => {
     return (
         <>
             <div className="modal-header" style={{ textAlign: 'center', marginBottom: '0', marginTop: '0' }}>
-                <h2 style={{ fontSize: '1.6rem', marginBottom: '0.25rem' }}>{plan.plan_name}</h2>
+                <h2 style={{ fontSize: 'var(--text-2xl)', marginBottom: '0.25rem' }}>{plan.plan_name}</h2>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
-                    <div className="modal-id" style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Plan ID: {plan.plan_id}</div>
-                    <span className={`status-pill ${(plan.status || '').toLowerCase()}`} style={{ fontSize: '0.75rem', padding: '2px 10px' }}>
+                    <div className="modal-id" style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>Plan ID: {plan.plan_id}</div>
+                    <span className={`status-pill ${(plan.status || '').toLowerCase()}`} style={{ fontSize: 'var(--text-xs)', padding: '2px 10px' }}>
                         {plan.status || '-'}
                     </span>
                 </div>
@@ -273,7 +274,7 @@ const PlanDetailView: React.FC<PlanDetailViewProps> = ({ plan }) => {
                         border: '1px solid var(--border)',
                         marginTop: '1rem',
                         marginBottom: '1rem',
-                        fontSize: '0.9rem'
+                        fontSize: 'var(--text-sm)'
                     }}>
                         {isInsurance ? "This is a pure protection plan with no cash value." : "No valuation data available for this plan."}
                     </div>

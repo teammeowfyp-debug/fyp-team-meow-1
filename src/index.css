@@ -1,10 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap');
 
 :root {
   /* Dynamic Color Palette */
   --primary: #C5B358;
   /* Antique Gold */
-  --primary-glow: rgba(197, 179, 88, 0.15);
+  --primary-glow: rgba(197, 179, 88, 0.2);
   --secondary: #1A1A1A;
   /* Deep Charcoal */
   --accent: #C5B358;
@@ -25,9 +25,36 @@
   /* Deep Charcoal */
   --text-muted: #555555;
 
-  /* Typography */
+  /* Typography Scale */
+  --text-xs: 0.75rem;
+  /* 12px */
+  --text-sm: 0.875rem;
+  /* 14px */
+  --text-base: 1rem;
+  /* 16px */
+  --text-lg: 1.125rem;
+  /* 18px */
+  --text-xl: 1.25rem;
+  /* 20px */
+  --text-2xl: 1.5rem;
+  /* 24px */
+  --text-3xl: 1.875rem;
+  /* 30px */
+  --text-4xl: 2.25rem;
+  /* 36px */
+  --text-5xl: 3rem;
+  /* 48px */
+
   --font-body: 'Inter', system-ui, -apple-system, sans-serif;
   --font-heading: 'Outfit', sans-serif;
+
+  /* Font Weights */
+  --font-light: 300;
+  --font-regular: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  --font-black: 800;
 
   /* Effects */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
@@ -50,7 +77,7 @@
   padding: 0;
 }
 
-html, 
+html,
 body {
   margin: 0;
   padding: 0;
@@ -98,11 +125,13 @@ h6 {
   transition: all 0.3s ease;
 }
 
-.glass-card:hover {
+.glass-card:not(.no-hover):hover {
   border-color: var(--primary);
   transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.25);
 }
+
+
 
 /* Animations */
 @keyframes fadeIn {
@@ -115,6 +144,95 @@ h6 {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Standardized Buttons */
+.btn-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-weight: var(--font-semibold);
+  font-size: var(--text-xs);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  gap: 8px;
+  border: 1px solid transparent;
+  padding: 8px 16px;
+  white-space: nowrap;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--primary-glow);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+.btn-outline:hover:not(:disabled) {
+  background: var(--primary-glow);
+  transform: translateY(-1px);
+}
+
+.btn-tab {
+  flex: 1;
+  padding: 0.75rem 2rem;
+  border: none !important;
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: 10px;
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+}
+
+.btn-tab.active {
+  background: var(--primary) !important;
+  color: #fff !important;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-small {
+  padding: 4px 12px;
+  font-size: 10px;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+}
+
+.btn-large {
+  padding: 12px 24px;
+  font-size: var(--text-sm);
+  border-radius: 10px;
+}
+
+.btn-disabled,
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.w-full {
+  width: 100% !important;
 }
 
 .animate-fade {

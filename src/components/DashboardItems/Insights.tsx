@@ -2,7 +2,7 @@ import React from 'react';
 import { RiskAnalysis } from './Insights/RiskAnalysis';
 import { MeetingNotes } from './Insights/MeetingNotes';
 import type { InsightsProps } from './Insights/Insights.helpers';
-import CustomSelect from '../UI/CustomSelect';
+import { Button } from '../UI/Button';
 
 const Insights: React.FC<InsightsProps> = (props) => {
     const {
@@ -14,23 +14,17 @@ const Insights: React.FC<InsightsProps> = (props) => {
         <section className="glass-card quadrant">
             <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h3>Insights</h3>
-                <CustomSelect
-                    value={insightsMode}
-                    options={[
-                        { label: 'Risk Analysis', value: 'risk-analysis' },
-                        { label: 'Meeting Notes', value: 'meeting-notes' }
-                    ]}
-                    onChange={(val) => onInsightsModeChange?.(val)}
-                    style={{ minWidth: '140px' }}
-                    preventParentInteraction={true}
-                    triggerStyle={{
-                        padding: '4px 10px',
-                        border: '1px solid var(--border)',
-                        backgroundColor: 'rgba(0,0,0,0.02)',
-                        minHeight: 'auto'
+                <Button
+                    variant="primary"
+                    size="small"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onInsightsModeChange?.(insightsMode === 'risk-analysis' ? 'meeting-notes' : 'risk-analysis');
                     }}
-                    optionsStyle={{ marginTop: '4px', padding: '4px' }}
-                />
+                    style={{ borderRadius: '20px', padding: '4px 12px', fontSize: '0.7rem' }}
+                >
+                    {insightsMode === 'risk-analysis' ? 'Risk Analysis' : 'Meeting Notes'}
+                </Button>
             </div>
 
             {insightsMode === 'risk-analysis' ? (

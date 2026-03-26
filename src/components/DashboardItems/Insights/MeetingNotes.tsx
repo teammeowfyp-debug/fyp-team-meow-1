@@ -10,6 +10,7 @@ import {
     InlineCopyButton,
     AIDisclaimerPill
 } from './Insights.components';
+import { Button } from '../../UI/Button';
 
 export const MeetingNotes: React.FC<InsightsProps> = ({
     client,
@@ -133,29 +134,31 @@ export const MeetingNotes: React.FC<InsightsProps> = ({
         handleFeedbackSubmit(meetingContent);
     };
 
-    const insightsTabButtonStyle = (isActive: boolean) => ({
-        flex: 1,
-        padding: mode === 'focused' ? '0.5rem 1.5rem' : '0.35rem 1rem',
-        border: 'none',
-        background: isActive ? 'var(--primary)' : 'transparent',
-        color: isActive ? '#fff' : 'var(--text-muted)',
-        borderRadius: '8px',
-        fontWeight: 600,
-        fontSize: mode === 'focused' ? '0.85rem' : '0.75rem',
-        cursor: 'pointer',
-        transition: 'all 0.2s ease',
-        boxShadow: isActive ? 'var(--shadow-sm)' : 'none',
-        textAlign: 'center' as const
-    });
-
     return (
         <>
             <div className="risk-indicator" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, gap: '0.75rem' }}>
                 <div className="tabs-switcher animate-fade" style={{
-                    display: 'flex', width: '100%', backgroundColor: 'rgba(0, 0, 0, 0.04)', borderRadius: '10px', padding: '3px', gap: 0
+                    display: 'flex', width: '100%', backgroundColor: 'rgba(0, 0, 0, 0.04)', borderRadius: '10px', 
+                    padding: '3px', gap: 0
                 }}>
-                    <button style={insightsTabButtonStyle(meetingTab === 'transcript')} onClick={(e) => { e.stopPropagation(); setMeetingTab('transcript'); }}>Transcript</button>
-                    <button style={insightsTabButtonStyle(meetingTab === 'generated')} onClick={(e) => { e.stopPropagation(); setMeetingTab('generated'); }}>Meeting Notes</button>
+                    <Button
+                        variant="tab"
+                        isActive={meetingTab === 'transcript'}
+                        size={mode === 'focused' ? 'medium' : 'small'}
+                        style={mode === 'overview' ? { padding: '8px 12px', fontSize: 'var(--text-xs)' } : {}}
+                        onClick={(e) => { e.stopPropagation(); setMeetingTab('transcript'); }}
+                    >
+                        Transcript
+                    </Button>
+                    <Button
+                        variant="tab"
+                        isActive={meetingTab === 'generated'}
+                        size={mode === 'focused' ? 'medium' : 'small'}
+                        style={mode === 'overview' ? { padding: '8px 12px', fontSize: 'var(--text-xs)' } : {}}
+                        onClick={(e) => { e.stopPropagation(); setMeetingTab('generated'); }}
+                    >
+                        Notes
+                    </Button>
                 </div>
 
                 <div className="ai-analysis-content" style={{ minHeight: 0, flex: 1, position: 'relative' }}
@@ -167,32 +170,31 @@ export const MeetingNotes: React.FC<InsightsProps> = ({
                             <textarea
                                 placeholder="Paste or type your meeting transcript here..."
                                 value={transcript}
-                                onChange={(e) => setTranscript(e.target.value)}
+                                onChange={(e: any) => setTranscript(e.target.value)}
                                 readOnly={!!(meetingNotesSummary || loading || meetingNotesResult)}
                                 style={{
                                     width: '100%', height: '100%', flex: 1, padding: mode === 'focused' ? '1.25rem' : '1rem',
                                     paddingBottom: (meetingNotesSummary || loading || meetingNotesResult) ? '1rem' : (mode === 'focused' ? '60px' : '50px'),
-                                    fontSize: mode === 'focused' ? '0.95rem' : '0.875rem', fontFamily: 'inherit', resize: 'none', outline: 'none',
+                                    fontSize: mode === 'focused' ? 'var(--text-base)' : 'var(--text-sm)', fontFamily: 'inherit', resize: 'none', outline: 'none',
                                     border: 'none', background: 'transparent', color: 'var(--text-main)', lineHeight: '1.6', boxSizing: 'border-box',
                                     opacity: (meetingNotesSummary || loading || meetingNotesResult) ? 0.8 : 1
                                 }}
                             />
-                            {!meetingNotesSummary && !loading && !meetingNotesResult && (
-                                <button
+                             {!meetingNotesSummary && !loading && !meetingNotesResult && (
+                                <Button
                                     onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleMeetingNotesSubmit(); }}
                                     disabled={!transcript.trim() || loading}
+                                    variant="outline"
+                                    size={mode === 'focused' ? 'medium' : 'small'}
                                     style={{
-                                        position: 'absolute', bottom: mode === 'focused' ? '16px' : '12px', right: mode === 'focused' ? '16px' : '12px',
-                                        padding: mode === 'focused' ? '10px 24px' : '6px 16px', borderRadius: mode === 'focused' ? '10px' : '8px',
-                                        background: (!transcript.trim()) ? 'rgba(0,0,0,0.05)' : 'linear-gradient(135deg, #C5B358 0%, #B3A049 100%)',
-                                        color: (!transcript.trim()) ? 'var(--text-muted)' : '#fff', border: 'none', fontWeight: 700,
-                                        fontSize: mode === 'focused' ? '0.85rem' : '0.75rem', cursor: (!transcript.trim()) ? 'not-allowed' : 'pointer',
-                                        transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 5,
-                                        boxShadow: (!transcript.trim()) ? 'none' : '0 2px 8px rgba(197, 179, 88, 0.25)',
+                                        position: 'absolute',
+                                        bottom: mode === 'focused' ? '16px' : '12px',
+                                        right: mode === 'focused' ? '16px' : '12px',
+                                        zIndex: 5
                                     }}
                                 >
                                     {loading ? 'Analysing...' : 'Analyse'}
-                                </button>
+                                </Button>
                             )}
                         </div>
                     )}
@@ -207,9 +209,9 @@ export const MeetingNotes: React.FC<InsightsProps> = ({
                                 {!meetingNotesSummary && !loading && !meetingNotesResult && (
                                     <div className="animate-fade" style={{
                                         height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                                        padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem', opacity: 0.8, gap: '1rem'
+                                        padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: 'var(--text-base)', opacity: 0.8, gap: '1rem'
                                     }}>
-                                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.5 }}>
+                                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.8 }}>
                                             <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
                                             <polyline points="14 2 14 8 20 8"></polyline>
                                             <line x1="16" y1="13" x2="8" y2="13"></line>
@@ -236,7 +238,7 @@ export const MeetingNotes: React.FC<InsightsProps> = ({
                                                     <div className="line short"></div>
                                                 </div>
                                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', color: 'var(--text-muted)' }}>
-                                                    <p style={{ fontSize: '0.9rem', fontWeight: 500, letterSpacing: '0.05em' }}>
+                                                    <p style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-medium)', letterSpacing: '0.05em' }}>
                                                         {!meetingNotesSummary ? 'Generating executive summary...' : 'Generating comprehensive analysis...'}
                                                     </p>
                                                 </div>
@@ -277,13 +279,13 @@ export const MeetingNotes: React.FC<InsightsProps> = ({
                                                     <div className="line short"></div>
                                                 </div>
                                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', color: 'var(--text-muted)' }}>
-                                                    <p style={{ fontSize: '0.9rem', fontWeight: 500, letterSpacing: '0.05em' }}>Generating executive summary...</p>
+                                                    <p style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-medium)', letterSpacing: '0.05em' }}>Generating executive summary...</p>
                                                 </div>
                                             </div>
                                         )}
                                         {meetingNotesSummary && !loading && (
                                             <div className="analysis-text animate-fade" style={{ opacity: 0.9 }}>
-                                                <h4 style={{ color: 'var(--primary)', fontSize: '0.8rem', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.8, fontWeight: 700 }}>Summary</h4>
+                                                <h4 style={{ color: 'var(--primary)', fontSize: 'var(--text-xs)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.8, fontWeight: 'var(--font-semibold)' }}>Summary</h4>
                                                 {renderCleanList(meetingNotesSummary)}
                                             </div>
                                         )}
@@ -294,27 +296,27 @@ export const MeetingNotes: React.FC<InsightsProps> = ({
                     )}
 
                     {(meetingNotesSummary || meetingNotesResult) && !loading && (
-                        <button
+                        <Button
                             onClick={(e) => {
                                 e.stopPropagation(); e.preventDefault();
                                 setMeetingNotesSummary(''); setMeetingNotesResult(null); setTranscript(''); setMeetingTab('transcript');
                                 if (onCacheUpdate) onCacheUpdate({ meetingNotes: null, meetingNotesSummary: '', meetingNotesTranscript: '' });
                             }}
+                            variant="outline"
+                            size={mode === 'focused' ? 'medium' : 'small'}
                             style={{
-                                position: 'absolute', bottom: mode === 'focused' ? '12px' : '10px', right: mode === 'focused' ? '12px' : '10px',
-                                fontSize: '0.65rem', color: '#fff', background: 'linear-gradient(135deg, #C5B358 0%, #B3A049 100%)',
-                                padding: mode === 'focused' ? '8px 20px' : '4px 10px', borderRadius: mode === 'focused' ? '10px' : '20px',
-                                border: 'none', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', cursor: 'pointer',
-                                transition: 'all 0.2s ease', display: 'flex', alignItems: 'center', gap: mode === 'focused' ? '6px' : '4px',
-                                zIndex: 10, boxShadow: mode === 'focused' ? '0 3px 12px rgba(197, 179, 88, 0.3)' : '0 2px 8px rgba(197, 179, 88, 0.25)',
+                                position: 'absolute',
+                                bottom: mode === 'focused' ? '12px' : '10px',
+                                right: mode === 'focused' ? '12px' : '10px',
+                                zIndex: 10
                             }}
                         >
-                            <svg width={mode === 'focused' ? '12' : '10'} height={mode === 'focused' ? '12' : '10'} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <svg width={mode === 'focused' ? '12' : '10'} height={mode === 'focused' ? '12' : '10'} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '0.5rem' }}>
                                 <line x1="12" y1="5" x2="12" y2="19"></line>
                                 <line x1="5" y1="12" x2="19" y2="12"></line>
                             </svg>
                             New Transcript
-                        </button>
+                        </Button>
                     )}
                 </div>
 

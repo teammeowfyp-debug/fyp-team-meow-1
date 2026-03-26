@@ -11,6 +11,7 @@ import {
     InlineCopyButton,
     AIDisclaimerPill
 } from './Insights.components';
+import { Button } from '../../UI/Button';
 
 export const RiskAnalysis: React.FC<InsightsProps> = ({
     client,
@@ -98,10 +99,10 @@ export const RiskAnalysis: React.FC<InsightsProps> = ({
                         const parsed = JSON.parse(fullText);
                         const exSummary = parsed["Executive Summary"] || fullText;
                         setSummary(exSummary);
-                        if (onCacheUpdate) onCacheUpdate({ overview: exSummary });
+                        if (onCacheUpdate) onCacheUpdate({ overview: exSummary, generatedPeriod: dateRange });
                     } catch (parseErr) {
                         setSummary(fullText);
-                        if (onCacheUpdate) onCacheUpdate({ overview: fullText });
+                        if (onCacheUpdate) onCacheUpdate({ overview: fullText, generatedPeriod: dateRange });
                     }
                 } catch (err: any) {
                     setError(err.message === 'Load failed' || err.message === 'Failed to fetch' ? 'AI Service unreachable.' : 'Failed to load summary.');
@@ -132,7 +133,7 @@ export const RiskAnalysis: React.FC<InsightsProps> = ({
                 }
                 const parsed = JSON.parse(fullText);
                 setStructuredAnalysis(parsed);
-                if (onCacheUpdate) onCacheUpdate({ focused: parsed });
+                if (onCacheUpdate) onCacheUpdate({ focused: parsed, generatedPeriod: dateRange });
             } catch (err: any) {
                 setError('Failed to generate full risk analysis.');
             } finally {
@@ -193,45 +194,30 @@ export const RiskAnalysis: React.FC<InsightsProps> = ({
                                 }}>
                                     <span className="label" style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>Current Category:</span>
                                     {mode === 'focused' && (
-                                        <button
+                                        <Button
                                             onClick={() => setIsInfoModalOpen(true)}
+                                            size="small"
                                             style={{
-                                                width: '18px',
-                                                height: '18px',
+                                                width: '24px',
+                                                height: '24px',
                                                 borderRadius: '50%',
-                                                border: '1px solid var(--border)',
-                                                background: 'rgba(0,0,0,0.03)',
-                                                color: 'var(--text-muted)',
-                                                cursor: 'pointer',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                transition: 'all 0.2s',
                                                 padding: 0,
-                                                marginTop: '-2px',
-                                                fontSize: '0.75rem',
-                                                fontWeight: 600
-                                            }}
-                                            title="View Risk Level Guide"
-                                            onMouseOver={(e) => {
-                                                e.currentTarget.style.background = 'var(--primary)';
-                                                e.currentTarget.style.color = '#fff';
-                                                e.currentTarget.style.borderColor = 'var(--primary)';
-                                            }}
-                                            onMouseOut={(e) => {
-                                                e.currentTarget.style.background = 'rgba(0,0,0,0.03)';
-                                                e.currentTarget.style.color = 'var(--text-muted)';
-                                                e.currentTarget.style.borderColor = 'var(--border)';
+                                                minWidth: '24px',
+                                                background: 'rgba(0,0,0,0.06)',
+                                                color: 'var(--text-muted)',
+                                                border: 'none',
+                                                fontSize: '11px',
+                                                fontWeight: 'var(--font-semibold)'
                                             }}
                                         >
                                             ?
-                                        </button>
+                                        </Button>
                                     )}
                                 </div>
                                 <span className="value" style={{
-                                    fontSize: mode === 'overview' ? '1.25rem' : '2rem',
+                                    fontSize: mode === 'overview' ? 'var(--text-xl)' : 'var(--text-4xl)',
                                     color: 'var(--accent)',
-                                    fontWeight: 700
+                                    fontWeight: 'var(--font-bold)'
                                 }}>
                                     {clientInfo.category}
                                 </span>
@@ -272,7 +258,7 @@ export const RiskAnalysis: React.FC<InsightsProps> = ({
                                             gap: '0.75rem',
                                             color: 'var(--text-muted)'
                                         }}>
-                                            <p style={{ fontSize: '0.9rem', fontWeight: 500, letterSpacing: '0.05em' }}>
+                                            <p style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-medium)', letterSpacing: '0.05em' }}>
                                                 {!summary ? 'Generating executive summary...' : 'Generating comprehensive analysis...'}
                                             </p>
                                         </div>
@@ -320,13 +306,13 @@ export const RiskAnalysis: React.FC<InsightsProps> = ({
                                             gap: '0.75rem',
                                             color: 'var(--text-muted)'
                                         }}>
-                                            <p style={{ fontSize: '0.9rem', fontWeight: 500, letterSpacing: '0.05em' }}>Generating executive summary...</p>
+                                            <p style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-medium)', letterSpacing: '0.05em' }}>Generating executive summary...</p>
                                         </div>
                                     </div>
                                 )}
                                 {summary && (
                                     <div className="analysis-text animate-fade" style={{ opacity: 0.9 }}>
-                                        <h4 style={{ color: 'var(--primary)', fontSize: '0.8rem', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.8, fontWeight: 700 }}>Summary</h4>
+                                        <h4 style={{ color: 'var(--primary)', fontSize: 'var(--text-xs)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.8, fontWeight: 'var(--font-semibold)' }}>Summary</h4>
                                         {renderCleanList(summary)}
                                     </div>
                                 )}
@@ -336,7 +322,7 @@ export const RiskAnalysis: React.FC<InsightsProps> = ({
                         {!hasInitiated && !loading && !error && (
                             <div className="animate-fade" style={{
                                 height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                                padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem', opacity: 0.8, gap: '0.5rem'
+                                padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: 'var(--text-base)', opacity: 0.8, gap: '0.5rem'
                             }}>
                                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.5 }}>
                                     <circle cx="12" cy="12" r="10"></circle>
@@ -344,26 +330,73 @@ export const RiskAnalysis: React.FC<InsightsProps> = ({
                                     <circle cx="12" cy="12" r="2"></circle>
                                 </svg>
                                 <p>Click below to analyse the client's risk alignment.</p>
-                                <button
+                                <Button
                                     onClick={(e) => { e.stopPropagation(); setHasInitiated(true); }}
-                                    style={{
-                                        padding: '10px 24px', borderRadius: '10px',
-                                        background: 'linear-gradient(135deg, #C5B358 0%, #B3A049 100%)',
-                                        color: '#fff', border: 'none', fontWeight: 700,
-                                        fontSize: '0.85rem', cursor: 'pointer',
-                                        transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        boxShadow: '0 2px 8px rgba(197, 179, 88, 0.25)',
-                                        marginTop: '0.5rem'
-                                    }}
-                                    onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-                                    onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                                    variant="outline"
+                                    size={mode === 'focused' ? 'medium' : 'small'}
+                                    style={{ marginTop: '0.5rem' }}
                                 >
                                     Generate Analysis
-                                </button>
+                                </Button>
                             </div>
                         )}
                     </div>
                 </div>
+
+                {/* Outdated Analysis Warning Indicator */}
+                {cache?.generatedPeriod && dateRange && (cache.generatedPeriod.startDate !== dateRange.startDate || cache.generatedPeriod.endDate !== dateRange.endDate) && (
+                    <div className="animate-fade" style={{
+                        padding: '8px 12px',
+                        background: 'rgba(155, 34, 38, 0.08)',
+                        border: '1px solid rgba(155, 34, 38, 0.15)',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        marginTop: '0.25rem'
+                    }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9B2226" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                        <span style={{ fontSize: 'var(--text-sm)', color: '#9B2226', fontWeight: 'var(--font-semibold)', flex: 1 }}>
+                            Date Mismatch: This analysis was generated for {new Date(cache.generatedPeriod.startDate).toLocaleDateString()} - {new Date(cache.generatedPeriod.endDate).toLocaleDateString()}
+                        </span>
+                        <Button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                reset(); // Clear local state
+                                if (onCacheUpdate) {
+                                    // Clear cache to trigger re-generation
+                                    onCacheUpdate({
+                                        overview: undefined,
+                                        focused: undefined,
+                                        generatedPeriod: undefined
+                                    });
+                                }
+                            }}
+                            variant="outline"
+                            size={mode === 'focused' ? 'medium' : 'small'}
+                            style={{
+                                color: '#9B2226',
+                                borderColor: 'rgba(155, 34, 38, 0.3)',
+                                background: 'transparent',
+                                transition: 'all 0.2s ease'
+                            }}
+                            onMouseEnter={(e: any) => {
+                                e.currentTarget.style.background = 'rgba(155, 34, 38, 0.1)';
+                                e.currentTarget.style.color = '#7a1b1e';
+                            }}
+                            onMouseLeave={(e: any) => {
+                                e.currentTarget.style.background = 'transparent';
+                                e.currentTarget.style.color = '#9B2226';
+                            }}
+                        >
+                            Regenerate
+                        </Button>
+                    </div>
+                )}
 
                 {mode === 'overview' && (
                     <AIDisclaimerPill

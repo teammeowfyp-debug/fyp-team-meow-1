@@ -18,6 +18,7 @@ export interface RiskAnalysisCache {
     meetingNotes?: any;
     meetingNotesSummary?: string;
     meetingNotesTranscript?: string;
+    generatedPeriod?: { startDate: string; endDate: string };
 }
 
 export const useDashboardData = (clientId: string | undefined) => {
@@ -61,18 +62,9 @@ export const useDashboardData = (clientId: string | undefined) => {
         }));
     }, [clientId]);
 
-    // Clear Insights cache for the current client when the date range changes
-    useEffect(() => {
-        if (!clientId) return;
-        setRiskAnalysisCache(prev => {
-            const clientCache = prev[clientId];
-            if (!clientCache || Object.keys(clientCache).length === 0) return prev;
-            return {
-                ...prev,
-                [clientId]: {}
-            };
-        });
-    }, [startDate, endDate, clientId]);
+    // Insights cache is now persistent across date changes
+    // Meeting notes remain as they are tied to transcript
+    // Risk analysis remains but will show a "different period" indicator in UI
 
     const fetchClientData = useCallback(async () => {
         if (!clientId) return;
@@ -175,9 +167,11 @@ export const useDashboardData = (clientId: string | undefined) => {
 
                 if (allDates.length > 0) {
                     const sorted = allDates.map(d => d.substring(0, 10)).sort();
+                    const today = new Date().toISOString().split('T')[0];
+                    const maxDataDate = sorted[sorted.length - 1];
                     const bounds = {
                         start: sorted[0],
-                        end: sorted[sorted.length - 1]
+                        end: maxDataDate > today ? today : maxDataDate
                     };
                     setAbsoluteBounds(bounds);
                     setStartDate(bounds.start);

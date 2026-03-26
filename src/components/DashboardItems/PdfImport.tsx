@@ -11,6 +11,7 @@ import {
   normalizeExtractedData,
   createEmptyExtractedData,
 } from '../../lib/pdfImport';
+import { Button } from '../UI/Button';
 import type { PdfExtractedData } from '../../lib/pdfImport';
 
 interface PdfImportProps {
@@ -18,9 +19,9 @@ interface PdfImportProps {
   clientId?: string;
   /** Called after a successful apply so the parent can refresh data */
   onSuccess?: (newClientId?: string) => void;
-  onClose: () => void;
+  onClose?: () => void;
   onCancel?: () => void;
-  variant?: 'modal' | 'inline';
+  variant?: 'modal' | 'inline' | 'page';
 }
 
 type Step = 'upload' | 'extracting' | 'review' | 'applying' | 'done';
@@ -344,7 +345,7 @@ export const PdfImport: React.FC<PdfImportProps> = ({ clientId, onSuccess, onClo
       setStep('done');
       setTimeout(() => {
         onSuccess?.(newId);
-        onClose();
+        onClose?.();
       }, 3000);
     } catch (err: any) {
       setError(err.message || 'Failed to apply changes.');
@@ -496,10 +497,10 @@ export const PdfImport: React.FC<PdfImportProps> = ({ clientId, onSuccess, onClo
         borderBottom: '1px solid var(--border, #eee)', paddingBottom: '1rem'
       }}>
         <div>
-          <h2 style={{ margin: 0, fontSize: '1.8rem', color: 'var(--secondary, #333)' }}>
+          <h2 style={{ margin: 0, fontSize: 'var(--text-3xl)', color: 'var(--secondary, #333)' }}>
             {isNewClient ? 'Add Client Profile' : 'Update Client Profile'}
           </h2>
-          <p style={{ margin: '6px 0 0', fontSize: '0.85rem', color: 'var(--text-muted, #888)' }}>
+          <p style={{ margin: '6px 0 0', fontSize: 'var(--text-sm)', color: 'var(--text-muted, #888)' }}>
             {isNewClient
               ? 'Fill details manually or autopopulate via PDF'
               : (!existingClient ? 'Loading...' : `Updating profile for ${existingClient?.name_as_per_id || existingClient?.full_name || 'Matched Client'}`)
@@ -542,7 +543,7 @@ export const PdfImport: React.FC<PdfImportProps> = ({ clientId, onSuccess, onClo
               {file ? (
                 <p style={{ fontWeight: 600, color: 'var(--secondary, #333)', margin: 0 }}>
                   {file.name}
-                  <span style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted, #888)', fontWeight: 400, marginTop: '4px' }}>
+                  <span style={{ display: 'block', fontSize: 'var(--text-xs)', color: 'var(--text-muted, #888)', fontWeight: 400, marginTop: '4px' }}>
                     {(file.size / 1024 / 1024).toFixed(1)} MB — click to change
                   </span>
                 </p>
@@ -551,7 +552,7 @@ export const PdfImport: React.FC<PdfImportProps> = ({ clientId, onSuccess, onClo
                   <p style={{ fontWeight: 600, color: 'var(--secondary, #333)', margin: '0 0 4px' }}>
                     Drag & drop your PDF here
                   </p>
-                  <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted, #888)' }}>
+                  <p style={{ margin: 0, fontSize: 'var(--text-sm)', color: 'var(--text-muted, #888)' }}>
                     or click to browse
                   </p>
                 </>
@@ -565,13 +566,13 @@ export const PdfImport: React.FC<PdfImportProps> = ({ clientId, onSuccess, onClo
             </div>
 
             {error && (
-              <p style={{ margin: 0, color: '#c0392b', fontSize: '0.85rem', fontWeight: 500, textAlign: 'center' }}>
+              <p style={{ margin: 0, color: '#c0392b', fontSize: 'var(--text-sm)', fontWeight: 500, textAlign: 'center' }}>
                 ⚠ {error}
               </p>
             )}
 
             {step === 'extracting' && (
-              <div style={{ textAlign: 'center', color: 'var(--text-muted, #888)', fontSize: '0.9rem' }}>
+              <div style={{ textAlign: 'center', color: 'var(--text-muted, #888)', fontSize: 'var(--text-sm)' }}>
                 <div style={{
                   display: 'inline-block', width: '28px', height: '28px',
                   border: '3px solid var(--border, #ddd)',
@@ -608,7 +609,7 @@ export const PdfImport: React.FC<PdfImportProps> = ({ clientId, onSuccess, onClo
               </svg>
             </div>
             <p style={{ margin: 0, color: 'var(--secondary)', fontWeight: 600 }}>Loading Client Data</p>
-            <p style={{ margin: '4px 0 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>Fetching the latest profile details...</p>
+            <p style={{ margin: '4px 0 0', fontSize: 'var(--text-sm)', color: 'var(--text-muted)' }}>Fetching the latest profile details...</p>
           </div>
         )}
 
@@ -630,32 +631,25 @@ export const PdfImport: React.FC<PdfImportProps> = ({ clientId, onSuccess, onClo
               gap: '1rem'
             }}>
               <div style={{ flex: 1 }}>
-                <h4 style={{ margin: 0, fontSize: '0.9rem', color: 'var(--secondary, #333)' }}>Autopopulate via PDF</h4>
-                <p style={{ margin: '4px 0 0', fontSize: '0.75rem', color: 'var(--text-muted, #888)' }}>
+                <h4 style={{ margin: 0, fontSize: 'var(--text-sm)', color: 'var(--secondary, #333)' }}>Autopopulate via PDF</h4>
+                <p style={{ margin: '4px 0 0', fontSize: 'var(--text-xs)', color: 'var(--text-muted, #888)' }}>
                   Save time by extracting data from a Great Eastern life plan document.
                 </p>
               </div>
-              <button
+              <Button
+                variant="outline"
+                size="small"
                 onClick={() => setStep('upload')}
-                style={{
-                  ...secondaryBtnStyle,
-                  borderColor: 'var(--primary, #c5b358)',
-                  color: 'var(--primary, #c5b358)',
-                  padding: '8px 16px',
-                  fontSize: '0.8rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}
+                style={{ borderRadius: '10px' }}
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '6px' }}>
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                   <polyline points="14 2 14 8 20 8"></polyline>
                   <line x1="12" y1="18" x2="12" y2="12"></line>
                   <line x1="9" y1="15" x2="15" y2="15"></line>
                 </svg>
                 Select PDF
-              </button>
+              </Button>
             </div>
 
             {/* Client Details section - Grouped */}
@@ -668,7 +662,7 @@ export const PdfImport: React.FC<PdfImportProps> = ({ clientId, onSuccess, onClo
               <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                 {/* Basic Group */}
                 <div>
-                  <h4 style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '1rem', borderBottom: '1px solid var(--border)', paddingBottom: '4px' }}>Basic Details</h4>
+                  <h4 style={{ fontSize: 'var(--text-xs)', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '1rem', borderBottom: '1px solid var(--border)', paddingBottom: '4px' }}>Basic Details</h4>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem 1.5rem' }}>
                     {['name_as_per_id', 'id_type', 'id_no', 'title', 'gender', 'date_of_birth', 'age', 'nationality', 'singapore_pr'].map(field => (
                       <FieldRow 
@@ -801,7 +795,7 @@ export const PdfImport: React.FC<PdfImportProps> = ({ clientId, onSuccess, onClo
                     </div>
                   </div>
                 ))}
-                <button onClick={addFamilyMember} style={{ ...secondaryBtnStyle, width: '100%', marginTop: '0.5rem' }}>+ Add Family Member</button>
+                <Button variant="outline" size="small" onClick={addFamilyMember} fullWidth style={{ marginTop: '0.5rem' }}>+ Add Family Member</Button>
               </div>
             </Section>
 
@@ -874,7 +868,7 @@ export const PdfImport: React.FC<PdfImportProps> = ({ clientId, onSuccess, onClo
                     </div>
                   </div>
                 ))}
-                <button onClick={addInsurancePlan} style={{ ...secondaryBtnStyle, width: '100%', marginTop: '0.5rem' }}>+ Add Insurance Plan</button>
+                <Button variant="outline" size="small" onClick={addInsurancePlan} fullWidth style={{ marginTop: '0.5rem' }}>+ Add Insurance Plan</Button>
               </div>
             </Section>
 
@@ -907,7 +901,7 @@ export const PdfImport: React.FC<PdfImportProps> = ({ clientId, onSuccess, onClo
                     </div>
                   </div>
                 ))}
-                <button onClick={addInvestment} style={{ ...secondaryBtnStyle, width: '100%', marginTop: '0.5rem' }}>+ Add Investment</button>
+                <Button variant="outline" size="small" onClick={addInvestment} fullWidth style={{ marginTop: '0.5rem' }}>+ Add Investment</Button>
               </div>
             </Section>
 
@@ -946,7 +940,7 @@ export const PdfImport: React.FC<PdfImportProps> = ({ clientId, onSuccess, onClo
       }}>
         <div style={{ flex: 1 }}>
           {error && (
-            <p style={{ margin: 0, color: '#c0392b', fontSize: '0.9rem', fontWeight: 600 }}>
+            <p style={{ margin: 0, color: '#c0392b', fontSize: 'var(--text-sm)', fontWeight: 600 }}>
               ⚠ {error}
             </p>
           )}
@@ -954,36 +948,34 @@ export const PdfImport: React.FC<PdfImportProps> = ({ clientId, onSuccess, onClo
         <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
           {step === 'upload' && (
             <>
-              <button onClick={() => { setFile(null); setStep('review'); }} style={secondaryBtnStyle}>Cancel</button>
-              <button
+
+              <Button
+                variant="outline"
                 onClick={handleAnalyse}
                 disabled={!file}
-                style={{ ...primaryBtnStyle, opacity: file ? 1 : 0.5 }}
               >
                 Analyse PDF
-              </button>
+              </Button>
             </>
           )}
           {step === 'extracting' && (
-            <button onClick={() => { setFile(null); setStep('review'); }} style={secondaryBtnStyle}>Cancel</button>
+            null
           )}
           {step === 'review' && (
             <>
+            <>
               {(file && !clientId) && (
-                <button onClick={() => setStep('upload')} style={secondaryBtnStyle}>← Back to Upload</button>
+                <Button variant="outline" onClick={() => setStep('upload')}>← Back to Upload</Button>
               )}
-              <button onClick={onCancel || onClose} style={secondaryBtnStyle}>Cancel</button>
-              <button
+
+              <Button
+                variant="outline"
                 onClick={handleApply}
                 disabled={!extracted}
-                style={{
-                  ...primaryBtnStyle,
-                  background: 'var(--primary, #c5b358)',
-                  opacity: extracted ? 1 : 0.5
-                }}
               >
                 {isNewClient ? 'Add Client' : 'Update Client'}
-              </button>
+              </Button>
+            </>
             </>
           )}
         </div>
@@ -1007,10 +999,32 @@ export const PdfImport: React.FC<PdfImportProps> = ({ clientId, onSuccess, onClo
     );
   }
 
-  return (
-    <FocusModal isOpen={true} onClose={onClose} closeOnBackdropClick={false}>
+  const content = (
+    <div 
+        className={variant === 'page' ? "pdf-import-container no-hover" : "pdf-import-container"}
+        style={variant === 'page' ? {
+            maxWidth: '1200px',
+            margin: '2rem auto',
+            padding: '2rem',
+            background: '#fff',
+            borderRadius: '16px',
+            border: '1px solid var(--border)',
+            boxShadow: 'var(--shadow-lg)',
+            minHeight: '80vh'
+        } : {}}
+    >
       {modalContent}
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
+
+  if (variant !== 'modal') {
+    return content;
+  }
+
+  return (
+    <FocusModal isOpen={true} onClose={onClose || (() => {})} closeOnBackdropClick={false}>
+      {content}
     </FocusModal>
   );
 };
@@ -1268,18 +1282,6 @@ const MultiPillSelect: React.FC<{
 };
 
 
-const primaryBtnStyle: React.CSSProperties = {
-  padding: '10px 24px',
-  background: 'var(--primary, #c5b358)',
-  color: '#fff',
-  border: '1px solid transparent',
-  borderRadius: '10px',
-  fontWeight: 700,
-  fontSize: '0.9rem',
-  cursor: 'pointer',
-  minWidth: '150px',
-};
-
 const SingleCustomSelect: React.FC<{
   options: string[];
   value: string;
@@ -1335,7 +1337,7 @@ const SingleCustomSelect: React.FC<{
         )}
         {value && <span style={{ color: 'var(--secondary, #333)', fontSize: '0.85rem' }}>{value}</span>}
         
-        <div style={{ marginLeft: 'auto', color: '#888', display: 'flex', alignItems: 'center' }}>
+        <div style={{ marginLeft: 'auto', color: 'var(--primary)', display: 'flex', alignItems: 'center' }}>
           <svg 
             width="12" height="12" viewBox="0 0 24 24" fill="none" 
             stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
@@ -1376,17 +1378,6 @@ const SingleCustomSelect: React.FC<{
       )}
     </div>
   );
-};
-
-const secondaryBtnStyle: React.CSSProperties = {
-  padding: '10px 20px',
-  background: 'transparent',
-  color: 'var(--secondary, #333)',
-  border: '1px solid var(--border, #ddd)',
-  borderRadius: '10px',
-  fontWeight: 600,
-  fontSize: '0.9rem',
-  cursor: 'pointer',
 };
 
 export default PdfImport;

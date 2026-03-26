@@ -147,7 +147,7 @@ const AddUser: React.FC = () => {
               />
             </div>
           </label>
-          <span className="login-subtitle" style={{ fontSize: '0.8rem', marginTop: '-12px' }}>Must be at least 6 characters. User should change after first login.</span>
+          <span className="login-subtitle" style={{ fontSize: 'var(--text-xs)', marginTop: '-12px' }}>Must be at least 6 characters. User should change after first login.</span>
 
           <label className="login-label">
             Role
@@ -161,7 +161,7 @@ const AddUser: React.FC = () => {
                   borderRadius: '4px',
                   border: '1px solid var(--border)',
                   background: '#fff',
-                  fontSize: '1rem',
+                  fontSize: 'var(--text-base)',
                 }}
               >
                 <option value="staff">Staff</option>

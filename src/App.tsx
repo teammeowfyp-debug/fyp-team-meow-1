@@ -13,6 +13,7 @@ import './App.css'
 import { AuthProvider } from './lib/AuthProvider'
 import RequireAuth from './lib/RequireAuth'
 import IdleLogout from './components/IdleLogout'
+import { PdfImport } from './components/DashboardItems/PdfImport'
 
 function AppContent() {
   const location = useLocation()
@@ -72,6 +73,14 @@ function AppContent() {
             element={
               <RequireAuth>
                 <Dashboard />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/add-client"
+            element={
+              <RequireAuth>
+                <PdfImport variant="page" />
               </RequireAuth>
             }
           />

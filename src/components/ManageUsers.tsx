@@ -2,6 +2,7 @@ import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/AuthProvider'
 import './Login.css'
+import { Button } from './UI/Button'
 
 const ManageUsers: React.FC = () => {
   const { user } = useAuth()
@@ -14,17 +15,20 @@ const ManageUsers: React.FC = () => {
 
   return (
     <div className="login-page">
-      <div className="login-card glass-card animate-fade" style={{ maxWidth: 420 }}>
+      <div className="login-card glass-card animate-fade no-hover" style={{ maxWidth: 420 }}>
         <header className="login-header">
           <h2>Manage Users</h2>
           <span className="login-subtitle">Add new staff or reassign clients to agents</span>
         </header>
 
         <div className="manage-users-buttons">
-          <button
+          <Button
             type="button"
-            className="manage-users-btn"
+            variant="outline"
+            size="medium"
+            fullWidth
             onClick={() => navigate('/admin/add-user')}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '1rem', padding: '12px' }}
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -33,22 +37,28 @@ const ManageUsers: React.FC = () => {
               <line x1="23" y1="11" x2="17" y2="11"></line>
             </svg>
             Add Users
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
-            className="manage-users-btn"
+            variant="outline"
+            size="medium"
+            fullWidth
             onClick={() => navigate('/admin/edit-users')}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '1rem', padding: '12px' }}
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
               <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
             </svg>
             Edit Users
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
-            className="manage-users-btn"
+            variant="outline"
+            size="medium"
+            fullWidth
             onClick={() => navigate('/admin/delete-users')}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '1rem', padding: '12px' }}
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="3 6 5 6 21 6"></polyline>
@@ -57,14 +67,10 @@ const ManageUsers: React.FC = () => {
               <line x1="14" y1="11" x2="14" y2="17"></line>
             </svg>
             Delete Users
-          </button>
+          </Button>
         </div>
 
-        <p className="login-footer-link">
-          <button type="button" onClick={() => navigate('/')} className="login-link" style={{ background: 'none', border: 'none', cursor: 'pointer', font: 'inherit' }}>
-            ← Back to dashboard
-          </button>
-        </p>
+
       </div>
     </div>
   )

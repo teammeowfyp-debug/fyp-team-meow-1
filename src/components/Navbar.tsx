@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../lib/AuthProvider'
 import { supabase } from '../lib/supabaseClient'
 import logo from '../assets/calibre logo.png'
 import './Navbar.css'
-import { PdfImport } from './DashboardItems/PdfImport';
+import { Button } from './UI/Button';
 
 interface SearchResult {
     client_id: string;
@@ -14,12 +14,12 @@ interface SearchResult {
 const Navbar: React.FC = () => {
     const { user, signOut } = useAuth()
     const navigate = useNavigate()
+    const location = useLocation()
     const [searchQuery, setSearchQuery] = useState('')
     const [results, setResults] = useState<SearchResult[]>([])
     const [isSearching, setIsSearching] = useState(false)
     const [showResults, setShowResults] = useState(false)
     const searchRef = useRef<HTMLDivElement>(null)
-    const [showPdfImport, setShowPdfImport] = useState(false)
 
     // Close results when clicking outside
     useEffect(() => {
@@ -87,6 +87,20 @@ const Navbar: React.FC = () => {
         .toUpperCase()
         .slice(0, 2) || '?'
 
+    // Store last viewed client for the Dashboard button
+    useEffect(() => {
+        const path = location.pathname;
+        const potentialId = path.split('/')[1];
+        const systemPages = ['scenario', 'add-client', 'admin', 'login', 'forgot-password', 'reset-password'];
+        if (potentialId && !systemPages.includes(potentialId)) {
+            localStorage.setItem('last-viewed-client', potentialId);
+        }
+    }, [location.pathname]);
+
+    const lastId = localStorage.getItem('last-viewed-client');
+    const dashboardLink = lastId ? `/${lastId}` : '/';
+    const isDashboardActive = location.pathname === '/' || (!['/scenario', '/add-client', '/admin'].some(p => location.pathname.startsWith(p)));
+
     return (
         <>
             <nav className="navbar glass">
@@ -140,7 +154,6 @@ const Navbar: React.FC = () => {
                                         onClick={() => handleResultClick(result.client_id)}
                                     >
                                         <span className="result-name">{result.full_name}</span>
-                                        <span className="result-id">{result.client_id}</span>
                                     </div>
                                 ))}
                             </div>
@@ -149,33 +162,59 @@ const Navbar: React.FC = () => {
                 </div>
 
                 <div className="navbar-right">
-                    <Link to="/scenario" className="navbar-add-user-btn">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
-                            <polyline points="16 7 22 7 22 13"></polyline>
-                        </svg>
-                        Scenario
-                    </Link>
-                    <button className="navbar-add-user-btn" onClick={() => setShowPdfImport(true)}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                            <polyline points="14 2 14 8 20 8"></polyline>
-                            <line x1="12" y1="18" x2="12" y2="12"></line>
-                            <line x1="9" y1="15" x2="15" y2="15"></line>
-                        </svg>
-                        Add Client
-                    </button>
-                    {user?.admin && (
-                        <Link to="/admin/manage-users" className="navbar-add-user-btn">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <div className="navbar-actions">
+                        <Link 
+                            to={dashboardLink} 
+                            className={`action-btn ${isDashboardActive ? 'active' : ''}`}
+                        >
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <rect x="3" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="14" width="7" height="7"></rect>
+                                <rect x="3" y="14" width="7" height="7"></rect>
+                            </svg>
+                            Dashboard
+                        </Link>
+
+                        <Link 
+                            to="/scenario" 
+                            className={`action-btn ${location.pathname.startsWith('/scenario') ? 'active' : ''}`}
+                        >
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+                                <polyline points="16 7 22 7 22 13"></polyline>
+                            </svg>
+                            Scenario
+                        </Link>
+                        
+                        <Link 
+                            to="/add-client"
+                            className={`action-btn ${location.pathname === '/add-client' ? 'active' : ''}`}
+                        >
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                                 <circle cx="8.5" cy="7" r="4"></circle>
-                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                <line x1="20" y1="8" x2="20" y2="14"></line>
+                                <line x1="17" y1="11" x2="23" y2="11"></line>
                             </svg>
-                            Manage Users
+                            Add Client
                         </Link>
-                    )}
+
+                        {user?.admin && (
+                            <Link 
+                                to="/admin/manage-users" 
+                                className={`action-btn ${location.pathname === '/admin/manage-users' ? 'active' : ''}`}
+                            >
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                    <path d="M12 8v4"></path>
+                                    <path d="M12 16h.01"></path>
+                                </svg>
+                                Manage <br></br>Users
+                            </Link>
+                        )}
+                    </div>
+
                     <div className="profile-wrapper">
                         <div className="profile-container glass">
                             <div className="advisor-profile">
@@ -192,28 +231,19 @@ const Navbar: React.FC = () => {
                                     <span className="user-email">{user?.email}</span>
                                     <span className="user-status">Logged in</span>
                                 </div>
-                                <button className="logout-button" onClick={() => signOut()}>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <Button className="logout-button" onClick={() => signOut()} variant="outline" size="small" fullWidth>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                                         <polyline points="16 17 21 12 16 7"></polyline>
                                         <line x1="21" y1="12" x2="9" y2="12"></line>
                                     </svg>
                                     Sign Out
-                                </button>
+                                </Button>
                             </div>
                         </div>
                     </div>
                 </div>
             </nav>
-            {showPdfImport && (
-                <PdfImport
-                    onClose={() => setShowPdfImport(false)}
-                    onSuccess={(newClientId) => {
-                        setShowPdfImport(false);
-                        if (newClientId) navigate(`/${newClientId}`);
-                    }}
-                />
-            )}
         </>
     )
 }

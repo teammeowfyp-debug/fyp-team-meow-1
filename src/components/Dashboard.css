@@ -12,9 +12,19 @@
     justify-content: space-between;
     align-items: center;
     padding: 2rem;
+    background: #fff;
+    border: 1px solid var(--border);
     border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
     flex-wrap: wrap;
     gap: 2rem;
+    transition: all 0.3s ease;
+}
+
+.dashboard-header:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.25);
 }
 
 .client-meta {
@@ -25,8 +35,8 @@
 
 .back-button {
     background: #fff;
-    border: 1px solid var(--border);
-    color: var(--secondary);
+    border: 1px solid var(--primary);
+    color: var(--primary);
     width: 40px;
     height: 40px;
     border-radius: 50%;
@@ -55,13 +65,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5rem;
+    font-size: var(--text-2xl);
     font-weight: 700;
     color: var(--primary);
 }
 
 .client-details h1 {
-    font-size: 2rem;
+    font-size: var(--text-4xl);
     margin-bottom: 0.5rem;
 }
 
@@ -75,7 +85,7 @@
     background: #fff;
     padding: 0.25rem 0.75rem;
     border-radius: 4px;
-    font-size: 0.85rem;
+    font-size: var(--text-xs);
     color: var(--text-muted);
     border: 1px solid var(--border);
 }
@@ -108,7 +118,7 @@
 }
 
 .label {
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: var(--text-muted);
@@ -132,12 +142,12 @@
 }
 
 .net-worth {
-    font-size: 1.75rem;
+    font-size: var(--text-3xl);
     color: var(--primary);
 }
 
 .timestamp {
-    font-size: 1.1rem;
+    font-size: var(--text-lg);
 }
 
 /* Grid Layout */
@@ -175,8 +185,8 @@
 
 .quadrant-link:hover .quadrant {
     border-color: var(--primary);
-    transform: translateY(-4px);
-    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.25);
 }
 
 .focused-view {
@@ -197,14 +207,14 @@
 }
 
 .card-header h3 {
-    font-size: 1.25rem;
+    font-size: var(--text-xl);
     color: var(--text-main);
 }
 
 .badge {
     padding: 0.25rem 0.6rem;
     border-radius: 6px;
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     font-weight: 600;
     background: rgba(255, 255, 255, 0.1);
 }
@@ -258,12 +268,12 @@
 }
 
 .percent {
-    font-size: 1.5rem;
+    font-size: var(--text-2xl);
     font-weight: 700;
 }
 
 .sub {
-    font-size: 0.7rem;
+    font-size: var(--text-xs);
     color: var(--text-muted);
 }
 
@@ -277,7 +287,7 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    font-size: 0.85rem;
+    font-size: var(--text-xs);
 }
 
 .dot {
@@ -313,7 +323,7 @@
     justify-content: space-between;
     width: 100%;
     padding: 0 10px;
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     color: var(--text-muted);
 }
 
@@ -343,7 +353,7 @@
     margin: 0;
     border-collapse: separate;
     border-spacing: 0;
-    font-size: 0.9rem;
+    font-size: var(--text-sm);
     color: var(--text-main);
     table-layout: fixed;
     /* Crucial for aligning split tables */
@@ -355,7 +365,7 @@
     color: var(--text-muted);
     font-weight: 700;
     text-transform: uppercase;
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     letter-spacing: 0.05em;
     background-color: #fff;
 }
@@ -402,7 +412,7 @@
 .status-pill {
     padding: 0.25rem 0.6rem;
     border-radius: 20px;
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     font-weight: 600;
     display: inline-block;
 }
@@ -459,7 +469,7 @@
 
 
 .analysis-text {
-    font-size: 0.95rem;
+    font-size: var(--text-sm);
     line-height: 1.7;
     color: var(--text-main);
     white-space: pre-wrap;
@@ -500,7 +510,7 @@
 
 .analysis-section h4 {
     color: var(--primary);
-    font-size: 0.8rem;
+    font-size: var(--text-xs);
     margin-bottom: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.1em;
@@ -514,7 +524,7 @@
 }
 
 .analysis-section li {
-    font-size: 0.95rem;
+    font-size: var(--text-sm);
     line-height: 1.6;
     margin-bottom: 0.75rem;
     padding-left: 1rem;
@@ -527,7 +537,7 @@
 .analysis-section.recommendations p,
 .analysis-section.recommendations ul,
 .analysis-section.recommendations ol {
-    font-size: 1rem;
+    font-size: var(--text-base);
     font-weight: 500;
     line-height: 1.6;
     color: var(--secondary);
@@ -550,7 +560,7 @@
 
 .risk-category-display .label,
 .risk-date-display .label {
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: var(--text-muted);
@@ -558,20 +568,20 @@
 }
 
 .risk-category-display .value {
-    font-size: 1.25rem;
+    font-size: var(--text-xl);
     font-weight: 600;
     color: var(--accent);
     font-family: var(--font-heading);
 }
 
 .risk-date-display .value {
-    font-size: 1rem;
+    font-size: var(--text-base);
     color: var(--text-main);
     font-weight: 500;
 }
 
 .risk-description {
-    font-size: 0.9rem;
+    font-size: var(--text-sm);
     line-height: 1.6;
     color: var(--text-muted);
     font-style: italic;
@@ -592,19 +602,19 @@
 }
 
 .empty-state-icon {
-    font-size: 4rem;
+    font-size: var(--text-5xl);
     opacity: 1;
     filter: drop-shadow(0 0 20px var(--primary-glow));
 }
 
 .empty-state-container h2 {
-    font-size: 2rem;
+    font-size: var(--text-4xl);
     color: var(--text-main);
 }
 
 .empty-state-container p {
     color: var(--text-muted);
-    font-size: 1.1rem;
+    font-size: var(--text-lg);
     line-height: 1.6;
 }
 
@@ -689,7 +699,7 @@
     background: none;
     border: none;
     color: var(--text-muted);
-    font-size: 1.5rem;
+    font-size: var(--text-2xl);
     cursor: pointer;
     transition: color 0.2s;
 }
@@ -703,7 +713,7 @@
 }
 
 .modal-id {
-    font-size: 0.85rem;
+    font-size: var(--text-xs);
     color: var(--text-muted);
     font-family: monospace;
 }
@@ -746,7 +756,7 @@
 }
 
 .filter-group label {
-    font-size: 0.7rem;
+    font-size: var(--text-xs);
     text-transform: uppercase;
     color: var(--text-muted);
     font-weight: 700;
@@ -765,7 +775,7 @@
     border-radius: 4px;
     padding: 0.6rem 1rem;
     color: var(--text-main);
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -810,7 +820,7 @@
 .custom-select-option {
     padding: 0.61rem 0.8rem;
     border-radius: 0;
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
     color: var(--text-muted);
     cursor: pointer;
     transition: all 0.2s ease;
@@ -848,7 +858,7 @@
     border-radius: 4px;
     padding: 0.6rem 1rem;
     color: var(--text-main);
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
     outline: none;
     transition: all 0.2s ease;
     min-width: 140px;
@@ -888,7 +898,7 @@ input[type="date"]::-webkit-datetime-edit-day-field:focus {
     background: none;
     border: none;
     color: var(--primary);
-    font-size: 0.8rem;
+    font-size: var(--text-xs);
     font-weight: 600;
     cursor: pointer;
     padding: 0.5rem;
@@ -916,7 +926,7 @@ input[type="date"]::-webkit-datetime-edit-day-field:focus {
     padding: 0.75rem;
     border-radius: var(--radius-md);
     border: 1px solid var(--border);
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
     font-family: var(--font-body);
     outline: none;
     background: #fff;

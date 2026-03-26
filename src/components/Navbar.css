@@ -2,10 +2,13 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.75rem 2rem;
+    padding: 0 2rem;
+    height: 64px;
     position: sticky;
     top: 0;
     z-index: 10001;
+    background: #fff;
+    border-bottom: 1px solid var(--border);
 }
 
 .navbar-left .logo {
@@ -15,14 +18,79 @@
 
 .navbar-logo {
     height: 38px;
-    /* Increased height for better visibility */
     width: auto;
     display: block;
     object-fit: contain;
 }
 
+.navbar-actions {
+    display: flex;
+    height: 100%;
+    align-items: stretch;
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    padding: 0;
+    width: 135px;
+    height: 100%;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    background: transparent;
+    border: none;
+    border-right: 1px solid var(--border);
+    color: var(--text-muted);
+    text-decoration: none;
+    text-align: center;
+    line-height: 1.2;
+    position: relative;
+}
+
+.action-btn:last-child {
+    border-right: none;
+}
+
+.action-btn:hover:not(.active) {
+    background: var(--primary-glow);
+    color: var(--primary);
+}
+
+.action-btn.active {
+    background: var(--primary);
+    color: #fff;
+}
+
+.action-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: rgba(0, 0, 0, 0.15);
+}
+
+.action-btn svg {
+    color: var(--primary);
+    width: 16px;
+    height: 16px;
+}
+
+.action-btn.active svg {
+    color: #fff;
+}
+
 .navbar-center {
-    flex: 0 1 500px;
+    flex: 0 1 475px;
 }
 
 .search-container {
@@ -45,7 +113,7 @@
 .search-icon {
     width: 18px;
     height: 18px;
-    color: var(--text-muted);
+    color: var(--primary);
     margin-right: 0.75rem;
 }
 
@@ -54,7 +122,7 @@
     border: none;
     color: var(--text-main);
     width: 100%;
-    font-size: 0.9rem;
+    font-size: var(--text-sm);
     outline: none;
 }
 
@@ -71,7 +139,6 @@
     padding: 0.5rem;
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
     background: #fff;
     border: 1px solid var(--border);
     box-shadow: var(--shadow-lg);
@@ -80,27 +147,29 @@
 
 .search-result-item {
     padding: 0.75rem 1rem;
-    border-radius: var(--radius-md);
+    border-radius: 8px;
     cursor: pointer;
     display: flex;
     flex-direction: column;
     transition: all 0.2s ease;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
 }
 
 .search-result-item:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--primary-glow);
 }
 
 .result-name {
-    font-size: 0.95rem;
+    font-size: var(--text-base);
     font-weight: 600;
     color: var(--text-main);
 }
 
-.result-id {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-}
+
 
 
 
@@ -117,7 +186,14 @@
 .navbar-right {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    height: 100%;
+}
+
+.profile-wrapper {
+    position: relative;
+    width: 200px;
+    height: 48px;
+    margin-left: 3rem;
 }
 
 .navbar-add-user-btn {
@@ -128,7 +204,7 @@
     background: var(--primary);
     color: white;
     border-radius: var(--radius-md);
-    font-size: 0.875rem;
+    font-size: var(--text-sm);
     font-weight: 600;
     text-decoration: none;
     transition: all 0.2s ease;
@@ -192,14 +268,14 @@
 }
 
 .advisor-name {
-    font-size: 0.875rem;
+    font-size: var(--text-sm);
     font-weight: 600;
     color: var(--text-main);
     white-space: nowrap;
 }
 
 .advisor-role {
-    font-size: 0.65rem;
+    font-size: var(--text-xs);
     color: var(--text-muted);
 }
 
@@ -213,7 +289,7 @@
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     color: var(--primary);
     flex-shrink: 0;
 }
@@ -256,7 +332,7 @@
 }
 
 .user-email {
-    font-size: 0.8rem;
+    font-size: var(--text-sm);
     font-weight: 500;
     color: var(--text-main);
     white-space: nowrap;
@@ -265,7 +341,7 @@
 }
 
 .user-status {
-    font-size: 0.7rem;
+    font-size: var(--text-xs);
     color: var(--success);
     display: flex;
     align-items: center;
@@ -289,7 +365,7 @@
     background: rgba(239, 68, 68, 0.1);
     border: 1px solid rgba(239, 68, 68, 0.2);
     color: #f87171;
-    font-size: 0.875rem;
+    font-size: var(--text-sm);
     font-weight: 600;
     display: flex;
     align-items: center;

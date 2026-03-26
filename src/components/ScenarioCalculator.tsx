@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { runScenario, runContributionScenario } from '../lib/scenarioCalculator';
 import type { ScenarioResult, ContributionResult } from '../lib/scenarioCalculator';
 import './ScenarioCalculator.css';
+import { Button } from './UI/Button';
 
 type Frequency = 'monthly' | 'quarterly' | 'annually';
 type Mode = 'future_value' | 'contribution';
@@ -206,8 +207,13 @@ const ScenarioCalculator: React.FC = () => {
     <div className="scenario-page animate-fade">
 
       {/* ── Page Header ─────────────────────── */}
-      <div className="scenario-hero">
-        <div className="scenario-hero-icon">📈</div>
+      <div className="scenario-hero glass-card no-hover">
+        <div className="scenario-hero-icon" style={{ background: 'var(--primary-glow)', padding: '0.75rem', borderRadius: '50%' }}>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+            <polyline points="16 7 22 7 22 13"></polyline>
+          </svg>
+        </div>
         <div>
           <h1 className="scenario-title">Investment Scenario Calculator</h1>
           <p className="scenario-subtitle">
@@ -219,23 +225,31 @@ const ScenarioCalculator: React.FC = () => {
       <div className="scenario-body">
 
         {/* ── Left: Parameters form ────────── */}
-        <section className="glass-card scenario-form-card">
+        <section className="glass-card scenario-form-card no-hover">
           
-          <div className="sc-tabs">
-            <button 
-              type="button"
-              className={`sc-tab ${mode === 'future_value' ? 'active' : ''}`}
+          <div className="tabs-switcher" style={{
+            display: 'flex',
+            marginBottom: '1.5rem',
+            width: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.04)',
+            borderRadius: '12px',
+            padding: '4px',
+            gap: 0
+          }}>
+            <Button
+              variant="tab"
+              isActive={mode === 'future_value'}
               onClick={() => handleModeChange('future_value')}
             >
               Future Value
-            </button>
-            <button 
-              type="button"
-              className={`sc-tab ${mode === 'contribution' ? 'active' : ''}`}
+            </Button>
+            <Button
+              variant="tab"
+              isActive={mode === 'contribution'}
               onClick={() => handleModeChange('contribution')}
             >
               Target Goal
-            </button>
+            </Button>
           </div>
 
           <form onSubmit={handleSubmit} noValidate>
@@ -446,17 +460,28 @@ const ScenarioCalculator: React.FC = () => {
             )}
 
             {/* Actions */}
-            <div className="sc-actions">
-              <button type="submit" className="sc-btn-primary" disabled={loading}>
+            <div className="sc-actions" style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
+              <Button 
+                type="submit" 
+                variant="primary" 
+                disabled={loading}
+                fullWidth={!activeResult}
+                style={{ flex: activeResult ? 2 : 1 }}
+              >
                 {loading
                   ? <><span className="sc-spinner" /> Calculating…</>
-                  : '📊 Calculate'
+                  : 'Calculate'
                 }
-              </button>
+              </Button>
               {activeResult && (
-                <button type="button" className="sc-btn-ghost" onClick={handleReset}>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={handleReset}
+                  style={{ flex: 1 }}
+                >
                   Reset
-                </button>
+                </Button>
               )}
             </div>
           </form>
@@ -465,8 +490,14 @@ const ScenarioCalculator: React.FC = () => {
         {/* ── Right: Results ───────────────── */}
         <div className="scenario-results-col">
           {!activeResult && !loading && (
-            <div className="scenario-empty-state glass-card">
-              <div className="scenario-empty-icon">💡</div>
+            <div className="scenario-empty-state glass-card no-hover">
+              <div className="scenario-empty-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="16" x2="12" y2="12" />
+                  <line x1="12" y1="8" x2="12.01" y2="8" />
+                </svg>
+              </div>
               <p className="scenario-empty-title">Enter your parameters</p>
               <p className="scenario-empty-sub">Fill in the form on the left and click <strong>Calculate</strong> to see your projected investment value.</p>
             </div>
@@ -475,7 +506,7 @@ const ScenarioCalculator: React.FC = () => {
           {activeResult && (
             <div className="sc-animate-in">
               {/* Final value hero */}
-              <div className="glass-card sc-hero-card">
+              <div className="glass-card sc-hero-card no-hover">
                 {mode === 'future_value' ? (
                   <>
                     <p className="sc-hero-label">Projected Final Value</p>
@@ -513,29 +544,70 @@ const ScenarioCalculator: React.FC = () => {
 
               {/* Breakdown grid */}
               <div className="sc-breakdown-grid">
-                <div className="glass-card sc-stat">
-                  <span className="sc-stat-icon">🏦</span>
-                  <span className="sc-stat-label">From Initial Principal</span>
-                  <span className="sc-stat-val">SGD {fmt(activeResult.breakdown.fromInitial)}</span>
+                <div className="glass-card sc-stat no-hover">
+                  <span className="sc-stat-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M3 21h18" />
+                      <path d="M3 7v1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7H3" />
+                      <path d="M19 21V11" />
+                      <path d="M5 21V11" />
+                      <path d="M9 21V11" />
+                      <path d="M13 21V11" />
+                    </svg>
+                  </span>
+                  <div className="sc-stat-content">
+                    <span className="sc-stat-label">From Initial Principal</span>
+                    <span className="sc-stat-val">SGD {fmt(activeResult.breakdown.fromInitial)}</span>
+                  </div>
                 </div>
                 {hasContributions && (
-                  <div className="glass-card sc-stat">
-                    <span className="sc-stat-icon">➕</span>
-                    <span className="sc-stat-label">From Contributions</span>
-                    <span className="sc-stat-val">SGD {fmt(activeResult.breakdown.fromContributions)}</span>
+                  <div className="glass-card sc-stat no-hover">
+                    <span className="sc-stat-icon">
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                      </svg>
+                    </span>
+                    <div className="sc-stat-content">
+                      <span className="sc-stat-label">From Contributions</span>
+                      <span className="sc-stat-val">SGD {fmt(activeResult.breakdown.fromContributions)}</span>
+                    </div>
                   </div>
                 )}
-                <div className="glass-card sc-stat">
-                  <span className="sc-stat-icon">💵</span>
-                  <span className="sc-stat-label">Total Capital In</span>
-                  <span className="sc-stat-val">SGD {fmt(activeResult.breakdown.totalContributed)}</span>
-                </div>
-                <div className={`glass-card sc-stat ${activeResult.breakdown.totalGrowth >= 0 ? 'sc-stat-positive' : 'sc-stat-negative'}`}>
-                  <span className="sc-stat-icon">{activeResult.breakdown.totalGrowth >= 0 ? '📈' : '📉'}</span>
-                  <span className="sc-stat-label">Total Growth</span>
-                  <span className={`sc-stat-val ${activeResult.breakdown.totalGrowth >= 0 ? 'sc-text-success' : 'sc-text-danger'}`}>
-                    {activeResult.breakdown.totalGrowth >= 0 ? '+' : ''}SGD {fmt(activeResult.breakdown.totalGrowth)}
+                <div className="glass-card sc-stat no-hover">
+                  <span className="sc-stat-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="12" y1="1" x2="12" y2="23" />
+                      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                    </svg>
                   </span>
+                  <div className="sc-stat-content">
+                    <span className="sc-stat-label">Total Capital In</span>
+                    <span className="sc-stat-val">SGD {fmt(activeResult.breakdown.totalContributed)}</span>
+                  </div>
+                </div>
+                <div className={`glass-card sc-stat no-hover ${activeResult.breakdown.totalGrowth >= 0 ? 'sc-stat-positive' : 'sc-stat-negative'}`}>
+                  <span className="sc-stat-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      {activeResult.breakdown.totalGrowth >= 0 ? (
+                        <>
+                          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                          <polyline points="17 6 23 6 23 12" />
+                        </>
+                      ) : (
+                        <>
+                          <polyline points="23 18 13.5 8.5 8.5 13.5 1 6" />
+                          <polyline points="17 18 23 18 23 12" />
+                        </>
+                      )}
+                    </svg>
+                  </span>
+                  <div className="sc-stat-content">
+                    <span className="sc-stat-label">Total Growth</span>
+                    <span className={`sc-stat-val ${activeResult.breakdown.totalGrowth >= 0 ? 'sc-text-success' : 'sc-text-danger'}`}>
+                      {activeResult.breakdown.totalGrowth >= 0 ? '+' : ''}SGD {fmt(activeResult.breakdown.totalGrowth)}
+                    </span>
+                  </div>
                 </div>
               </div>
 

@@ -38,7 +38,7 @@ const Dashboard: React.FC = () => {
     if (!clientId) {
         return (
             <div className="dashboard-container animate-fade">
-                <div className="empty-state-container glass-card">
+                <div className="empty-state-container glass-card no-hover">
                     <div className="empty-state-icon">
                         <svg
                             width="64"
@@ -65,7 +65,7 @@ const Dashboard: React.FC = () => {
     if (loading) {
         return (
             <div className="dashboard-container animate-fade">
-                <div className="empty-state-container glass-card">
+                <div className="empty-state-container glass-card no-hover">
                     <div className="empty-state-icon">
                         <svg
                             width="64"
@@ -162,7 +162,12 @@ const Dashboard: React.FC = () => {
                 cache={clientId ? riskAnalysisCache[clientId] : null}
                 dashboardStartDate={startDate}
                 dashboardEndDate={endDate}
-                onFocusQuadrant={(quadId) => navigate(`/${clientId}/${quadId}`)}
+                onFocusQuadrant={(quadId: string, mode?: string) => {
+                    if (quadId === 'risk' && mode) {
+                        setInsightsMode(mode as 'risk-analysis' | 'meeting-notes');
+                    }
+                    navigate(`/${clientId}/${quadId}`);
+                }}
             />
             {isFocused ? (
                 <main className="focused-view">

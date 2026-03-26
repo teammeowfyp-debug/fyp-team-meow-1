@@ -5,6 +5,7 @@ import { jsPDF } from 'jspdf';
 import AssetAllocation from './AssetAllocation';
 import Cashflow from './Cashflow';
 import { renderCleanList } from './Insights/Insights.components';
+import { Button } from '../UI/Button';
 
 interface ExportReportModalProps {
     client: any;
@@ -14,7 +15,7 @@ interface ExportReportModalProps {
     dashboardEndDate: string;
     cache: any;
     onClose: () => void;
-    onFocusQuadrant?: (quadId: string) => void;
+    onFocusQuadrant?: (quadId: string, mode?: string) => void;
 }
 
 const ExportReportModal: React.FC<ExportReportModalProps> = ({
@@ -124,8 +125,8 @@ const ExportReportModal: React.FC<ExportReportModalProps> = ({
     return (
         <FocusModal isOpen={true} onClose={onClose} modalContentStyle={{ maxWidth: '500px', padding: '0' }}>
             <div className="modal-header" style={{ padding: '2rem 2rem 1rem 2rem', borderBottom: '1px solid var(--border)' }}>
-                <h2 style={{ fontSize: '1.5rem', color: 'var(--secondary)', margin: 0 }}>Export Client Report</h2>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.5rem' }}>Generate a comprehensive PDF report for {client.full_name}</p>
+                <h2 style={{ fontSize: 'var(--text-2xl)', color: 'var(--secondary)', margin: 0 }}>Export Client Report</h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)', marginTop: '0.5rem' }}>Generate a comprehensive PDF report for {client.full_name}</p>
             </div>
 
             <div className="modal-body" style={{ padding: '2rem' }}>
@@ -137,29 +138,28 @@ const ExportReportModal: React.FC<ExportReportModalProps> = ({
                         </svg>
                         <div style={{ textAlign: 'center' }}>
                             <h3 style={{ margin: '0 0 0.5rem 0', color: 'var(--secondary)' }}>Exporting PDF...</h3>
-                            <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem' }}>{statusText}</p>
+                            <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: 'var(--text-sm)' }}>{statusText}</p>
                         </div>
                     </div>
                 ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                         <div className="form-group">
-                            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Analysis Period</label>
+                            <label style={{ display: 'block', fontSize: 'var(--text-xs)', fontWeight: 'var(--font-semibold)', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Analysis Period</label>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                                 <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} style={{ flex: 1, padding: '10px 12px', border: '1px solid var(--border)', borderRadius: '8px', background: 'rgba(0,0,0,0.02)', outline: 'none' }} />
-                                <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>to</span>
+                                <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>to</span>
                                 <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} style={{ flex: 1, padding: '10px 12px', border: '1px solid var(--border)', borderRadius: '8px', background: 'rgba(0,0,0,0.02)', outline: 'none' }} />
                             </div>
                         </div>
 
                         <div className="form-group">
-                            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Filename</label>
+                            <label style={{ display: 'block', fontSize: 'var(--text-xs)', fontWeight: 'var(--font-semibold)', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Filename</label>
                             <input
                                 type="text"
                                 value={filename}
                                 onChange={e => setFilename(e.target.value)}
                                 style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--border)', borderRadius: '8px', background: 'rgba(0,0,0,0.02)', outline: 'none', boxSizing: 'border-box' }}
                             />
-                            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>* You will be prompted to choose the save location.</p>
                         </div>
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', background: 'rgba(0,0,0,0.02)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)' }}>
@@ -167,20 +167,33 @@ const ExportReportModal: React.FC<ExportReportModalProps> = ({
                                 <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
                                     <input type="checkbox" checked={includeRiskAnalysis} onChange={(e) => setIncludeRiskAnalysis(e.target.checked)} style={{ width: '18px', height: '18px', accentColor: 'var(--primary)', cursor: 'pointer' }} />
                                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--secondary)' }}>Include Risk Analysis</span>
+                                        <span style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--secondary)' }}>Include Risk Analysis</span>
                                     </div>
                                 </label>
                                 {includeRiskAnalysis && !isRiskAnalysisValid && (
-                                    <div className="animate-fade" style={{ marginLeft: '30px', padding: '10px 12px', borderRadius: '8px', background: 'rgba(197, 179, 88, 0.1)', border: '1px solid rgba(197, 179, 88, 0.3)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                        <p style={{ margin: 0, fontSize: '0.75rem', color: '#856404', lineHeight: '1.4' }}>
+                                    <div className="animate-fade" style={{ marginLeft: '30px', padding: '10px 12px', borderRadius: '8px', background: 'rgba(155, 34, 38, 0.08)', border: '1px solid rgba(155, 34, 38, 0.15)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                        <p style={{ margin: 0, fontSize: '0.75rem', color: '#9B2226', lineHeight: '1.4', fontWeight: 'var(--font-semibold)' }}>
                                             No risk analysis found for the selected period.
                                         </p>
-                                        <button
-                                            onClick={() => { onFocusQuadrant?.('risk'); onClose(); }}
-                                            style={{ alignSelf: 'flex-start', border: 'none', background: 'var(--primary)', color: '#fff', fontSize: '0.7rem', fontWeight: 700, padding: '4px 10px', borderRadius: '4px', cursor: 'pointer' }}
+                                        <Button
+                                            variant="outline"
+                                            size="small"
+                                            onClick={() => { onFocusQuadrant?.('risk', 'risk-analysis'); onClose(); }}
+                                            style={{ 
+                                                alignSelf: 'flex-start',
+                                                color: '#9B2226',
+                                                borderColor: 'rgba(155, 34, 38, 0.3)',
+                                                background: 'transparent'
+                                            }}
+                                            onMouseEnter={(e: any) => {
+                                                e.currentTarget.style.background = 'rgba(155, 34, 38, 0.1)';
+                                            }}
+                                            onMouseLeave={(e: any) => {
+                                                e.currentTarget.style.background = 'transparent';
+                                            }}
                                         >
                                             Go to Risk Analysis
-                                        </button>
+                                        </Button>
                                     </div>
                                 )}
                             </div>
@@ -189,32 +202,48 @@ const ExportReportModal: React.FC<ExportReportModalProps> = ({
                                 <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
                                     <input type="checkbox" checked={includeMeetingNotes} onChange={(e) => setIncludeMeetingNotes(e.target.checked)} style={{ width: '18px', height: '18px', accentColor: 'var(--primary)', cursor: 'pointer' }} />
                                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--secondary)' }}>Include Meeting Notes</span>
+                                        <span style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--secondary)' }}>Include Meeting Notes</span>
                                     </div>
                                 </label>
                                 {includeMeetingNotes && !isMeetingNotesValid && (
-                                    <div className="animate-fade" style={{ marginLeft: '30px', padding: '10px 12px', borderRadius: '8px', background: 'rgba(197, 179, 88, 0.1)', border: '1px solid rgba(197, 179, 88, 0.3)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                        <p style={{ margin: 0, fontSize: '0.75rem', color: '#856404', lineHeight: '1.4' }}>
+                                    <div className="animate-fade" style={{ marginLeft: '30px', padding: '10px 12px', borderRadius: '8px', background: 'rgba(155, 34, 38, 0.08)', border: '1px solid rgba(155, 34, 38, 0.15)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                        <p style={{ margin: 0, fontSize: '0.75rem', color: '#9B2226', lineHeight: '1.4', fontWeight: 'var(--font-semibold)' }}>
                                             No meeting notes found.
                                         </p>
-                                        <button
-                                            onClick={() => { onFocusQuadrant?.('risk'); onClose(); }} // Meeting notes is in risk quadrant tab
-                                            style={{ alignSelf: 'flex-start', border: 'none', background: 'var(--primary)', color: '#fff', fontSize: '0.7rem', fontWeight: 700, padding: '4px 10px', borderRadius: '4px', cursor: 'pointer' }}
+                                        <Button
+                                            variant="outline"
+                                            size="small"
+                                            onClick={() => { onFocusQuadrant?.('risk', 'meeting-notes'); onClose(); }}
+                                            style={{ 
+                                                alignSelf: 'flex-start',
+                                                color: '#9B2226',
+                                                borderColor: 'rgba(155, 34, 38, 0.3)',
+                                                background: 'transparent'
+                                            }}
+                                            onMouseEnter={(e: any) => {
+                                                e.currentTarget.style.background = 'rgba(155, 34, 38, 0.1)';
+                                            }}
+                                            onMouseLeave={(e: any) => {
+                                                e.currentTarget.style.background = 'transparent';
+                                            }}
                                         >
                                             Go to Meeting Notes
-                                        </button>
+                                        </Button>
                                     </div>
                                 )}
                             </div>
                         </div>
 
-                        <button
+                        <Button
+                            variant="outline"
+                            size="large"
+                            fullWidth
                             onClick={handleExport}
                             disabled={!filename.trim() || !startDate || !endDate || (includeRiskAnalysis && !isRiskAnalysisValid) || (includeMeetingNotes && !isMeetingNotesValid)}
-                            style={{ width: '100%', padding: '12px', background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, cursor: (!filename.trim() || !startDate || !endDate || (includeRiskAnalysis && !isRiskAnalysisValid) || (includeMeetingNotes && !isMeetingNotesValid)) ? 'not-allowed' : 'pointer', transition: 'all 0.2s', marginTop: '0.5rem', opacity: (!filename.trim() || !startDate || !endDate || (includeRiskAnalysis && !isRiskAnalysisValid) || (includeMeetingNotes && !isMeetingNotesValid)) ? 0.6 : 1 }}
+                            style={{ marginTop: '0.5rem' }}
                         >
                             Export Data
-                        </button>
+                        </Button>
                     </div>
                 )}
             </div>

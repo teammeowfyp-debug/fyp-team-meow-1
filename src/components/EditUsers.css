@@ -13,7 +13,7 @@
   background: #fff;
   border: 1px solid var(--border);
   border-radius: 4px;
-  font-size: 1rem;
+  font-size: var(--text-base);
   font-family: var(--font-body);
   color: var(--text-main);
   outline: none;
@@ -28,7 +28,7 @@
 .edit-users-loading,
 .edit-users-empty {
   color: var(--text-muted);
-  font-size: 0.95rem;
+  font-size: var(--text-sm);
   margin: 1rem 0;
 }
 
@@ -44,7 +44,7 @@
 .edit-users-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.9rem;
+  font-size: var(--text-sm);
 }
 
 .edit-users-table th,
@@ -89,7 +89,7 @@
   background: #fff;
   border: 1px solid var(--border);
   border-radius: 4px;
-  font-size: 0.95rem;
+  font-size: var(--text-sm);
   font-family: var(--font-body);
   color: var(--text-main);
   min-width: 200px;
@@ -113,7 +113,7 @@
   color: white;
   border: none;
   border-radius: 4px;
-  font-size: 0.9rem;
+  font-size: var(--text-sm);
   font-weight: 600;
   cursor: pointer;
   letter-spacing: 0.03em;
@@ -142,7 +142,7 @@
 
 .edit-users-label {
   display: block;
-  font-size: 0.9rem;
+  font-size: var(--text-sm);
   font-weight: 600;
   color: var(--secondary);
   margin-bottom: 0.5rem;
@@ -165,7 +165,7 @@
 }
 
 .edit-users-panel-title {
-  font-size: 1rem;
+  font-size: var(--text-base);
   font-weight: 600;
   color: var(--secondary);
   margin: 0 0 1rem 0;
@@ -188,7 +188,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.9rem;
+  font-size: var(--text-sm);
   color: var(--text-muted);
   cursor: pointer;
 }
@@ -208,6 +208,6 @@
 }
 
 .edit-users-bulk-label {
-  font-size: 0.9rem;
+  font-size: var(--text-sm);
   color: var(--text-muted);
 }

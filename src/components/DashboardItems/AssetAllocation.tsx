@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts';
 import { CustomizedXAxisTick } from '../UI/ChartUtils';
 import { FocusModal } from '../UI/FocusModal';
+import { Button } from '../UI/Button';
 
 const ALLOCATION_COLORS: Record<string, string> = {
     'Equity': 'var(--primary)',
@@ -138,7 +139,7 @@ const AssetAllocation: React.FC<AssetAllocationProps> = ({ client, mode = 'overv
                 }}>
                     <p style={{ color: 'var(--secondary)', fontWeight: 700, marginBottom: 6 }}>{data.fullDate}</p>
                     {payload.map((entry: any, i: number) => entry.value > 0 && (
-                        <p key={i} style={{ color: entry.fill, fontSize: '0.85rem', margin: '3px 0' }}>
+                        <p key={i} style={{ color: entry.fill, fontSize: 'var(--text-sm)', margin: '3px 0' }}>
                             {entry.name}: <span style={{ fontWeight: 600 }}>
                                 {chartType === 'percent'
                                     ? `${((entry.value / total) * 100).toFixed(1)}%`
@@ -159,45 +160,18 @@ const AssetAllocation: React.FC<AssetAllocationProps> = ({ client, mode = 'overv
         <section className="glass-card quadrant">
             <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h3>Asset Allocation</h3>
-                <button
+                <Button
+                    variant="primary"
+                    size="small"
                     onClick={(e) => {
                         e.stopPropagation();
                         e.preventDefault();
-                        e.nativeEvent.stopImmediatePropagation();
                         setChartType(chartType === 'absolute' ? 'percent' : 'absolute');
                     }}
-                    onMouseDown={(e) => e.stopPropagation()}
-                    onMouseUp={(e) => e.stopPropagation()}
-                    style={{
-                        background: 'transparent',
-                        border: '1px solid var(--border)',
-                        color: 'var(--text-muted)',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        fontSize: '0.7rem',
-                        fontWeight: 700,
-                        padding: '4px 10px',
-                        borderRadius: '20px',
-                        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                        backgroundColor: 'rgba(0,0,0,0.02)',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em'
-                    }}
-                    onMouseOver={(e) => {
-                        e.currentTarget.style.background = 'var(--primary-glow)';
-                        e.currentTarget.style.color = 'var(--primary)';
-                        e.currentTarget.style.borderColor = 'var(--primary)';
-                    }}
-                    onMouseOut={(e) => {
-                        e.currentTarget.style.background = 'rgba(0,0,0,0.02)';
-                        e.currentTarget.style.color = 'var(--text-muted)';
-                        e.currentTarget.style.borderColor = 'var(--border)';
-                    }}
+                    style={{ borderRadius: '20px', padding: '4px 12px', fontSize: '0.7rem' }}
                 >
-                    <span>{chartType === 'absolute' ? 'Show %' : 'Show Value'}</span>
-                </button>
+                    {chartType === 'absolute' ? 'Value' : '%'}
+                </Button>
             </div>
             <div className="chart-container" style={{ width: '100%', flex: 1, marginTop: '10px' }}>
                 {hasData ? (
@@ -298,8 +272,8 @@ const AllocationBreakdown: React.FC<AllocationBreakdownProps> = ({
     return (
         <>
             <div className="modal-header" style={{ textAlign: 'center', marginBottom: '1rem' }}>
-                <h2 style={{ marginBottom: '0.25rem', fontSize: '1.8rem' }}>Allocation Breakdown</h2>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>{selectedSnapshot.fullDate}</p>
+                <h2 style={{ marginBottom: '0.25rem', fontSize: 'var(--text-3xl)' }}>Allocation Breakdown</h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)' }}>{selectedSnapshot.fullDate}</p>
             </div>
 
             <div className="modal-body">
@@ -362,15 +336,15 @@ const AllocationBreakdown: React.FC<AllocationBreakdownProps> = ({
                                 opacity: activePlanName ? 0.3 : 1
                             }}
                         >
-                            <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--primary)', fontWeight: 700, letterSpacing: '0.05em' }}>Total Portfolio Value</div>
-                            <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--secondary)' }}>
+                            <div style={{ fontSize: 'var(--text-xs)', textTransform: 'uppercase', color: 'var(--primary)', fontWeight: 700, letterSpacing: '0.05em' }}>Total Portfolio Value</div>
+                            <div style={{ fontSize: 'var(--text-3xl)', fontWeight: 800, color: 'var(--secondary)' }}>
                                 ${assetClasses.reduce((sum, cls) => sum + (selectedSnapshot[cls] || 0), 0).toLocaleString()}
                             </div>
                         </div>
                     </div>
 
                     <div style={{ flex: '1', minWidth: '350px' }}>
-                        <h4 style={{ fontSize: '0.85rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '1.5rem', letterSpacing: '0.05em', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem' }}>Details by Asset Class</h4>
+                        <h4 style={{ fontSize: 'var(--text-sm)', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '1.5rem', letterSpacing: '0.05em', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem' }}>Details by Asset Class</h4>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                             {assetClasses.filter(cls => selectedSnapshot[cls] > 0).map((cls, i) => {
                                 const isCatActive = activeCategory === cls || (activePlanName && selectedSnapshot.plans.find((p: any) => p.name === activePlanName)?.category === cls);
@@ -394,7 +368,7 @@ const AllocationBreakdown: React.FC<AllocationBreakdownProps> = ({
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                                 <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: catColor, boxShadow: '0 0 10px rgba(0,0,0,0.1)' }} />
-                                                <span style={{ fontWeight: 800, color: 'var(--secondary)', letterSpacing: '-0.01em', fontSize: '0.95rem' }}>{cls}</span>
+                                                <span style={{ fontWeight: 800, color: 'var(--secondary)', letterSpacing: '-0.01em', fontSize: 'var(--text-base)' }}>{cls}</span>
                                             </div>
                                             <span style={{ fontWeight: 700, color: 'var(--secondary)' }}>${(selectedSnapshot[cls] || 0).toLocaleString()}</span>
                                         </div>
