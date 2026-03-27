@@ -90,7 +90,10 @@
 }
 
 .navbar-center {
-    flex: 0 1 356px;
+    flex: 1;
+    margin: 0 3rem;
+    display: flex;
+    justify-content: center;
 }
 
 .search-container {
@@ -102,6 +105,8 @@
     border-radius: var(--radius-md);
     padding: 0.5rem 1rem;
     transition: all 0.2s ease;
+    width: 100%;
+    max-width: 800px;
 }
 
 .search-container:focus-within {
@@ -217,11 +222,6 @@
     transform: translateY(-1px);
 }
 
-.profile-wrapper {
-    position: relative;
-    width: 200px;
-    height: 48px;
-}
 
 .profile-container {
     position: absolute;

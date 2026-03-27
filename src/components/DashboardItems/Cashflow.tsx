@@ -117,6 +117,39 @@ const Cashflow: React.FC<CashflowProps> = ({ client, mode = 'overview', dateRang
         return null;
     };
 
+    if (isExporting) {
+        return (
+            <div className="chart-container" style={{ flex: 1, position: 'relative', minHeight: 0 }}>
+                <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={chartData} margin={{ top: 0, right: 30, left: 0, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
+                        <XAxis dataKey="as_of_date" tick={<CustomizedXAxisTick />} interval="preserveStartEnd" axisLine={false} tickLine={false} height={60} />
+                        <YAxis tickFormatter={(v) => `$${v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v}`} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
+                        <Line type="monotone" dataKey="inflow" stroke="#719266" strokeWidth={1.5} dot={false} isAnimationActive={false} />
+                        <Line type="monotone" dataKey="expense" stroke="#9B2226" strokeWidth={1.5} dot={false} isAnimationActive={false} />
+                        <Line type="monotone" dataKey="wealthTransfers" stroke="#3C5A82" strokeWidth={1.5} dot={false} isAnimationActive={false} />
+                        <Line type="monotone" dataKey="netSurplus" stroke="#BC6C25" strokeWidth={1.5} dot={false} isAnimationActive={false} />
+                        <Line type="monotone" dataKey="netCashflow" stroke="#C5B358" strokeWidth={1.5} dot={false} isAnimationActive={false} />
+                    </LineChart>
+                </ResponsiveContainer>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', justifyContent: 'center', marginTop: '0.5rem' }}>
+                    {[
+                        { key: 'inflow', label: 'Inflow', color: '#719266' },
+                        { key: 'expense', label: 'Expense', color: '#9B2226' },
+                        { key: 'wealthTransfers', label: 'Wealth Transfers', color: '#3C5A82' },
+                        { key: 'netSurplus', label: 'Net Surplus', color: '#BC6C25' },
+                        { key: 'netCashflow', label: 'Net Cashflow', color: '#C5B358' }
+                    ].map((item) => (
+                        <div key={item.key} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.7rem', color: item.color, fontWeight: 600 }}>
+                            <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: item.color }} />
+                            {item.label}
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
     return (
         <>
             <section className={`glass-card quadrant ${mode === 'focused' ? 'focused' : ''}`}>
@@ -140,11 +173,11 @@ const Cashflow: React.FC<CashflowProps> = ({ client, mode = 'overview', dateRang
 
                                         return (
                                             <>
-                                                {visibleLines.inflow && <Line type="monotone" dataKey="inflow" stroke="#719266" strokeWidth={1.5} dot={dotStyle} activeDot={activeDotStyle} isAnimationActive={!isExporting} animationDuration={800} />}
-                                                {visibleLines.expense && <Line type="monotone" dataKey="expense" stroke="#9B2226" strokeWidth={1.5} dot={dotStyle} activeDot={activeDotStyle} isAnimationActive={!isExporting} animationDuration={800} />}
-                                                {visibleLines.wealthTransfers && <Line type="monotone" dataKey="wealthTransfers" stroke="#3C5A82" strokeWidth={1.5} dot={dotStyle} activeDot={activeDotStyle} isAnimationActive={!isExporting} animationDuration={800} />}
-                                                {visibleLines.netSurplus && <Line type="monotone" dataKey="netSurplus" stroke="#BC6C25" strokeWidth={1.5} dot={dotStyle} activeDot={activeDotStyle} isAnimationActive={!isExporting} animationDuration={800} />}
-                                                {visibleLines.netCashflow && <Line type="monotone" dataKey="netCashflow" stroke="#C5B358" strokeWidth={1.5} dot={dotStyle} activeDot={activeDotStyle} isAnimationActive={!isExporting} animationDuration={800} />}
+                                                {visibleLines.inflow && <Line type="monotone" dataKey="inflow" stroke="#719266" strokeWidth={1.5} dot={dotStyle} activeDot={activeDotStyle} isAnimationActive={true} animationDuration={800} />}
+                                                {visibleLines.expense && <Line type="monotone" dataKey="expense" stroke="#9B2226" strokeWidth={1.5} dot={dotStyle} activeDot={activeDotStyle} isAnimationActive={true} animationDuration={800} />}
+                                                {visibleLines.wealthTransfers && <Line type="monotone" dataKey="wealthTransfers" stroke="#3C5A82" strokeWidth={1.5} dot={dotStyle} activeDot={activeDotStyle} isAnimationActive={true} animationDuration={800} />}
+                                                {visibleLines.netSurplus && <Line type="monotone" dataKey="netSurplus" stroke="#BC6C25" strokeWidth={1.5} dot={dotStyle} activeDot={activeDotStyle} isAnimationActive={true} animationDuration={800} />}
+                                                {visibleLines.netCashflow && <Line type="monotone" dataKey="netCashflow" stroke="#C5B358" strokeWidth={1.5} dot={dotStyle} activeDot={activeDotStyle} isAnimationActive={true} animationDuration={800} />}
                                             </>
                                         );
                                     })()}

@@ -97,14 +97,14 @@ const Dashboard: React.FC = () => {
 
     const renderFullGrid = () => (
         <main className="dashboard-grid">
-            <Link to={`/${clientId}/asset-allocation`} className="quadrant-link">
-                <AssetAllocation client={client} dateRange={dateRange} />
-            </Link>
             <Link to={`/${clientId}/cashflow`} className="quadrant-link">
                 <Cashflow client={client} dateRange={dateRange} />
             </Link>
             <Link to={`/${clientId}/plans`} className="quadrant-link">
                 <PlansHeld client={client} mode="overview" dateRange={dateRange} />
+            </Link>
+            <Link to={`/${clientId}/asset-allocation`} className="quadrant-link">
+                <AssetAllocation client={client} dateRange={dateRange} />
             </Link>
             <div
                 onClick={() => navigate(`/${clientId}/risk`)}

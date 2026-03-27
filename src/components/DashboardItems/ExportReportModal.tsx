@@ -6,6 +6,7 @@ import AssetAllocation from './AssetAllocation';
 import Cashflow from './Cashflow';
 import { renderCleanList } from './Insights/Insights.components';
 import { Button } from '../UI/Button';
+import calibreLogo from '../../assets/calibre logo.png';
 
 interface ExportReportModalProps {
     client: any;
@@ -17,6 +18,94 @@ interface ExportReportModalProps {
     onClose: () => void;
     onFocusQuadrant?: (quadId: string, mode?: string) => void;
 }
+
+/* ─── PDF Specific Styles ─── */
+const GOLD = '#C5B358';
+
+const PDF_S = {
+    page: {
+        width: '800px',
+        minHeight: '1120px',
+        background: '#fff',
+        color: '#333',
+        boxSizing: 'border-box' as const,
+        fontFamily: 'Inter, system-ui, sans-serif',
+        position: 'relative' as const,
+        overflow: 'hidden' as const,
+        padding: '60px 40px'
+    },
+    coverPage: {
+        width: '800px',
+        height: '1120px',
+        display: 'flex',
+        flexDirection: 'column' as const,
+        justifyContent: 'center',
+        alignItems: 'center',
+        textAlign: 'center' as const,
+        background: '#fff',
+        padding: '80px 40px'
+    },
+    sectionTitle: {
+        fontSize: '24px', color: GOLD, borderBottom: `3px solid ${GOLD}`,
+        paddingBottom: '12px', marginBottom: '24px', fontWeight: 800, textTransform: 'uppercase' as const, letterSpacing: '0.05em'
+    },
+    subTitle: { fontSize: '15px', color: GOLD, marginBottom: '14px', marginTop: '24px', fontWeight: 700 as const, textTransform: 'uppercase' as const, letterSpacing: '0.08em' },
+    table: { width: '100%', borderCollapse: 'collapse' as const, fontSize: '9px', marginBottom: '24px', tableLayout: 'fixed' as const },
+    th: {
+        textAlign: 'left' as const, padding: '8px 8px', background: '#f8f9fa',
+        borderBottom: '2px solid #dee2e6', fontWeight: 700, color: '#495057', fontSize: '8px',
+        textTransform: 'uppercase' as const, letterSpacing: '0.05em', overflow: 'hidden', whiteSpace: 'nowrap' as const, textOverflow: 'ellipsis'
+    },
+    td: { padding: '8px 8px', borderBottom: '1px solid #eee', verticalAlign: 'top' as const, lineHeight: '1.4', overflow: 'hidden', wordWrap: 'break-word' as const },
+    tdRight: { padding: '8px 8px', borderBottom: '1px solid #eee', textAlign: 'right' as const, verticalAlign: 'top' as const, fontWeight: 500 },
+    infoGrid: { display: 'grid' as const, gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px 30px', fontSize: '11px', marginBottom: '20px' },
+    infoLabel: { fontSize: '9px', textTransform: 'uppercase' as const, color: '#888', fontWeight: 700, letterSpacing: '0.06em', marginBottom: '3px' },
+    infoValue: { color: 'var(--secondary)', fontWeight: 600 as const },
+    footer: {
+        position: 'absolute' as const, bottom: '40px', left: '0', right: '0',
+        padding: '0 40px', display: 'flex', justifyContent: 'space-between',
+        fontSize: '9px', color: '#aaa', borderTop: '1px solid #f0f0f0', paddingTop: '15px'
+    }
+};
+
+const fmtDate = (d: string | null | undefined) => {
+    if (!d) return '-';
+    try { return new Date(d).toLocaleDateString('en-SG', { day: '2-digit', month: 'short', year: 'numeric' }); }
+    catch { return '-'; }
+};
+
+const fmtCurrency = (v: any) => {
+    const n = parseFloat(v || 0);
+    return `$${n.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+};
+
+const fmtLabel = (key: string) => {
+    if (key === 'address_type') return 'Type of Address';
+    if (key === 'house_block_no') return 'House / Block';
+    return key.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+};
+
+const fmtValue = (key: string, value: any) => {
+    if (value === null || value === undefined || value === '') return '-';
+    if (Array.isArray(value)) return value.join(', ');
+    let display = value.toString();
+    if (typeof value === 'number' || (typeof value === 'string' && /^\d+\.0$/.test(value))) {
+        display = display.replace(/\.0$/, '');
+    }
+    if (key.includes('date') || key === 'last_updated') {
+        try { return new Date(value).toLocaleDateString('en-SG', { day: '2-digit', month: 'long', year: 'numeric' }); }
+        catch { return display; }
+    }
+    return display;
+};
+
+const chunkArray = (arr: any[], size: number) => {
+    const result = [];
+    for (let i = 0; i < arr.length; i += size) {
+        result.push(arr.slice(i, i + size));
+    }
+    return result;
+};
 
 const ExportReportModal: React.FC<ExportReportModalProps> = ({
     client,
@@ -34,7 +123,6 @@ const ExportReportModal: React.FC<ExportReportModalProps> = ({
     const [isExporting, setIsExporting] = useState(false);
     const [statusText, setStatusText] = useState('');
 
-    // Feature toggles
     const [includeRiskAnalysis, setIncludeRiskAnalysis] = useState(false);
     const [includeMeetingNotes, setIncludeMeetingNotes] = useState(false);
 
@@ -42,8 +130,8 @@ const ExportReportModal: React.FC<ExportReportModalProps> = ({
 
     const isRiskAnalysisValid = !!(
         cache?.focused &&
-        startDate === dashboardStartDate &&
-        endDate === dashboardEndDate
+        cache?.generatedPeriod?.startDate === startDate &&
+        cache?.generatedPeriod?.endDate === endDate
     );
 
     const isMeetingNotesValid = !!(
@@ -51,146 +139,256 @@ const ExportReportModal: React.FC<ExportReportModalProps> = ({
         cache?.meetingNotesSummary
     );
 
+    /* ─── Derive all report data ─── */
+    const allPlans = client.client_plans || [];
+
+    const filteredCashflows = (client?.cashflow || [])
+        .filter((item: any) => {
+            const d = item.as_of_date.substring(0, 10);
+            if (startDate && d < startDate) return false;
+            if (endDate && d > endDate) return false;
+            return true;
+        })
+        .sort((a: any, b: any) => new Date(a.as_of_date).getTime() - new Date(b.as_of_date).getTime());
+
+    const contactFields = ['email', 'employment_status', 'occupation', 'mobile_no', 'home_no', 'office_no'];
+    const addressFields = ['address_type', 'postal_district', 'house_block_no', 'street_name', 'building_name', 'unit_no'];
+    const technicalFields = ['client_id', 'full_name', 'name_as_per_id', 'client_investments', 'client_insurance', 'cashflow', 'client_plans', 'client_family', 'family_members_count', 'last_updated', 'assigned_user_id'];
+    const basicFields = Object.keys(client).filter(k => !contactFields.includes(k) && !addressFields.includes(k) && !technicalFields.includes(k));
+
     const handleExport = async () => {
         setIsExporting(true);
-        setStatusText('Preparing report content...');
+        setStatusText('Preparing Document...');
 
         try {
-            setStatusText('Rendering report document...');
+            await new Promise(r => setTimeout(r, 1000));
 
-            // Allow React to render the report Data before capturing
-            setTimeout(async () => {
-                try {
-                    if (reportRef.current) {
-                        const canvas = await html2canvas(reportRef.current, { scale: 2, useCORS: true, logging: false });
-                        const imgData = canvas.toDataURL('image/png');
-                        const pdf = new jsPDF('p', 'mm', 'a4');
-                        const pdfWidth = pdf.internal.pageSize.getWidth();
-                        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+            if (!reportRef.current) return;
 
-                        const pageHeight = pdf.internal.pageSize.getHeight();
-                        let heightLeft = pdfHeight;
-                        let position = 0;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
 
-                        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
-                        heightLeft -= pageHeight;
+            const pageElements = reportRef.current.querySelectorAll('.pdf-page');
 
-                        while (heightLeft >= 0) {
-                            position = position - pageHeight;
-                            pdf.addPage();
-                            pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
-                            heightLeft -= pageHeight;
-                        }
-
-                        const pdfBlob = pdf.output('blob');
-
-                        try {
-                            if ('showSaveFilePicker' in window) {
-                                // @ts-ignore
-                                const handle = await window.showSaveFilePicker({
-                                    suggestedName: filename || 'Report.pdf',
-                                    types: [{
-                                        description: 'PDF Document',
-                                        accept: { 'application/pdf': ['.pdf'] },
-                                    }],
-                                });
-                                const writable = await handle.createWritable();
-                                await writable.write(pdfBlob);
-                                await writable.close();
-                            } else {
-                                pdf.save(filename || 'Report.pdf');
-                            }
-                        } catch (saveErr: any) {
-                            if (saveErr.name !== 'AbortError') {
-                                pdf.save(filename || 'Report.pdf');
-                            }
-                        }
-                        onClose();
-                    }
-                } catch (err) {
-                    console.error('Failed to generate PDF:', err);
-                    alert('Failed to generate PDF. Please try again.');
-                } finally {
-                    setIsExporting(false);
+            for (let i = 0; i < pageElements.length; i++) {
+                const element = pageElements[i] as HTMLElement;
+                const sectionTag = element.querySelector('h2');
+                let sectionName = 'Cover Page';
+                if (i !== 0 && sectionTag && sectionTag.textContent) {
+                    sectionName = sectionTag.textContent.replace(/^\d+\.\s*/, '');
                 }
-            }, 1500); // Wait for charts and content to fully render
+                setStatusText(`Rendering Page ${i + 1} of ${pageElements.length} — ${sectionName}...`);
 
-        } catch (err) {
-            console.error('Failed to generate report data:', err);
-            alert('Failed to fetch data for report. Please try again.');
+                const canvas = await html2canvas(element, {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    backgroundColor: '#ffffff',
+                    width: 800,
+                    height: 1120
+                });
+
+                const imgData = canvas.toDataURL('image/jpeg', 0.9);
+
+                if (i > 0) pdf.addPage();
+                pdf.addImage(imgData, 'JPEG', 0, 0, pageWidth, pageHeight, undefined, 'FAST');
+            }
+
+            setStatusText('Saving PDF File...');
+            const pdfBlob = pdf.output('blob');
+
+            if ('showSaveFilePicker' in window) {
+                // @ts-ignore
+                const handle = await window.showSaveFilePicker({
+                    suggestedName: filename || 'Report.pdf',
+                    types: [{ description: 'PDF Document', accept: { 'application/pdf': ['.pdf'] } }],
+                });
+                const writable = await handle.createWritable();
+                await writable.write(pdfBlob);
+                await writable.close();
+            } else {
+                pdf.save(filename || 'Report.pdf');
+            }
+            onClose();
+
+        } catch (err: any) {
+            if (err.name !== 'AbortError') {
+                console.error('Failed to generate report:', err);
+                alert('An error occurred during export. Please check the console for details.');
+            }
+        } finally {
             setIsExporting(false);
         }
     };
 
+    const renderFooter = (page: number, total: number) => (
+        <div style={PDF_S.footer}>
+            <span>Confidential | Calibre Advisory</span>
+            <span>Page {page} of {total}</span>
+            <span>{new Date().toLocaleDateString('en-SG')}</span>
+        </div>
+    );
+
+    const renderInfoSection = (title: string, fields: string[]) => (
+        <div style={{ marginBottom: '20px' }}>
+            <h4 style={PDF_S.subTitle}>{title}</h4>
+            <div style={PDF_S.infoGrid}>
+                {fields.map(key => (
+                    <div key={key}>
+                        <div style={PDF_S.infoLabel}>{fmtLabel(key)}</div>
+                        <div style={PDF_S.infoValue}>{fmtValue(key, client[key])}</div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+
+    /* ─── Calculate Chunking for Safe Boundaries ─── */
+    const familyChunks = chunkArray(client.client_family || [], 8);
+    const profilePages = 1 + Math.max(0, familyChunks.length - 1); // first chunk fits on profile page, rest overflow
+
+    const planChunksSummary = chunkArray(allPlans, 12);
+    const planChunksDetails = chunkArray(allPlans, 1);
+    const cashflowChunks = chunkArray(filteredCashflows, 30);
+
+    let cashflowMonths: string[] = [...(client.cashflow || [])].sort((a: any, b: any) => new Date(a.as_of_date).getTime() - new Date(b.as_of_date).getTime()).map((c: any) => c.as_of_date).filter((d: string) => (!startDate || d.substring(0, 10) >= startDate) && (!endDate || d.substring(0, 10) <= endDate));
+    const assetClassSet = new Set<string>(); (client.client_plans || []).forEach((p: any) => assetClassSet.add(p.asset_class));
+    const classes = Array.from(assetClassSet).filter(c => c !== 'Insurance (Wealth)');
+    const allocationHistoryChunks = chunkArray(cashflowMonths, 30);
+
+    const pages = {
+        cover: 1,
+        toc: 1,
+        profile: profilePages,
+        portfolio: Math.max(1, planChunksSummary.length) + planChunksDetails.length,
+        cashflow: 1 + Math.max(1, cashflowChunks.length),
+        allocation: 1 + Math.max(1, allocationHistoryChunks.length),
+        risk: includeRiskAnalysis ? 1 : 0,
+        meeting: includeMeetingNotes ? 1 : 0
+    };
+
+    let offset = 3; // Cover=1, TOC=2, profile starts at 3
+    const profileRange = { start: offset, end: offset + pages.profile - 1 };
+    offset = profileRange.end + 1;
+
+    const cashflowRange = { start: offset, end: offset + pages.cashflow - 1 };
+    offset = cashflowRange.end + 1;
+
+    const portfolioRange = { start: offset, end: offset + pages.portfolio - 1 };
+    offset = portfolioRange.end + 1;
+
+    const allocRange = { start: offset, end: offset + pages.allocation - 1 };
+    offset = allocRange.end + 1;
+
+    const riskRange = pages.risk ? { start: offset, end: offset + pages.risk - 1 } : null;
+    if (pages.risk) offset += pages.risk;
+
+    const meetingRange = pages.meeting ? { start: offset, end: offset + pages.meeting - 1 } : null;
+    if (pages.meeting) offset += pages.meeting;
+
+    const totalPages = offset - 1;
+    let currentPage = 1;
+
+    const formatRange = (r: { start: number, end: number }) => r.start === r.end ? `${r.start}` : `${r.start} – ${r.end}`;
+
+    // Build TOC entries with subsections
+    let sectionNum = 1;
+    const tocSections: { num: string; title: string; range: string; indent?: boolean }[] = [];
+
+    tocSections.push({ num: `${sectionNum}`, title: 'Personal Profile', range: formatRange(profileRange) });
+    tocSections.push({ num: `${sectionNum}.1`, title: 'Basic Information', range: '', indent: true });
+    tocSections.push({ num: `${sectionNum}.2`, title: 'Employment & Contact', range: '', indent: true });
+    tocSections.push({ num: `${sectionNum}.3`, title: 'Residential Address', range: '', indent: true });
+    if ((client.client_family || []).length > 0) {
+        tocSections.push({ num: `${sectionNum}.4`, title: 'Family Members', range: '', indent: true });
+    }
+    sectionNum++;
+
+    tocSections.push({ num: `${sectionNum}`, title: 'Cashflow', range: formatRange(cashflowRange) });
+    tocSections.push({ num: `${sectionNum}.1`, title: 'Trend Visualisation', range: '', indent: true });
+    tocSections.push({ num: `${sectionNum}.2`, title: 'History by Component', range: '', indent: true });
+    sectionNum++;
+
+    tocSections.push({ num: `${sectionNum}`, title: 'Plans Held', range: formatRange(portfolioRange) });
+    tocSections.push({ num: `${sectionNum}.1`, title: 'Holdings Summary', range: '', indent: true });
+    tocSections.push({ num: `${sectionNum}.2`, title: 'Individual Valuations', range: '', indent: true });
+    sectionNum++;
+
+    tocSections.push({ num: `${sectionNum}`, title: 'Asset Allocation', range: formatRange(allocRange) });
+    tocSections.push({ num: `${sectionNum}.1`, title: 'Trend Visualisation', range: '', indent: true });
+    tocSections.push({ num: `${sectionNum}.2`, title: 'History by Asset Type', range: '', indent: true });
+    sectionNum++;
+
+    if (riskRange) {
+        tocSections.push({ num: `${sectionNum}`, title: 'Risk Analysis', range: formatRange(riskRange) });
+        tocSections.push({ num: `${sectionNum}.1`, title: 'Summary', range: '', indent: true });
+        tocSections.push({ num: `${sectionNum}.2`, title: 'Key Insights', range: '', indent: true });
+        tocSections.push({ num: `${sectionNum}.3`, title: 'Potential Risks', range: '', indent: true });
+        tocSections.push({ num: `${sectionNum}.4`, title: 'Recommendations', range: '', indent: true });
+        sectionNum++;
+    }
+    if (meetingRange) {
+        tocSections.push({ num: `${sectionNum}`, title: 'Meeting Notes', range: formatRange(meetingRange) });
+        tocSections.push({ num: `${sectionNum}.1`, title: 'Summary', range: '', indent: true });
+        tocSections.push({ num: `${sectionNum}.2`, title: 'Key Takeaways', range: '', indent: true });
+        tocSections.push({ num: `${sectionNum}.3`, title: 'Action Items', range: '', indent: true });
+        tocSections.push({ num: `${sectionNum}.4`, title: 'Financial Insights', range: '', indent: true });
+    }
+
+
     return (
         <FocusModal isOpen={true} onClose={onClose} modalContentStyle={{ maxWidth: '500px', padding: '0' }}>
-            <div className="modal-header" style={{ padding: '2rem 2rem 1rem 2rem', borderBottom: '1px solid var(--border)' }}>
-                <h2 style={{ fontSize: 'var(--text-2xl)', color: 'var(--secondary)', margin: 0 }}>Export Client Report</h2>
-                <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)', marginTop: '0.5rem' }}>Generate a comprehensive PDF report for {client.full_name}</p>
+            <div className="modal-header" style={{ padding: '1.5rem 2rem 1rem 2rem', borderBottom: '1px solid var(--border)' }}>
+                <h2 style={{ fontSize: 'var(--text-xl)', color: 'var(--secondary)', margin: 0 }}>Export Client Report</h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)', marginTop: '0.25rem' }}>Generate a comprehensive financial review for your client</p>
             </div>
 
             <div className="modal-body" style={{ padding: '2rem' }}>
                 {isExporting ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '3rem 0', gap: '1.5rem' }}>
-                        <svg width="64" height="64" viewBox="0 0 24 24" stroke="var(--primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ filter: 'drop-shadow(0 0 15px var(--primary-glow))', animation: 'hourglassFlip 1.2s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite' }}>
-                            <path d="M5 2h14l-7 9.5-7-9.5z" fill="var(--bg-main)"></path>
-                            <path d="M5 22h14l-7-9.5-7 9.5z" fill="var(--bg-main)"></path>
-                        </svg>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem 0', gap: '1.5rem' }}>
+                        <div className="loading-spinner" style={{ width: '40px', height: '40px', border: '3px solid var(--primary-glow)', borderTopColor: 'var(--primary)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
                         <div style={{ textAlign: 'center' }}>
-                            <h3 style={{ margin: '0 0 0.5rem 0', color: 'var(--secondary)' }}>Exporting PDF...</h3>
+                            <h3 style={{ margin: '0 0 0.5rem 0', color: 'var(--secondary)', fontSize: '1rem' }}>Generating Report</h3>
                             <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: 'var(--text-sm)' }}>{statusText}</p>
                         </div>
                     </div>
                 ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                         <div className="form-group">
-                            <label style={{ display: 'block', fontSize: 'var(--text-xs)', fontWeight: 'var(--font-semibold)', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Analysis Period</label>
+                            <label style={{ display: 'block', fontSize: 'var(--text-xs)', fontWeight: 'var(--font-semibold)', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.4rem' }}>Analysis Period</label>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} style={{ flex: 1, padding: '10px 12px', border: '1px solid var(--border)', borderRadius: '8px', background: 'rgba(0,0,0,0.02)', outline: 'none' }} />
-                                <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>to</span>
-                                <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} style={{ flex: 1, padding: '10px 12px', border: '1px solid var(--border)', borderRadius: '8px', background: 'rgba(0,0,0,0.02)', outline: 'none' }} />
+                                <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} style={{ flex: 1, padding: '8px 10px', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '0.9rem' }} />
+                                <span style={{ color: '#888' }}>-</span>
+                                <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} style={{ flex: 1, padding: '8px 10px', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '0.9rem' }} />
                             </div>
                         </div>
 
                         <div className="form-group">
-                            <label style={{ display: 'block', fontSize: 'var(--text-xs)', fontWeight: 'var(--font-semibold)', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Filename</label>
-                            <input
-                                type="text"
-                                value={filename}
-                                onChange={e => setFilename(e.target.value)}
-                                style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--border)', borderRadius: '8px', background: 'rgba(0,0,0,0.02)', outline: 'none', boxSizing: 'border-box' }}
-                            />
+                            <label style={{ display: 'block', fontSize: 'var(--text-xs)', fontWeight: 'var(--font-semibold)', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.4rem' }}>Filename</label>
+                            <input type="text" value={filename} onChange={e => setFilename(e.target.value)} style={{ width: '100%', padding: '8px 10px', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '0.9rem' }} />
                         </div>
 
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', background: 'rgba(0,0,0,0.02)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                        <div style={{ background: 'rgba(0,0,0,0.02)', padding: '16px', borderRadius: '10px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
-                                    <input type="checkbox" checked={includeRiskAnalysis} onChange={(e) => setIncludeRiskAnalysis(e.target.checked)} style={{ width: '18px', height: '18px', accentColor: 'var(--primary)', cursor: 'pointer' }} />
-                                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                        <span style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--secondary)' }}>Include Risk Analysis</span>
-                                    </div>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={includeRiskAnalysis}
+                                        onChange={e => setIncludeRiskAnalysis(e.target.checked)}
+                                    />
+                                    <span style={{ fontSize: '0.9rem', fontWeight: 500 }}>Include Risk Analysis</span>
                                 </label>
                                 {includeRiskAnalysis && !isRiskAnalysisValid && (
-                                    <div className="animate-fade" style={{ marginLeft: '30px', padding: '10px 12px', borderRadius: '8px', background: 'rgba(155, 34, 38, 0.08)', border: '1px solid rgba(155, 34, 38, 0.15)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                        <p style={{ margin: 0, fontSize: '0.75rem', color: '#9B2226', lineHeight: '1.4', fontWeight: 'var(--font-semibold)' }}>
-                                            No risk analysis found for the selected period.
+                                    <div style={{ marginLeft: '26px', padding: '10px', borderRadius: '8px', background: 'rgba(239, 68, 68, 0.05)', border: '1px solid rgba(239, 68, 68, 0.2)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                        <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--danger)', fontWeight: 500 }}>
+                                            {cache?.focused ? 'Analysis period does not match selection.' : 'No AI risk analysis found.'}
                                         </p>
                                         <Button
                                             variant="outline"
                                             size="small"
                                             onClick={() => { onFocusQuadrant?.('risk', 'risk-analysis'); onClose(); }}
-                                            style={{ 
-                                                alignSelf: 'flex-start',
-                                                color: '#9B2226',
-                                                borderColor: 'rgba(155, 34, 38, 0.3)',
-                                                background: 'transparent'
-                                            }}
-                                            onMouseEnter={(e: any) => {
-                                                e.currentTarget.style.background = 'rgba(155, 34, 38, 0.1)';
-                                            }}
-                                            onMouseLeave={(e: any) => {
-                                                e.currentTarget.style.background = 'transparent';
-                                            }}
+                                            style={{ alignSelf: 'flex-start', fontSize: '0.75rem', padding: '4px 10px', color: 'var(--danger)', borderColor: 'rgba(239, 68, 68, 0.3)' }}
                                         >
                                             Go to Risk Analysis
                                         </Button>
@@ -198,34 +396,27 @@ const ExportReportModal: React.FC<ExportReportModalProps> = ({
                                 )}
                             </div>
 
+                            <div style={{ height: '1px', background: 'var(--border)', margin: '4px 0' }} />
+
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
-                                    <input type="checkbox" checked={includeMeetingNotes} onChange={(e) => setIncludeMeetingNotes(e.target.checked)} style={{ width: '18px', height: '18px', accentColor: 'var(--primary)', cursor: 'pointer' }} />
-                                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                        <span style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--secondary)' }}>Include Meeting Notes</span>
-                                    </div>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={includeMeetingNotes}
+                                        onChange={e => setIncludeMeetingNotes(e.target.checked)}
+                                    />
+                                    <span style={{ fontSize: '0.9rem', fontWeight: 500 }}>Include Meeting Notes</span>
                                 </label>
                                 {includeMeetingNotes && !isMeetingNotesValid && (
-                                    <div className="animate-fade" style={{ marginLeft: '30px', padding: '10px 12px', borderRadius: '8px', background: 'rgba(155, 34, 38, 0.08)', border: '1px solid rgba(155, 34, 38, 0.15)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                        <p style={{ margin: 0, fontSize: '0.75rem', color: '#9B2226', lineHeight: '1.4', fontWeight: 'var(--font-semibold)' }}>
-                                            No meeting notes found.
+                                    <div style={{ marginLeft: '26px', padding: '10px', borderRadius: '8px', background: 'rgba(239, 68, 68, 0.05)', border: '1px solid rgba(239, 68, 68, 0.2)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                        <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--danger)', fontWeight: 500 }}>
+                                            No meeting notes or transcript found.
                                         </p>
                                         <Button
                                             variant="outline"
                                             size="small"
                                             onClick={() => { onFocusQuadrant?.('risk', 'meeting-notes'); onClose(); }}
-                                            style={{ 
-                                                alignSelf: 'flex-start',
-                                                color: '#9B2226',
-                                                borderColor: 'rgba(155, 34, 38, 0.3)',
-                                                background: 'transparent'
-                                            }}
-                                            onMouseEnter={(e: any) => {
-                                                e.currentTarget.style.background = 'rgba(155, 34, 38, 0.1)';
-                                            }}
-                                            onMouseLeave={(e: any) => {
-                                                e.currentTarget.style.background = 'transparent';
-                                            }}
+                                            style={{ alignSelf: 'flex-start', fontSize: '0.75rem', padding: '4px 10px', color: 'var(--danger)', borderColor: 'rgba(239, 68, 68, 0.3)' }}
                                         >
                                             Go to Meeting Notes
                                         </Button>
@@ -234,177 +425,449 @@ const ExportReportModal: React.FC<ExportReportModalProps> = ({
                             </div>
                         </div>
 
-                        <Button
-                            variant="outline"
-                            size="large"
-                            fullWidth
-                            onClick={handleExport}
+                        <Button 
+                            variant="outline" 
+                            size="large" 
+                            fullWidth 
+                            onClick={handleExport} 
                             disabled={!filename.trim() || !startDate || !endDate || (includeRiskAnalysis && !isRiskAnalysisValid) || (includeMeetingNotes && !isMeetingNotesValid)}
-                            style={{ marginTop: '0.5rem' }}
                         >
-                            Export Data
+                            Generate Report
                         </Button>
                     </div>
                 )}
             </div>
 
-            {/* Hidden Report Container */}
-            {isExporting && (
-                <div style={{ position: 'absolute', top: '-9999px', left: '-9999px', pointerEvents: 'none' }}>
-                    <div ref={reportRef} style={{ width: '800px', background: '#fff', padding: '40px', color: '#333', boxSizing: 'border-box', fontFamily: 'Inter, system-ui, sans-serif' }}>
-                        {/* 1. HEADER */}
-                        <div style={{ borderBottom: '2px solid var(--primary)', paddingBottom: '20px', marginBottom: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                            <div>
-                                <h1 style={{ margin: '0 0 8px 0', fontSize: '28px', color: 'var(--secondary)' }}>Client Financial Report</h1>
-                                <p style={{ margin: 0, fontSize: '18px', color: '#555' }}>Client: <strong style={{ color: 'var(--secondary)' }}>{client.full_name}</strong></p>
-                            </div>
-                            <div style={{ textAlign: 'right', fontSize: '12px', color: '#777' }}>
-                                <p style={{ margin: '0 0 4px 0' }}>Export Date: {new Date().toLocaleDateString()}</p>
-                                <p style={{ margin: 0 }}>Analysis Period: {startDate} to {endDate}</p>
-                            </div>
-                        </div>
+            {/* ══════════════════════════════════════════════════════════════
+                HIDDEN REPORT CONTAINER — Multi-Page PDF Engine
+               ══════════════════════════════════════════════════════════════ */}
+            <div style={{ position: 'absolute', top: '-9999px', left: '-9999px', pointerEvents: 'none' }}>
+                <div ref={reportRef} style={{ background: '#f5f5f5' }}>
 
-                        {/* 2. ASSET ALLOCATION */}
-                        <div style={{ marginBottom: '40px' }}>
-                            <h2 style={{ fontSize: '20px', color: 'var(--primary)', borderBottom: '1px solid #ddd', paddingBottom: '8px', marginBottom: '16px' }}>1. Asset Allocation & Portfolio</h2>
-                            <div style={{ height: '350px', marginBottom: '20px' }}>
-                                <AssetAllocation client={client} mode="overview" dateRange={{ startDate, endDate }} isExporting={true} />
-                            </div>
+                    {/* COVER */}
+                    <div className="pdf-page" style={PDF_S.coverPage}>
+                        <img src={calibreLogo} alt="" style={{ width: '320px', marginBottom: '100px' }} />
+                        <div style={{ width: '160px', height: '6px', background: GOLD, marginBottom: '50px' }} />
+                        <h1 style={{ fontSize: '56px', color: 'var(--secondary)', margin: '0 0 10px 0', fontWeight: 900 }}>Client Report</h1>
+                        <h2 style={{ fontSize: '22px', color: GOLD, margin: '0 0 80px 0', textTransform: 'uppercase', letterSpacing: '0.3em' }}>Private & Confidential</h2>
 
-                            <h3 style={{ fontSize: '16px', color: '#444', marginBottom: '8px' }}>Active Plans Breakdown</h3>
-                            <div style={{ background: '#f9f9f9', padding: '20px', borderRadius: '8px', border: '1px solid #eaeaea' }}>
-                                {(client.client_plans || []).filter((p: any) => p.status === 'Active').map((plan: any, i: number) => {
-                                    const value = parseFloat(plan.market_value || plan.cash_value || plan.surrender_value || 0);
-                                    return (
-                                        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: i !== (client.client_plans || []).filter((p: any) => p.status === 'Active').length - 1 ? '1px solid #ddd' : 'none', padding: '8px 0', fontSize: '13px' }}>
-                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                                <span style={{ fontWeight: 600, color: '#333' }}>{plan.plan_name}</span>
-                                                <span style={{ color: '#777', fontSize: '11px' }}>{plan.asset_class || plan.policy_type} | {plan.company_name}</span>
-                                            </div>
-                                            <div style={{ fontWeight: 600, color: '#333' }}>
-                                                ${value.toLocaleString()}
-                                            </div>
-                                        </div>
-                                    )
-                                })}
-                            </div>
-                        </div>
+                        <div style={{ marginTop: 'auto', textAlign: 'center' }}>
+                            <p style={{ fontSize: '20px', color: '#666', margin: '0 0 6px 0' }}>Financial Review for</p>
+                            <p style={{ fontSize: '38px', color: 'var(--secondary)', margin: '0 0 50px 0', fontWeight: 800 }}>{client.full_name}</p>
 
-                        {/* 3. CASHFLOW */}
-                        <div style={{ marginBottom: '40px' }}>
-                            <h2 style={{ fontSize: '20px', color: 'var(--primary)', borderBottom: '1px solid #ddd', paddingBottom: '8px', marginBottom: '16px' }}>2. Cashflow</h2>
-                            <div style={{ height: '350px', marginBottom: '20px' }}>
-                                <Cashflow client={client} mode="overview" dateRange={{ startDate, endDate }} isExporting={true} />
-                            </div>
-                            <h3 style={{ fontSize: '16px', color: '#444', marginBottom: '8px' }}>Latest Cashflow Statement</h3>
-                            <div style={{ background: '#f9f9f9', padding: '20px', borderRadius: '8px', border: '1px solid #eaeaea' }}>
-                                {(() => {
-                                    const cfs = (client?.cashflow || [])
-                                        .filter((item: any) => {
-                                            const itemDate = item.as_of_date.substring(0, 10);
-                                            if (startDate && itemDate < startDate) return false;
-                                            if (endDate && itemDate > endDate) return false;
-                                            return true;
-                                        })
-                                        .sort((a: any, b: any) => new Date(b.as_of_date).getTime() - new Date(a.as_of_date).getTime());
-
-                                    if (cfs.length > 0) {
-                                        const latest = cfs[0];
-                                        return (
-                                            <div style={{ display: 'flex', gap: '20px', justifyContent: 'space-between' }}>
-                                                <div style={{ flex: 1 }}>
-                                                    <div style={{ fontWeight: 700, color: '#555', marginBottom: '10px', fontSize: '13px', textTransform: 'uppercase' }}>Inflows</div>
-                                                    <p style={{ margin: '4px 0', fontSize: '12px' }}>Employment: ${parseFloat(latest.employment_income_gross || 0).toLocaleString()}</p>
-                                                    <p style={{ margin: '4px 0', fontSize: '12px' }}>Rental: ${parseFloat(latest.rental_income || 0).toLocaleString()}</p>
-                                                    <p style={{ margin: '4px 0', fontSize: '12px' }}>Investment: ${parseFloat(latest.investment_income || 0).toLocaleString()}</p>
-                                                    <div style={{ borderTop: '1px solid #ccc', marginTop: '6px', paddingTop: '6px', fontWeight: 700, fontSize: '13px' }}>Total Inflow: ${parseFloat(latest.total_inflow || 0).toLocaleString()}</div>
-                                                </div>
-                                                <div style={{ flex: 1 }}>
-                                                    <div style={{ fontWeight: 700, color: '#555', marginBottom: '10px', fontSize: '13px', textTransform: 'uppercase' }}>Expenses</div>
-                                                    <p style={{ margin: '4px 0', fontSize: '12px' }}>Household: ${parseFloat(latest.household_expenses || 0).toLocaleString()}</p>
-                                                    <p style={{ margin: '4px 0', fontSize: '12px' }}>Taxes: ${parseFloat(latest.income_tax || 0).toLocaleString()}</p>
-                                                    <p style={{ margin: '4px 0', fontSize: '12px' }}>Insurance: ${parseFloat(latest.insurance_premiums || 0).toLocaleString()}</p>
-                                                    <div style={{ borderTop: '1px solid #ccc', marginTop: '6px', paddingTop: '6px', fontWeight: 700, fontSize: '13px' }}>Total Expense: ${parseFloat(latest.total_expense || 0).toLocaleString()}</div>
-                                                </div>
-                                                <div style={{ flex: 1, borderLeft: '1px solid #ddd', paddingLeft: '20px' }}>
-                                                    <div style={{ fontWeight: 700, color: '#555', marginBottom: '10px', fontSize: '13px', textTransform: 'uppercase' }}>Net Status</div>
-                                                    <p style={{ margin: '4px 0', fontSize: '12px' }}>Wealth Transfer: ${parseFloat(latest.wealth_transfers || 0).toLocaleString()}</p>
-                                                    <p style={{ margin: '4px 0', fontSize: '12px', fontWeight: 600, color: 'var(--success)' }}>Net Surplus: ${parseFloat(latest.net_surplus || 0).toLocaleString()}</p>
-                                                    <div style={{ borderTop: '1px solid #ccc', marginTop: '6px', paddingTop: '6px', fontWeight: 800, fontSize: '14px', color: 'var(--primary)' }}>Net Cashflow: ${parseFloat(latest.net_cashflow || 0).toLocaleString()}</div>
-                                                </div>
-                                            </div>
-                                        )
-                                    }
-                                    return <p style={{ fontSize: '12px', color: '#777' }}>No cashflow data in this period.</p>;
-                                })()}
-                            </div>
-                        </div>
-
-                        {/* 4. RISK ANALYSIS */}
-                        {includeRiskAnalysis && (
-                            <div style={{ marginBottom: '40px' }}>
-                                <h2 style={{ fontSize: '20px', color: 'var(--primary)', borderBottom: '1px solid #ddd', paddingBottom: '8px', marginBottom: '16px' }}>3. Risk Analysis</h2>
-                                <div style={{ background: '#f9f9f9', padding: '20px', borderRadius: '8px', border: '1px solid #eaeaea' }}>
-                                    {cache?.focused ? (
-                                        <>
-                                            <div style={{ marginBottom: '16px' }}>
-                                                <strong style={{ fontSize: '14px', color: 'var(--primary)', textTransform: 'uppercase' }}>Key Insights</strong>
-                                                {renderCleanList(cache.focused["Key Insights"])}
-                                            </div>
-                                            <div style={{ marginBottom: '16px' }}>
-                                                <strong style={{ fontSize: '14px', color: 'var(--primary)', textTransform: 'uppercase' }}>Potential Risks</strong>
-                                                {renderCleanList(cache.focused["Potential Risks"])}
-                                            </div>
-                                            <div>
-                                                <strong style={{ fontSize: '14px', color: 'var(--primary)', textTransform: 'uppercase' }}>Recommendations</strong>
-                                                {renderCleanList(cache.focused["Recommendations"])}
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <p style={{ fontSize: '13px', color: '#777' }}>No risk analysis identified.</p>
-                                    )}
+                            <div style={{ display: 'flex', gap: '60px', justifyContent: 'center', borderTop: '1px solid #eee', paddingTop: '40px' }}>
+                                <div style={{ textAlign: 'left' }}>
+                                    <p style={PDF_S.infoLabel}>Analysis Period</p>
+                                    <p style={{ ...PDF_S.infoValue, fontSize: '15px' }}>{fmtDate(startDate)} — {fmtDate(endDate)}</p>
+                                </div>
+                                <div style={{ textAlign: 'left' }}>
+                                    <p style={PDF_S.infoLabel}>Document Date</p>
+                                    <p style={{ ...PDF_S.infoValue, fontSize: '15px' }}>{new Date().toLocaleDateString('en-SG', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
                                 </div>
                             </div>
-                        )}
-
-                        {/* 5. MEETING NOTES */}
-                        {includeMeetingNotes && cache?.meetingNotes && (
-                            <div style={{ marginBottom: '40px' }}>
-                                <h2 style={{ fontSize: '20px', color: 'var(--primary)', borderBottom: '1px solid #ddd', paddingBottom: '8px', marginBottom: '16px' }}>{includeRiskAnalysis ? '4.' : '3.'} Meeting Notes</h2>
-                                <div style={{ background: '#f9f9f9', padding: '20px', borderRadius: '8px', border: '1px solid #eaeaea' }}>
-                                    {cache?.meetingNotesSummary && (
-                                        <div style={{ marginBottom: '16px' }}>
-                                            <strong style={{ fontSize: '14px', color: 'var(--primary)', textTransform: 'uppercase' }}>Meeting Summary</strong>
-                                            {renderCleanList(cache.meetingNotesSummary)}
-                                        </div>
-                                    )}
-                                    <>
-                                        {cache.meetingNotes["Key Takeaways"] && (
-                                            <div style={{ marginBottom: '16px' }}>
-                                                <strong style={{ fontSize: '14px', color: 'var(--primary)', textTransform: 'uppercase' }}>Key Takeaways</strong>
-                                                {renderCleanList(cache.meetingNotes["Key Takeaways"])}
-                                            </div>
-                                        )}
-                                        {cache.meetingNotes["Action Items"] && (
-                                            <div style={{ marginBottom: '16px' }}>
-                                                <strong style={{ fontSize: '14px', color: 'var(--primary)', textTransform: 'uppercase' }}>Action Items</strong>
-                                                {renderCleanList(cache.meetingNotes["Action Items"])}
-                                            </div>
-                                        )}
-                                        {cache.meetingNotes["Financial Insights"] && (
-                                            <div>
-                                                <strong style={{ fontSize: '14px', color: 'var(--primary)', textTransform: 'uppercase' }}>Financial Insights</strong>
-                                                {renderCleanList(cache.meetingNotes["Financial Insights"])}
-                                            </div>
-                                        )}
-                                    </>
-                                </div>
-                            </div>
-                        )}
-
+                        </div>
                     </div>
+
+                    {/* TOC */}
+                    <div className="pdf-page" style={PDF_S.page}>
+                        <h2 style={PDF_S.sectionTitle}>Table of Contents</h2>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0', padding: '0 10px' }}>
+                            {tocSections.map((sec, i) => (
+                                <div key={i} style={{
+                                    display: 'flex', justifyContent: 'space-between',
+                                    borderBottom: sec.indent ? 'none' : '1px dotted #bbb',
+                                    paddingBottom: sec.indent ? '2px' : '10px',
+                                    paddingTop: sec.indent ? '2px' : '14px',
+                                    paddingLeft: sec.indent ? '30px' : '0'
+                                }}>
+                                    <span style={{
+                                        fontSize: sec.indent ? '12px' : '15px',
+                                        fontWeight: sec.indent ? 400 : 600,
+                                        color: sec.indent ? '#666' : '#333'
+                                    }}>{sec.num}. {sec.title}</span>
+                                    {sec.range && <span style={{ color: '#888', fontSize: sec.indent ? '12px' : '14px' }}>{sec.range}</span>}
+                                </div>
+                            ))}
+                        </div>
+                        {renderFooter(currentPage++, totalPages)}
+                    </div>
+
+                    {/* SECTION 1: Client Personal Profile (page 1 with first family chunk) */}
+                    <div className="pdf-page" style={PDF_S.page}>
+                        <h2 style={PDF_S.sectionTitle}>1. Personal Profile</h2>
+                        {renderInfoSection('1.1 Basic Information', basicFields)}
+                        {renderInfoSection('1.2 Employment & Contact', contactFields)}
+                        {renderInfoSection('1.3 Residential Address', addressFields)}
+
+                        {familyChunks.length > 0 && (
+                            <>
+                                <h4 style={PDF_S.subTitle}>1.4 Family Members</h4>
+                                <table style={PDF_S.table}>
+                                    <thead>
+                                        <tr>
+                                            <th style={{ ...PDF_S.th, width: '22%' }}>Name</th>
+                                            <th style={{ ...PDF_S.th, width: '10%' }}>Gender</th>
+                                            <th style={{ ...PDF_S.th, width: '10%' }}>Rel.</th>
+                                            <th style={{ ...PDF_S.th, width: '12%' }}>DOB</th>
+                                            <th style={{ ...PDF_S.th, width: '8%' }}>Age</th>
+                                            <th style={{ ...PDF_S.th, width: '12%', textAlign: 'right' }}>Upkeep/mo</th>
+                                            <th style={{ ...PDF_S.th, width: '12%' }}>Support Till</th>
+                                            <th style={{ ...PDF_S.th, width: '14%' }}>Yrs to Support</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {familyChunks[0].map((m: any, i: number) => (
+                                            <tr key={i}>
+                                                <td style={{ ...PDF_S.td, fontWeight: 600 }}>{m.family_member_name}</td>
+                                                <td style={PDF_S.td}>{m.gender}</td>
+                                                <td style={PDF_S.td}>{m.relationship}</td>
+                                                <td style={PDF_S.td}>{fmtDate(m.date_of_birth)}</td>
+                                                <td style={PDF_S.td}>{m.age}</td>
+                                                <td style={PDF_S.tdRight}>{fmtCurrency(m.monthly_upkeep)}</td>
+                                                <td style={PDF_S.td}>{m.support_until_age ? `Age ${m.support_until_age}` : '-'}</td>
+                                                <td style={PDF_S.td}>{m.years_to_support ?? '-'}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </>
+                        )}
+                        {renderFooter(currentPage++, totalPages)}
+                    </div>
+
+                    {/* Overflow family pages */}
+                    {familyChunks.slice(1).map((chunk, chunkIdx) => (
+                        <div key={`family-overflow-${chunkIdx}`} className="pdf-page" style={PDF_S.page}>
+                            <h2 style={PDF_S.sectionTitle}>1. Personal Profile</h2>
+                            <h4 style={PDF_S.subTitle}>1.4 Family Members (cont.)</h4>
+                            <table style={PDF_S.table}>
+                                <thead>
+                                    <tr>
+                                        <th style={{ ...PDF_S.th, width: '22%' }}>Name</th>
+                                        <th style={{ ...PDF_S.th, width: '10%' }}>Gender</th>
+                                        <th style={{ ...PDF_S.th, width: '10%' }}>Rel.</th>
+                                        <th style={{ ...PDF_S.th, width: '12%' }}>DOB</th>
+                                        <th style={{ ...PDF_S.th, width: '8%' }}>Age</th>
+                                        <th style={{ ...PDF_S.th, width: '12%', textAlign: 'right' }}>Upkeep/mo</th>
+                                        <th style={{ ...PDF_S.th, width: '12%' }}>Support Till</th>
+                                        <th style={{ ...PDF_S.th, width: '14%' }}>Yrs to Support</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {chunk.map((m: any, i: number) => (
+                                        <tr key={i}>
+                                            <td style={{ ...PDF_S.td, fontWeight: 600 }}>{m.family_member_name}</td>
+                                            <td style={PDF_S.td}>{m.gender}</td>
+                                            <td style={PDF_S.td}>{m.relationship}</td>
+                                            <td style={PDF_S.td}>{fmtDate(m.date_of_birth)}</td>
+                                            <td style={PDF_S.td}>{m.age}</td>
+                                            <td style={PDF_S.tdRight}>{fmtCurrency(m.monthly_upkeep)}</td>
+                                            <td style={PDF_S.td}>{m.support_until_age ? `Age ${m.support_until_age}` : '-'}</td>
+                                            <td style={PDF_S.td}>{m.years_to_support ?? '-'}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                            {renderFooter(currentPage++, totalPages)}
+                        </div>
+                    ))}
+
+                    {/* SECTION 2: CASHFLOW CHART */}
+                    <div className="pdf-page" style={PDF_S.page}>
+                        <h2 style={PDF_S.sectionTitle}>2. Cashflow</h2>
+                        <h4 style={PDF_S.subTitle}>2.1 Trend Visualisation</h4>
+                        <div style={{ height: '340px', marginBottom: '40px', background: '#fff', border: '1px solid #eee', padding: '10px', borderRadius: '8px' }}>
+                            <Cashflow client={client} mode="overview" dateRange={{ startDate, endDate }} isExporting={true} />
+                        </div>
+                        {renderFooter(currentPage++, totalPages)}
+                    </div>
+
+                    {/* SECTION 2: DETAILED CASHFLOW TABLES */}
+                    {cashflowChunks.length === 0 ? (
+                        <div className="pdf-page" style={PDF_S.page}>
+                            <h2 style={PDF_S.sectionTitle}>2. Cashflow</h2>
+                            <h4 style={PDF_S.subTitle}>2.2 History by Component</h4>
+                            <p style={{ fontSize: '12px', color: '#666' }}>No cashflow data in this period.</p>
+                            {renderFooter(currentPage++, totalPages)}
+                        </div>
+                    ) : cashflowChunks.map((chunk, chunkIdx) => (
+                        <div key={`cf-chunk-${chunkIdx}`} className="pdf-page" style={PDF_S.page}>
+                            <h2 style={PDF_S.sectionTitle}>2. Cashflow</h2>
+                            <h4 style={PDF_S.subTitle}>2.2 History by Component</h4>
+
+                            <table style={{ ...PDF_S.table, fontSize: '7.5px' }}>
+                                <thead>
+                                    <tr>
+                                        <th style={{ ...PDF_S.th, width: '48px', fontSize: '7px' }} rowSpan={2}>Date</th>
+                                        <th style={{ ...PDF_S.th, textAlign: 'center', background: '#eef5ee', fontSize: '7px' }} colSpan={4}>Inflows</th>
+                                        <th style={{ ...PDF_S.th, textAlign: 'center', background: '#fff5f5', fontSize: '7px' }} colSpan={7}>Expenses</th>
+                                        <th style={{ ...PDF_S.th, textAlign: 'center', fontSize: '7px' }} colSpan={3}>Transfers</th>
+                                        <th style={{ ...PDF_S.th, textAlign: 'right', background: '#f0f2f5', fontWeight: 800, fontSize: '7px' }}>Net</th>
+                                    </tr>
+                                    <tr style={{ fontSize: '6.5px' }}>
+                                        <th style={{ ...PDF_S.th, textAlign: 'right', fontSize: '6.5px' }}>Emp.</th>
+                                        <th style={{ ...PDF_S.th, textAlign: 'right', fontSize: '6.5px' }}>Rental</th>
+                                        <th style={{ ...PDF_S.th, textAlign: 'right', fontSize: '6.5px' }}>Invest.</th>
+                                        <th style={{ ...PDF_S.th, textAlign: 'right', background: '#dcecdb', fontSize: '6.5px' }}>TOTAL</th>
+                                        <th style={{ ...PDF_S.th, textAlign: 'right', fontSize: '6.5px' }}>H'hold</th>
+                                        <th style={{ ...PDF_S.th, textAlign: 'right', fontSize: '6.5px' }}>Tax</th>
+                                        <th style={{ ...PDF_S.th, textAlign: 'right', fontSize: '6.5px' }}>Invest.</th>
+                                        <th style={{ ...PDF_S.th, textAlign: 'right', fontSize: '6.5px' }}>Prop.</th>
+                                        <th style={{ ...PDF_S.th, textAlign: 'right', fontSize: '6.5px' }}>Mort.</th>
+                                        <th style={{ ...PDF_S.th, textAlign: 'right', fontSize: '6.5px' }}>Loans</th>
+                                        <th style={{ ...PDF_S.th, textAlign: 'right', background: '#fbe9e9', fontSize: '6.5px' }}>TOTAL</th>
+                                        <th style={{ ...PDF_S.th, textAlign: 'right', fontSize: '6.5px' }}>CPF</th>
+                                        <th style={{ ...PDF_S.th, textAlign: 'right', fontSize: '6.5px' }}>Invest.</th>
+                                        <th style={{ ...PDF_S.th, textAlign: 'right', background: '#d5d7d9', fontSize: '6.5px' }}>TOTAL</th>
+                                        <th style={{ ...PDF_S.th, textAlign: 'right', background: '#d5d7d9', fontSize: '6.5px' }}></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {chunk.map((cf: any, i: number) => (
+                                        <tr key={i}>
+                                            <td style={{ ...PDF_S.td, fontSize: '7px', paddingLeft: '4px', paddingRight: '4px' }}>{new Date(cf.as_of_date).toLocaleDateString('en-GB', { month: 'short', year: '2-digit' })}</td>
+                                            <td style={{ ...PDF_S.tdRight, fontSize: '7px', paddingLeft: '4px', paddingRight: '4px' }}>{fmtCurrency(cf.employment_income_gross)}</td>
+                                            <td style={{ ...PDF_S.tdRight, fontSize: '7px', paddingLeft: '4px', paddingRight: '4px' }}>{fmtCurrency(cf.rental_income)}</td>
+                                            <td style={{ ...PDF_S.tdRight, fontSize: '7px', paddingLeft: '4px', paddingRight: '4px' }}>{fmtCurrency(cf.investment_income)}</td>
+                                            <td style={{ ...PDF_S.tdRight, fontWeight: 800, background: '#eef5ee', fontSize: '7px', paddingLeft: '4px', paddingRight: '4px' }}>{fmtCurrency(cf.total_inflow)}</td>
+                                            <td style={{ ...PDF_S.tdRight, fontSize: '7px', paddingLeft: '4px', paddingRight: '4px' }}>{fmtCurrency(cf.household_expenses)}</td>
+                                            <td style={{ ...PDF_S.tdRight, fontSize: '7px', paddingLeft: '4px', paddingRight: '4px' }}>{fmtCurrency(cf.income_tax)}</td>
+                                            <td style={{ ...PDF_S.tdRight, fontSize: '7px', paddingLeft: '4px', paddingRight: '4px' }}>{fmtCurrency(cf.insurance_premiums)}</td>
+                                            <td style={{ ...PDF_S.tdRight, fontSize: '7px', paddingLeft: '4px', paddingRight: '4px' }}>{fmtCurrency(cf.property_expenses)}</td>
+                                            <td style={{ ...PDF_S.tdRight, fontSize: '7px', paddingLeft: '4px', paddingRight: '4px' }}>{fmtCurrency(cf.property_loan_repayment)}</td>
+                                            <td style={{ ...PDF_S.tdRight, fontSize: '7px', paddingLeft: '4px', paddingRight: '4px' }}>{fmtCurrency(cf.non_property_loan_repayment)}</td>
+                                            <td style={{ ...PDF_S.tdRight, fontWeight: 800, background: '#fff5f5', fontSize: '7px', paddingLeft: '4px', paddingRight: '4px' }}>{fmtCurrency(cf.total_expense)}</td>
+                                            <td style={{ ...PDF_S.tdRight, fontSize: '7px', paddingLeft: '4px', paddingRight: '4px' }}>{fmtCurrency(cf.cpf_contribution_total)}</td>
+                                            <td style={{ ...PDF_S.tdRight, fontSize: '7px', paddingLeft: '4px', paddingRight: '4px' }}>{fmtCurrency(cf.regular_investments)}</td>
+                                            <td style={{ ...PDF_S.tdRight, fontWeight: 700, background: '#f0f2f5', fontSize: '7px', paddingLeft: '4px', paddingRight: '4px' }}>{fmtCurrency(cf.wealth_transfers)}</td>
+                                            <td style={{ ...PDF_S.tdRight, fontWeight: 900, background: '#f0f2f5', fontSize: '7px', paddingLeft: '4px', paddingRight: '4px' }}>{fmtCurrency(cf.net_cashflow)}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                            {renderFooter(currentPage++, totalPages)}
+                        </div>
+                    ))}
+
+                    {/* SECTION 3: PORTFOLIO — Plan Summary */}
+                    {planChunksSummary.length === 0 ? (
+                        <div className="pdf-page" style={PDF_S.page}>
+                            <h2 style={PDF_S.sectionTitle}>3. Plans Held</h2>
+                            <h4 style={PDF_S.subTitle}>3.1 Holdings Summary</h4>
+                            <p style={{ fontSize: '12px', color: '#666' }}>No plans recorded during this period.</p>
+                            {renderFooter(currentPage++, totalPages)}
+                        </div>
+                    ) : planChunksSummary.map((chunk, chunkIdx) => (
+                        <div key={`plan-summary-chunk-${chunkIdx}`} className="pdf-page" style={PDF_S.page}>
+                            <h2 style={PDF_S.sectionTitle}>3. Plans Held</h2>
+                            <h4 style={PDF_S.subTitle}>3.1 Holdings Summary</h4>
+
+                            <table style={PDF_S.table}>
+                                <thead>
+                                    <tr>
+                                        <th style={{ ...PDF_S.th, width: '30%' }}>Plan Name</th>
+                                        <th style={{ ...PDF_S.th, width: '16%' }}>Type</th>
+                                        <th style={{ ...PDF_S.th, width: '11%' }}>Start</th>
+                                        <th style={{ ...PDF_S.th, width: '11%' }}>Expiry</th>
+                                        <th style={{ ...PDF_S.th, width: '10%' }}>Status</th>
+                                        <th style={{ ...PDF_S.th, width: '11%', textAlign: 'right' }}>Value</th>
+                                        <th style={{ ...PDF_S.th, width: '11%', textAlign: 'right' }}>Init. Inv.</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {chunk.map((plan: any, i: number) => {
+                                        const isIns = (plan.asset_class || '').includes('Insurance');
+                                        const vals = isIns ? (plan.insurance_valuations || []) : (plan.investment_valuations || []);
+                                        const eligible = vals.filter((v: any) => v.as_of_date.substring(0, 10) >= startDate && v.as_of_date.substring(0, 10) <= endDate);
+                                        const latestVal = eligible.length > 0 ? eligible.reduce((a: any, b: any) => new Date(a.as_of_date) > new Date(b.as_of_date) ? a : b) : null;
+                                        const value = latestVal ? parseFloat(isIns ? latestVal.cash_value : latestVal.market_value) : 0;
+                                        return (
+                                            <tr key={i}>
+                                                <td style={{ ...PDF_S.td, fontWeight: 600 }}>{plan.plan_name}</td>
+                                                <td style={PDF_S.td}>{plan.policy_type || plan.asset_class}</td>
+                                                <td style={{ ...PDF_S.td, whiteSpace: 'nowrap' }}>{fmtDate(plan.start_date)}</td>
+                                                <td style={{ ...PDF_S.td, whiteSpace: 'nowrap' }}>{fmtDate(plan.end_date)}</td>
+                                                <td style={{ ...PDF_S.td, textTransform: 'capitalize', whiteSpace: 'nowrap' }}>{plan.status || '-'}</td>
+                                                <td style={PDF_S.tdRight}>{value > 0 ? fmtCurrency(value) : '-'}</td>
+                                                <td style={PDF_S.tdRight}>{plan.initial_investment ? fmtCurrency(plan.initial_investment) : '-'}</td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                            {renderFooter(currentPage++, totalPages)}
+                        </div>
+                    ))}
+
+                    {/* SECTION 3: PORTFOLIO — Deep Dive Valuations */}
+                    {planChunksDetails.map((chunk, chunkIdx) => (
+                        <div key={`plan-details-chunk-${chunkIdx}`} className="pdf-page" style={PDF_S.page}>
+                            <h2 style={PDF_S.sectionTitle}>3. Plans Held</h2>
+                            <h4 style={PDF_S.subTitle}>3.2 Individual Valuations</h4>
+
+                            {chunk.map((plan: any, i: number) => {
+                                const isIns = (plan.asset_class || '').includes('Insurance');
+                                const allVals = isIns ? (plan.insurance_valuations || []) : (plan.investment_valuations || []);
+                                const vals = allVals.filter((v: any) => v.as_of_date.substring(0, 10) >= startDate && v.as_of_date.substring(0, 10) <= endDate).slice(0, 10);
+
+                                return (
+                                    <div key={i} style={{ marginBottom: '30px' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                                            <h3 style={{ margin: 0, fontSize: '14px', color: '#333', fontWeight: 600 }}>{plan.plan_name}</h3>
+                                        </div>
+
+                                        <div style={PDF_S.infoGrid}>
+                                            <div><div style={PDF_S.infoLabel}>Policy Type</div><div style={PDF_S.infoValue}>{plan.policy_type || plan.asset_class}</div></div>
+                                            <div><div style={PDF_S.infoLabel}>Policy No.</div><div style={PDF_S.infoValue}>{plan.policy_no || plan.policy_id || '-'}</div></div>
+                                            <div><div style={PDF_S.infoLabel}>Start Date</div><div style={PDF_S.infoValue}>{fmtDate(plan.start_date)}</div></div>
+                                            <div><div style={PDF_S.infoLabel}>Expiry Date</div><div style={PDF_S.infoValue}>{fmtDate(plan.end_date)}</div></div>
+                                            <div><div style={PDF_S.infoLabel}>Status</div><div style={PDF_S.infoValue}>{plan.status || '-'}</div></div>
+                                            {isIns && <div><div style={PDF_S.infoLabel}>Sum Assured</div><div style={PDF_S.infoValue}>{fmtCurrency(plan.sum_assured)}</div></div>}
+                                            {isIns && <div><div style={PDF_S.infoLabel}>Premium</div><div style={PDF_S.infoValue}>{fmtCurrency(plan.premium_amount)}</div></div>}
+                                            {isIns && <div><div style={PDF_S.infoLabel}>Payment Frequency</div><div style={PDF_S.infoValue}>{plan.payment_frequency || '-'}</div></div>}
+                                            {isIns && <div><div style={PDF_S.infoLabel}>Payment Term</div><div style={PDF_S.infoValue}>{plan.payment_term ? `${plan.payment_term} yrs` : '-'}</div></div>}
+                                            {isIns && <div><div style={PDF_S.infoLabel}>Life Assured</div><div style={PDF_S.infoValue}>{plan.life_assured || '-'}</div></div>}
+                                            {isIns && <div><div style={PDF_S.infoLabel}>Benefit Type</div><div style={PDF_S.infoValue}>{plan.benefit_type || '-'}</div></div>}
+                                            {!isIns && <div><div style={PDF_S.infoLabel}>Initial Investment</div><div style={PDF_S.infoValue}>{fmtCurrency(plan.initial_investment)}</div></div>}
+                                            {!isIns && <div><div style={PDF_S.infoLabel}>Contribution Amount</div><div style={PDF_S.infoValue}>{fmtCurrency(plan.contribution_amount)}</div></div>}
+                                            {!isIns && <div><div style={PDF_S.infoLabel}>Contribution Frequency</div><div style={PDF_S.infoValue}>{plan.contribution_frequency || '-'}</div></div>}
+                                        </div>
+
+                                        <p style={{ fontSize: '10px', color: '#666', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: '10px', marginBottom: '8px' }}>Valuation History</p>
+                                        {vals.length > 0 ? (
+                                            <table style={{ ...PDF_S.table, marginBottom: 0 }}>
+                                                <thead>
+                                                    <tr>
+                                                        <th style={PDF_S.th}>Date</th>
+                                                        <th style={{ ...PDF_S.th, textAlign: 'right' }}>Value</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {vals.map((v: any, j: number) => (
+                                                        <tr key={j}>
+                                                            <td style={PDF_S.td}>{fmtDate(v.as_of_date)}</td>
+                                                            <td style={PDF_S.tdRight}>{fmtCurrency(isIns ? v.cash_value : v.market_value)}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        ) : (
+                                            <p style={{ fontSize: '10px', color: '#888' }}>No valuations in this period.</p>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                            {renderFooter(currentPage++, totalPages)}
+                        </div>
+                    ))}
+
+                    {/* SECTION 4: ASSET ALLOCATION CHART */}
+                    <div className="pdf-page" style={PDF_S.page}>
+                        <h2 style={PDF_S.sectionTitle}>4. Asset Allocation</h2>
+                        <h4 style={PDF_S.subTitle}>4.1 Trend Visualisation</h4>
+                        <div style={{ height: '340px', marginBottom: '40px', background: '#fff', border: '1px solid #eee', padding: '10px', borderRadius: '8px' }}>
+                            <AssetAllocation client={client} mode="overview" dateRange={{ startDate, endDate }} isExporting={true} />
+                        </div>
+                        {renderFooter(currentPage++, totalPages)}
+                    </div>
+
+                    {/* SECTION 4: ASSET ALLOCATION DETAILS */}
+                    {allocationHistoryChunks.length === 0 ? (
+                        <div className="pdf-page" style={PDF_S.page}>
+                            <h2 style={PDF_S.sectionTitle}>4. Asset Allocation</h2>
+                            <h4 style={PDF_S.subTitle}>4.2 History by Asset Type</h4>
+                            <p style={{ fontSize: '12px', color: '#666' }}>No data in this period.</p>
+                            {renderFooter(currentPage++, totalPages)}
+                        </div>
+                    ) : allocationHistoryChunks.map((chunk, chunkIdx) => (
+                        <div key={`alloc-chunk-${chunkIdx}`} className="pdf-page" style={PDF_S.page}>
+                            <h2 style={PDF_S.sectionTitle}>4. Asset Allocation</h2>
+                            <h4 style={PDF_S.subTitle}>4.2 History by Asset Type</h4>
+                            <table style={PDF_S.table}>
+                                <thead>
+                                    <tr>
+                                        <th style={PDF_S.th}>Date</th>
+                                        {classes.map(c => <th key={c} style={{ ...PDF_S.th, textAlign: 'right' }}>{c}</th>)}
+                                        <th style={{ ...PDF_S.th, textAlign: 'right', fontWeight: 700 }}>Net Worth</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {chunk.map((d, i) => {
+                                        const monthTs = new Date(d).getTime();
+                                        let total = 0;
+                                        return (
+                                            <tr key={i}>
+                                                <td style={{ ...PDF_S.td, fontWeight: 600 }}>{new Date(d).toLocaleDateString('en-GB', { month: 'short', year: '2-digit' })}</td>
+                                                {classes.map(cls => {
+                                                    const pValue = (client.client_plans || []).filter((p: any) => p.asset_class === cls).reduce((s: any, p: any) => {
+                                                        const vals = (p.asset_class.includes('Insurance') ? p.insurance_valuations : p.investment_valuations) || [];
+                                                        const eligible = vals.filter((v: any) => new Date(v.as_of_date).getTime() <= monthTs);
+                                                        if (eligible.length === 0) return s;
+                                                        const best = eligible.reduce((a: any, b: any) => new Date(a.as_of_date).getTime() > new Date(b.as_of_date).getTime() ? a : b);
+                                                        return s + parseFloat(best.market_value || best.cash_value || 0);
+                                                    }, 0);
+                                                    total += pValue;
+                                                    return <td key={cls} style={PDF_S.tdRight}>{fmtCurrency(pValue)}</td>;
+                                                })}
+                                                <td style={{ ...PDF_S.tdRight, fontWeight: 700, background: '#f8f9fa' }}>{fmtCurrency(total)}</td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                            {renderFooter(currentPage++, totalPages)}
+                        </div>
+                    ))}
+
+                    {/* SECTION 5: RISK ANALYSIS */}
+                    {includeRiskAnalysis && (
+                        <div className="pdf-page" style={PDF_S.page}>
+                            <h2 style={PDF_S.sectionTitle}>5. Risk Analysis</h2>
+                            <div style={{}}>
+                                {cache?.overview && (
+                                    <>
+                                        <p style={{ ...PDF_S.subTitle, marginTop: '0' }}>5.1 Summary</p>
+                                        <div style={{ fontSize: '12px', marginLeft: '10px', lineHeight: '1.7' }}>{renderCleanList(cache.overview)}</div>
+                                    </>
+                                )}
+                                {cache?.focused ? (
+                                    <>
+                                        <p style={{ ...PDF_S.subTitle, marginTop: cache?.overview ? '24px' : '0' }}>5.2 Key Insights</p>
+                                        <div style={{ fontSize: '12px', marginLeft: '10px', lineHeight: '1.7' }}>{renderCleanList(cache.focused["Key Insights"])}</div>
+                                        <p style={{ ...PDF_S.subTitle }}>5.3 Potential Risks</p>
+                                        <div style={{ fontSize: '12px', marginLeft: '10px', lineHeight: '1.7' }}>{renderCleanList(cache.focused["Potential Risks"])}</div>
+                                        <p style={{ ...PDF_S.subTitle }}>5.4 Recommendations</p>
+                                        <div style={{ fontSize: '12px', marginLeft: '10px', lineHeight: '1.7' }}>{renderCleanList(cache.focused["Recommendations"])}</div>
+                                    </>
+                                ) : (!cache?.overview && <p style={{ fontSize: '12px', color: '#888' }}>No analysis data available. Please generate a risk analysis on the dashboard first.</p>)}
+                            </div>
+                            {renderFooter(currentPage++, totalPages)}
+                        </div>
+                    )}
+
+                    {/* SECTION 6: MEETING NOTES */}
+                    {includeMeetingNotes && (
+                        <div className="pdf-page" style={PDF_S.page}>
+                            <h2 style={PDF_S.sectionTitle}>{includeRiskAnalysis ? '6' : '5'}. Meeting Notes</h2>
+                            <div style={{}}>
+                                <p style={{ ...PDF_S.subTitle, marginTop: '0' }}>{includeRiskAnalysis ? '6.1' : '5.1'} Summary</p>
+                                <div style={{ fontSize: '12px', marginLeft: '10px', lineHeight: '1.7' }}>{renderCleanList(cache?.meetingNotesSummary)}</div>
+                                {cache?.meetingNotes && (
+                                    <>
+                                        <p style={{ ...PDF_S.subTitle }}>{includeRiskAnalysis ? '6.2' : '5.2'} Key Takeaways</p>
+                                        <div style={{ fontSize: '12px', marginLeft: '10px', lineHeight: '1.7' }}>{renderCleanList(cache?.meetingNotes?.["Key Takeaways"])}</div>
+                                        <p style={{ ...PDF_S.subTitle }}>{includeRiskAnalysis ? '6.3' : '5.3'} Action Items</p>
+                                        <div style={{ fontSize: '12px', marginLeft: '10px', lineHeight: '1.7' }}>{renderCleanList(cache?.meetingNotes?.["Action Items"])}</div>
+                                        <p style={{ ...PDF_S.subTitle }}>{includeRiskAnalysis ? '6.4' : '5.4'} Financial Insights</p>
+                                        <div style={{ fontSize: '12px', marginLeft: '10px', lineHeight: '1.7' }}>{renderCleanList(cache?.meetingNotes?.["Financial Insights"])}</div>
+                                    </>
+                                )}
+                            </div>
+                            {renderFooter(currentPage++, totalPages)}
+                        </div>
+                    )}
                 </div>
-            )}
+            </div>
         </FocusModal>
     );
 };

@@ -361,7 +361,7 @@ export const RiskAnalysis: React.FC<InsightsProps> = ({
                             <line x1="12" y1="16" x2="12.01" y2="16"></line>
                         </svg>
                         <span style={{ fontSize: 'var(--text-sm)', color: '#9B2226', fontWeight: 'var(--font-semibold)', flex: 1 }}>
-                            Date Mismatch: This analysis was generated for {new Date(cache.generatedPeriod.startDate).toLocaleDateString()} - {new Date(cache.generatedPeriod.endDate).toLocaleDateString()}
+                            This analysis was generated for a different period ({new Date(cache.generatedPeriod.startDate).toLocaleDateString()} - {new Date(cache.generatedPeriod.endDate).toLocaleDateString()})
                         </span>
                         <Button
                             onClick={(e) => {

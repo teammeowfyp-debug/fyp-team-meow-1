@@ -156,6 +156,49 @@ const AssetAllocation: React.FC<AssetAllocationProps> = ({ client, mode = 'overv
         return null;
     };
 
+    if (isExporting) {
+        return (
+            <div className="chart-container" style={{ width: '100%', flex: 1, marginTop: '10px' }}>
+                <ResponsiveContainer width="100%" height={300}>
+                    <BarChart
+                        data={history}
+                        margin={{ top: 0, right: 20, bottom: 0, left: 0 }}
+                        stackOffset={chartType === 'percent' ? 'expand' : undefined}
+                    >
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                        <XAxis
+                            dataKey="as_of_date"
+                            stroke="var(--text-muted)"
+                            tick={<CustomizedXAxisTick />}
+                            tickLine={false}
+                            axisLine={false}
+                            interval="preserveStartEnd"
+                            height={60}
+                        />
+                        <YAxis
+                            stroke="var(--text-muted)"
+                            tick={{ fill: 'var(--text-muted)', fontSize: 10 }}
+                            tickFormatter={(v) => chartType === 'percent' ? `${(v * 100).toFixed(0)}%` : `$${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`}
+                            tickLine={false}
+                            axisLine={false}
+                        />
+                        <Legend verticalAlign="bottom" wrapperStyle={{ paddingTop: '5px', fontSize: '10px' }} />
+                        {assetClasses.map((cls, i) => (
+                            <Bar
+                                key={cls}
+                                dataKey={cls}
+                                stackId="a"
+                                fill={ALLOCATION_COLORS[cls] || FALLBACK_COLORS[i % FALLBACK_COLORS.length]}
+                                radius={i === assetClasses.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]}
+                                isAnimationActive={false}
+                            />
+                        ))}
+                    </BarChart>
+                </ResponsiveContainer>
+            </div>
+        );
+    }
+
     return (
         <section className="glass-card quadrant">
             <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -190,8 +233,8 @@ const AssetAllocation: React.FC<AssetAllocationProps> = ({ client, mode = 'overv
                                 tick={<CustomizedXAxisTick />}
                                 tickLine={false}
                                 axisLine={false}
-                                interval={0}
-                                height={50}
+                                interval={isExporting ? 'preserveStartEnd' : 0}
+                                height={isExporting ? 60 : 50}
                             />
                             <YAxis
                                 stroke="var(--text-muted)"
