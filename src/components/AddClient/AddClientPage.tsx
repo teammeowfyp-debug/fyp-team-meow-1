@@ -13,10 +13,9 @@ import { MANDATORY_CLIENT_FIELDS } from '../ClientForm/ClientFormComponents';
 
 interface AddClientPageProps {
   onSuccess?: (newClientId?: string) => void;
-  onCancel?: () => void;
 }
 
-export const AddClientPage: React.FC<AddClientPageProps> = ({ onSuccess, onCancel }) => {
+export const AddClientPage: React.FC<AddClientPageProps> = ({ onSuccess }) => {
   const {
     fileInputRef, dragOver, file, step, setStep, error,
     extracted, existingClient, isNewClient,
@@ -64,7 +63,7 @@ export const AddClientPage: React.FC<AddClientPageProps> = ({ onSuccess, onCance
                 style={{
                   border: `2px dashed ${dragOver ? 'var(--primary, #c5b358)' : 'var(--border, #ddd)'}`,
                   borderRadius: '20px',
-                  padding: '5rem 2rem',
+                  padding: '10rem 2rem',
                   cursor: 'pointer',
                   background: dragOver ? 'var(--primary-glow, rgba(197,179,88,0.05))' : 'rgba(0,0,0,0.01)',
                   transition: 'all 0.3s ease',
@@ -111,13 +110,29 @@ export const AddClientPage: React.FC<AddClientPageProps> = ({ onSuccess, onCance
                 </div>
               )}
 
-              {error && <p style={{ color: '#c0392b', fontWeight: 600, marginBottom: '1.5rem', fontSize: 'var(--text-sm)', textAlign: 'center' }}>⚠ {error}</p>}
+              {error && step === 'upload' && !error.includes('Mandatory fields') && (
+                <div className="standard-error-box" style={{ margin: '0 auto 1.5rem', justifyContent: 'center', width: 'fit-content' }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                  </svg>
+                  <span>{error}</span>
+                </div>
+              )}
 
-              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginBottom: '0.5rem' }}>
-                <Button variant="ghost" size="medium" onClick={() => setStep('review')} style={{ minWidth: '100px' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginBottom: '0.5rem' }}>
+                <Button 
+                  variant="outline" 
+                  size="medium" 
+                  onClick={() => {
+                    setStep('review');
+                  }} 
+                  disabled={step === 'extracting'}
+                >
                   Cancel
                 </Button>
-                <Button variant="primary" size="medium" onClick={handleAnalyse} disabled={!file || step === 'extracting'} style={{ minWidth: '200px' }}>
+                <Button variant="outline" size="medium" onClick={handleAnalyse} disabled={!file || step === 'extracting'} style={{ minWidth: '200px' }}>
                   {step === 'extracting' ? 'Extracting...' : 'Extract'}
                 </Button>
               </div>
@@ -156,7 +171,9 @@ export const AddClientPage: React.FC<AddClientPageProps> = ({ onSuccess, onCance
                 <Button
                   variant="outline"
                   size="small"
-                  onClick={() => setStep('upload')}
+                  onClick={() => {
+                    setStep('upload');
+                  }}
                   style={{ borderRadius: '10px' }}
                 >
                   Upload PDF
@@ -211,7 +228,7 @@ export const AddClientPage: React.FC<AddClientPageProps> = ({ onSuccess, onCance
                       <FamilyForm
                         extracted={extracted}
                         includeFamily={true}
-                        setIncludeFamily={() => {}}
+                        setIncludeFamily={() => { }}
                         handleFamilyMemberChange={handleFamilyMemberChange}
                         removeFamilyMember={removeFamilyMember}
                         addFamilyMember={addFamilyMember}
@@ -222,7 +239,7 @@ export const AddClientPage: React.FC<AddClientPageProps> = ({ onSuccess, onCance
                       <CashflowForm
                         extracted={extracted}
                         includeCashflow={true}
-                        setIncludeCashflow={() => {}}
+                        setIncludeCashflow={() => { }}
                         handleCashflowChange={handleCashflowChange}
                       />
                     )}
@@ -231,7 +248,7 @@ export const AddClientPage: React.FC<AddClientPageProps> = ({ onSuccess, onCance
                       <InsuranceForm
                         extracted={extracted}
                         includeInsurance={true}
-                        setIncludeInsurance={() => {}}
+                        setIncludeInsurance={() => { }}
                         handleInsuranceChange={handleInsurancePlanChange}
                         removeInsurance={removeInsurancePlan}
                         addInsurance={addInsurancePlan}
@@ -242,18 +259,26 @@ export const AddClientPage: React.FC<AddClientPageProps> = ({ onSuccess, onCance
                       <InvestmentForm
                         extracted={extracted}
                         includeInvestments={true}
-                        setIncludeInvestments={() => {}}
+                        setIncludeInvestments={() => { }}
                         handleInvestmentChange={handleInvestmentChange}
                         removeInvestment={removeInvestment}
                         addInvestment={addInvestment}
                       />
                     )}
 
-                    {error && <p style={{ color: '#e74c3c', fontSize: 'var(--text-sm)', fontWeight: 500 }}>⚠ {error}</p>}
-                    
-                    <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', borderTop: '1px solid var(--border)', paddingTop: '1.5rem' }}>
-                      <Button variant="ghost" onClick={onCancel} style={{ minWidth: '100px' }}>Cancel</Button>
-                      <Button variant="primary" onClick={handleApply} style={{ minWidth: '200px' }}>Add Client Profile</Button>
+                    {error && (
+                      <div className="error-text">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <line x1="12" y1="8" x2="12" y2="12"></line>
+                          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                        <span>{error}</span>
+                      </div>
+                    )}
+
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid var(--border)', paddingTop: '1.5rem' }}>
+                      <Button variant="outline" onClick={handleApply} style={{ minWidth: '200px' }}>Add Client Profile</Button>
                     </div>
                   </div>
                 )}

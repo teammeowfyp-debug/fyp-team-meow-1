@@ -41,17 +41,17 @@ const AdminPortal: React.FC<AdminPortalProps> = ({ defaultTab = 'add' }) => {
     <div className="scenario-page animate-fade-in">
       {/* ── Page Header ─────────────────────── */}
       <div className="scenario-hero glass-card no-hover">
-        <div className="scenario-hero-icon" style={{ background: 'var(--primary-glow)', padding: '0.75rem', borderRadius: '12px', color: 'var(--primary)' }}>
+        <div className="scenario-hero-icon" style={{ background: 'var(--primary-glow)', padding: '0.75rem', borderRadius: '50%', color: 'var(--primary)' }}>
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-            <circle cx="8.5" cy="7" r="4"></circle>
-            <polyline points="17 11 19 13 23 9"></polyline>
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            <circle cx="12" cy="11" r="3"></circle>
+            <path d="M7 18.5c.5-1 2-2 5-2s4.5 1 5 2"></path>
           </svg>
         </div>
         <div>
           <h1 className="scenario-title">Administrative Portal</h1>
           <p className="scenario-subtitle">
-            Manage your advisory team, reassign client portfolios, and control system access.
+            Manage your advisory team, reassign clients, and control system access.
           </p>
         </div>
       </div>

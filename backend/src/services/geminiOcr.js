@@ -71,10 +71,8 @@ Return a single JSON object with this exact structure:
     "cpf_contribution_total": number | null,
     "regular_investments": number | null,
     "total_inflow": number | null,
-    "total_expense": number | null,
-    "wealth_transfers": number | null,
-    "net_surplus": number | null,
-    "net_cashflow": number | null
+    "total_outflow": number | null,
+    "net_position": number | null
   } | null,
   "insurance_plans": [
     {
@@ -116,10 +114,9 @@ FIELD MAPPING RULES:
 - "cpf_contribution_total": Matches "Annual CPF Contribution". Note: This is informational and should not be added to Total Outflow.
 - "regular_investments": Matches "Regular Investments".
 - "total_inflow": Mathematical sum of employment_income_gross + rental_income + investment_income.
-- "total_expense": Mathematical sum of ALL individual outflow fields (household, property loan, property exp, tax, insurance, non-prop loan, investments).
-- CRITICAL: Your total_expense MUST include the CPF component of loan repayments, even if the PDF's own "Total Outflow" summary line excludes it. Mathematical sum takes precedence.
-- "net_surplus": total_inflow - total_expense.
-- "net_cashflow": Matches the "Cash" line.
+- "total_outflow": Mathematical sum of ALL individual outflow fields (household, property loan, property exp, tax, insurance, non-prop loan, cpf_contribution_total, regular_investments).
+- CRITICAL: Your total_outflow MUST include the CPF component of loan repayments, even if the PDF's own "Total Outflow" summary line excludes it. Mathematical sum takes precedence.
+- "net_position": total_inflow - total_outflow.
 - "risk_profile" = the Level (1–4) shown as checked/selected in the Risk Profile Outcome section. Format as "Level 1", "Level 2", "Level 3", or "Level 4".
 - "singapore_pr": Return exactly "Yes" or "No"
 - Numbers: plain numbers, no currency symbols or commas

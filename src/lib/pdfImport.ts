@@ -55,10 +55,8 @@ export interface PdfExtractedData {
     cpf_contribution_total?: number | null;
     regular_investments?: number | null;
     total_inflow?: number | null;
-    total_expense?: number | null;
-    wealth_transfers?: number | null;
-    net_surplus?: number | null;
-    net_cashflow?: number | null;
+    total_outflow?: number | null;
+    net_position?: number | null;
   } | null;
   insurance_plans: Array<{
     policy_name: string;
@@ -76,9 +74,6 @@ export interface PdfExtractedData {
   investments: Array<{
     policy_name: string;
     policy_type?: string | null;
-    initial_investment?: number | null;
-    contribution_amount?: number | null;
-    contribution_frequency?: string | null;
     start_date?: string | null;
     status: string;
   }>;
@@ -160,15 +155,15 @@ export function normalizeExtractedData(data: PdfExtractedData): PdfExtractedData
     let sVal = val;
     if (typeof val === 'boolean') sVal = val ? 'Yes' : 'No';
     if (sVal === null || sVal === undefined || sVal === '') return null;
-    
+
     const s = String(sVal).trim().toLowerCase().replace(/-/g, ' ');
-    
+
     // Custom aliases for common variations
     if (target.includes('Spouse') && (s === 'wife' || s === 'husband' || s === 'partner')) return 'Spouse';
     if (target.includes('Child') && (s === 'son' || s === 'daughter' || s === 'children')) return 'Child';
     if (target.includes('Parent') && (s === 'father' || s === 'mother' || s === 'parents')) return 'Parent';
 
-    const match = target.find(option => 
+    const match = target.find(option =>
       option.toLowerCase().replace(/-/g, ' ') === s ||
       option.toLowerCase().replace(/-/g, '').replace(/\s+/g, '') === s.replace(/\s+/g, '')
     );
@@ -187,7 +182,7 @@ export function normalizeExtractedData(data: PdfExtractedData): PdfExtractedData
     if (c.address_type !== undefined) c.address_type = normalize(c.address_type, ['Local', 'Overseas']);
     if (c.risk_profile !== undefined) c.risk_profile = normalize(c.risk_profile, ['Level 1', 'Level 2', 'Level 3', 'Level 4']);
     if (c.qualification !== undefined) c.qualification = normalize(c.qualification, ['Primary', 'Secondary', 'Diploma', 'Degree', 'Masters', 'PhD', 'Others'], false);
-    
+
     if (c.singapore_pr !== undefined) c.singapore_pr = normalize(c.singapore_pr, ['Yes', 'No']);
     if (c.id_type !== undefined) c.id_type = normalize(c.id_type, ['NRIC', 'Passport']);
   }
@@ -219,7 +214,7 @@ export function normalizeExtractedData(data: PdfExtractedData): PdfExtractedData
     d.insurance_plans.forEach((p: any) => {
       if (p.policy_type !== undefined) p.policy_type = normalize(p.policy_type, ['Life Insurance', 'Health Insurance', 'General Insurance']);
       if (p.payment_frequency !== undefined) p.payment_frequency = normalize(p.payment_frequency, ['Monthly', 'Quarterly', 'Semi-Annual', 'Annual']);
-      
+
       if (p.sum_assured != null) p.sum_assured = Math.max(0, Number(p.sum_assured || 0));
       if (p.premium_amount != null) p.premium_amount = Math.max(0, Number(p.premium_amount || 0));
       if (p.payment_term != null) p.payment_term = Math.max(0, Number(p.payment_term || 0));
@@ -233,10 +228,6 @@ export function normalizeExtractedData(data: PdfExtractedData): PdfExtractedData
     d.investments.forEach((inv: any) => {
       // DB check constraint: 'Equity', 'Fixed Income', 'Cash'
       if (inv.policy_type !== undefined) inv.policy_type = normalize(inv.policy_type, ['Equity', 'Fixed Income', 'Cash']);
-      if (inv.contribution_frequency !== undefined) inv.contribution_frequency = normalize(inv.contribution_frequency, ['Monthly', 'Quarterly', 'Semi-Annual', 'Annual']);
-      
-      if (inv.initial_investment != null) inv.initial_investment = Math.max(0, Number(inv.initial_investment || 0));
-      if (inv.contribution_amount != null) inv.contribution_amount = Math.max(0, Number(inv.contribution_amount || 0));
 
       inv.status = 'Pending';
     });
@@ -357,18 +348,18 @@ function buildClientRow(clientData: PdfExtractedData['client'], selectedFields: 
 
   // The clientData is already normalized by normalizeExtractedData before being passed here.
   // We just ensure numeric types and mandatory field presence.
-  
+
   return row;
 }
 
 export function handleDatabaseError(error: any): Error {
   const msg = error.message || '';
-  
+
   if (msg.includes('no unique or exclusion constraint matching the ON CONFLICT specification')) {
     return new Error('Database Sync Error: Your database is missing some required unique indexes for syncing family members and insurance plans. Please contact your administrator or check the implementation plan to run the required SQL migration.');
   }
 
-  if (msg.includes('years_to_support') || msg.includes('total_inflow') || msg.includes('net_surplus')) {
+  if (msg.includes('years_to_support') || msg.includes('total_inflow') || msg.includes('net_position')) {
     return new Error('This form contains calculated fields (like Total Inflow or Years to Support) that are handled automatically by the system. Please try applying again—I have adjusted the save logic to let the database handle these calculations.');
   }
 
@@ -403,7 +394,7 @@ async function writeRelatedData(
     for (const member of data.family) {
       // years_to_support is a generated column in Supabase
       const { years_to_support, ...memberToInsert } = member; // eslint-disable-line @typescript-eslint/no-unused-vars
-      
+
       // Sanitize numeric fields for DB check constraints (>= 0)
       if (memberToInsert.monthly_upkeep != null) memberToInsert.monthly_upkeep = Math.max(0, memberToInsert.monthly_upkeep);
       if (memberToInsert.support_until_age != null) memberToInsert.support_until_age = Math.max(0, memberToInsert.support_until_age);
@@ -436,13 +427,13 @@ async function writeRelatedData(
       }
     }
 
-    // total_inflow, total_expense, net_surplus, and net_cashflow are generated columns in Supabase
+    // total_inflow, total_outflow, and net_position are generated columns in Supabase
     // We must NOT include them in the insert payload.
-    const { 
-      total_inflow, total_expense, net_surplus, net_cashflow, wealth_transfers, // eslint-disable-line @typescript-eslint/no-unused-vars
-      ...cfToInsert 
+    const {
+      total_inflow, total_outflow, net_position, // eslint-disable-line @typescript-eslint/no-unused-vars
+      ...cfToInsert
     } = sanitizedCf;
-    
+
     promises.push(
       Promise.resolve(
         supabase
@@ -478,9 +469,6 @@ async function writeRelatedData(
       client_id: clientId,
       policy_name: inv.policy_name,
       policy_type: inv.policy_type || 'Equity',
-      initial_investment: Math.max(0, Number(inv.initial_investment || 0)),
-      contribution_amount: Math.max(0, Number(inv.contribution_amount || 0)),
-      contribution_frequency: inv.contribution_frequency || null,
       start_date: inv.start_date || now,
       status: inv.status || 'Pending'
     }));

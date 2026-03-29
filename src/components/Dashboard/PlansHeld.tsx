@@ -346,20 +346,6 @@ const PlanDetailView: React.FC<PlanDetailViewProps> = ({ plan }) => {
                             <span className="value" style={{ color: 'var(--secondary)', fontWeight: 600 }}>{plan.policy_type || '-'}</span>
                         </div>
                         <div className="stat-group align-center">
-                            <span className="label">Initial Investment</span>
-                            <span className="value" style={{ color: 'var(--secondary)', fontWeight: 600 }}>${(plan.initial_investment || 0).toLocaleString()}</span>
-                        </div>
-                        <div className="stat-group align-center">
-                            <span className="label">Contribution Amount</span>
-                            <span className="value" style={{ color: 'var(--secondary)', fontWeight: 600 }}>
-                                ${(plan.contribution_amount || 0).toLocaleString()}
-                            </span>
-                        </div>
-                        <div className="stat-group align-center">
-                            <span className="label">Contribution Frequency</span>
-                            <span className="value" style={{ color: 'var(--secondary)', fontWeight: 600 }}>{plan.contribution_frequency || '-'}</span>
-                        </div>
-                        <div className="stat-group align-center">
                             <span className="label">Start Date</span>
                             <span className="value" style={{ color: 'var(--secondary)', fontWeight: 600 }}>
                                 {plan.start_date ? new Date(plan.start_date).toLocaleDateString('en-SG', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}

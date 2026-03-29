@@ -265,7 +265,8 @@
 .status-toast-error {
   background: rgba(155, 34, 38, 0.05);
   color: var(--danger);
-  border: 1px solid rgba(155, 34, 38, 0.1);
+  border: 1.2px dashed var(--danger);
+  border-radius: 8px;
 }
 
 @keyframes fadeIn {

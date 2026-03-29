@@ -21,14 +21,16 @@ interface AssetAllocationProps {
     mode?: 'overview' | 'focused';
     dateRange?: { startDate: string; endDate: string };
     isExporting?: boolean;
+    forceChartType?: 'absolute' | 'percent';
 }
 
-const AssetAllocation: React.FC<AssetAllocationProps> = ({ client, mode = 'overview', dateRange, isExporting = false }) => {
+const AssetAllocation: React.FC<AssetAllocationProps> = ({ client, mode = 'overview', dateRange, isExporting = false, forceChartType }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedSnapshot, setSelectedSnapshot] = useState<any>(null);
     const [activeCategory, setActiveCategory] = useState<string | null>(null);
     const [activePlanName, setActivePlanName] = useState<string | null>(null);
-    const [chartType, setChartType] = useState<'absolute' | 'percent'>('absolute');
+    const [chartTypeState, setChartType] = useState<'absolute' | 'percent'>('absolute');
+    const chartType = forceChartType || chartTypeState;
 
     const handleChartClick = (data: any) => {
         if (mode === 'focused' && data) {
@@ -159,7 +161,7 @@ const AssetAllocation: React.FC<AssetAllocationProps> = ({ client, mode = 'overv
     if (isExporting) {
         return (
             <div className="chart-container" style={{ width: '100%', flex: 1, marginTop: '10px' }}>
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height={370}>
                     <BarChart
                         data={history}
                         margin={{ top: 0, right: 20, bottom: 0, left: 0 }}

@@ -1,73 +1,138 @@
 policy_id,client_id,policy_name,policy_type,benefit_type,sum_assured,premium_amount,payment_frequency,payment_term,life_assured,start_date,expiry_date,status
-f17b1051-7c35-4509-b5c4-a31182508b69,e2564ada-dc96-446e-a209-b62431e250a5,"Morrison, Contreras and Murphy Life Plan",Life Insurance,Critical Illness,101570.71,19.28,Semi-Annual,11,Spouse,2024-08-26,2026-01-17,Matured
-19e70729-c1ad-44f4-8c19-751b79f6dfb5,e2564ada-dc96-446e-a209-b62431e250a5,"Lang, Castillo and Evans Essential Plan",General Insurance,Total Permanent Disability,112380.02,36.73,Quarterly,23,Child,2025-09-22,2028-05-14,Active
-8a6ceac5-d8dc-4fac-910a-ecd828a60d59,2c06dfe8-d725-4c85-971f-0a1efef7b187,Walker and Sons Legacy Plan,Health Insurance,Accidental,43687.79,21.1,Monthly,6,Parent,2016-03-10,2020-02-19,Matured
-ab6b9a24-86bc-4b5e-9dc9-7006dcad1c8c,2c06dfe8-d725-4c85-971f-0a1efef7b187,Braun Group Health Plan,Life Insurance,Death,63027.28,7.34,Semi-Annual,18,Spouse,2022-10-29,2030-02-23,Active
-68ce29db-0620-4a6e-a3c1-f75d8c6b0a9b,c3bdd2fb-e2fd-4bfc-83e0-ce97f09fb095,Montoya and Sons Essential Plan,Life Insurance,Accidental,149255.28,26.02,Monthly,13,Child,2020-11-02,2030-08-08,Active
-86182d39-1746-4659-87d4-f847679aa5e8,c3bdd2fb-e2fd-4bfc-83e0-ce97f09fb095,"Walker, Baker and Cole Secure Plan",General Insurance,Hospitalization,96714.03,33.79,Quarterly,8,Spouse,2018-09-29,2026-05-17,Active
-548298e4-680a-4b55-a1db-6c2a0cff93d6,c3bdd2fb-e2fd-4bfc-83e0-ce97f09fb095,Gonzalez-Hutchinson Life Plan,Life Insurance,Death,90742.55,31.52,Monthly,25,Self,2025-12-06,2027-07-03,Active
-adad36f5-8858-4f63-84d4-ec8d5cc219c0,50486c7d-3817-4072-ac3e-eaba9f90cf56,Parrish PLC Legacy Plan,Life Insurance,Critical Illness,1272196.7,327.51,Quarterly,29,Self,2024-07-20,2026-08-21,Active
-62052535-4521-404a-8998-21b8ee47dda4,50486c7d-3817-4072-ac3e-eaba9f90cf56,Harris-Nelson Shield Plan,Life Insurance,Death,1164089.36,279.5,Semi-Annual,25,Self,2025-11-12,2030-07-04,Active
-e6c8c85f-0073-4af7-9a8e-9f3c284b67fc,50486c7d-3817-4072-ac3e-eaba9f90cf56,Logan-Green Total Care Plan,Health Insurance,Critical Illness,1294367.96,310.32,Quarterly,28,Spouse,2020-01-05,2024-07-26,Matured
-4b6f35e7-2572-4bff-8449-95a9aa8b3624,84094c82-f508-427b-9ee4-fe3ba3f87387,Medina LLC Health Plan,Life Insurance,Total Permanent Disability,72274.03,23.9,Annual,20,Self,2017-12-24,2022-04-20,Matured
-ec7e7b89-8813-4ebc-9d51-4aa527473a0e,84094c82-f508-427b-9ee4-fe3ba3f87387,"Larsen, Martinez and Allen Supreme Plan",Life Insurance,Hospitalization,76204.35,22.55,Quarterly,28,Child,2022-02-07,2024-10-16,Matured
-f09d4d9f-8fee-4496-8112-6bfdd6576373,84094c82-f508-427b-9ee4-fe3ba3f87387,"Roberts, Carpenter and Rosales Legacy Plan",Life Insurance,Hospitalization,118704.6,30.6,Annual,29,Child,2018-02-06,2022-01-04,Matured
-78d01169-1dc8-49b5-ab0f-1a8f80506e9f,84094c82-f508-427b-9ee4-fe3ba3f87387,Snyder PLC Life Plan,Life Insurance,Total Permanent Disability,123456.01,37.81,Annual,20,Self,2017-11-28,2021-09-27,Matured
-164bb236-c5bc-4265-b6bc-fa4425d02ae5,c6222502-902e-4eaf-a53a-2b591ecd4271,Wood-Johnson Secure Plan,Life Insurance,Total Permanent Disability,998714.7,350.96,Quarterly,9,Parent,2021-01-07,2028-12-28,Active
-8ee5d9a3-5858-4789-8c23-df972bc36dde,c6222502-902e-4eaf-a53a-2b591ecd4271,Turner LLC Shield Plan,Life Insurance,Death,975931.11,329.79,Quarterly,20,Spouse,2023-02-14,2031-04-08,Pending
-43285c66-d12d-4449-b884-af00ab9807e4,c6222502-902e-4eaf-a53a-2b591ecd4271,Hunt PLC Health Plan,General Insurance,Death,914391.7,148.19,Monthly,29,Spouse,2022-11-12,2027-12-30,Active
-4fc9cc2b-412f-405e-96a3-8150c61e87af,c6222502-902e-4eaf-a53a-2b591ecd4271,Jackson Group Essential Plan,General Insurance,Accidental,991060.77,148.24,Semi-Annual,19,Spouse,2021-01-31,2027-08-24,Active
-ea56a1f2-9555-485d-a01c-4735611d8b9c,7b66ef0f-e383-4013-9b6a-16f550822316,Hall-Smith Legacy Plan,General Insurance,Death,695080.26,180.62,Semi-Annual,8,Child,2018-04-05,2025-04-22,Matured
-c4a3374b-ac2f-4e72-801e-aaea80c43203,7b66ef0f-e383-4013-9b6a-16f550822316,Marshall-Williams Term Plan,General Insurance,Death,742477.87,220.21,Annual,26,Self,2017-01-30,2024-01-14,Matured
-d2eff9cc-324f-4038-b632-6a6798ecb757,f625fcbd-b88d-4d73-a3fe-c3821c457e42,Chase Group Term Plan,Life Insurance,Total Permanent Disability,100000.0,100.0,Annual,5,Child,2024-12-22,2032-01-15,Active
-0859ce97-1b67-4065-843b-be4410dde70f,f625fcbd-b88d-4d73-a3fe-c3821c457e42,"Davis, Cooper and Cherry Legacy Plan",Life Insurance,Total Permanent Disability,100000.0,100.0,Quarterly,14,Parent,2021-09-13,2028-06-07,Settled
-0abc6bf5-1e13-4893-baed-1bd570396262,88649e93-b090-45c8-8f37-05f78afff5bd,Ray LLC Legacy Plan,Life Insurance,Critical Illness,25647.39,5.33,Quarterly,23,Self,2024-09-02,2033-11-22,Active
-6ec03507-320f-486e-a440-f73e86a57d6d,88649e93-b090-45c8-8f37-05f78afff5bd,Watkins Group Shield Plan,Life Insurance,Accidental,21425.19,9.36,Quarterly,6,Spouse,2018-10-21,2020-03-05,Void
-ba3495cc-d16f-41be-ae68-256397c0b525,88649e93-b090-45c8-8f37-05f78afff5bd,"Graham, Wong and King Life Plan",General Insurance,Critical Illness,18601.16,4.11,Annual,6,Self,2018-12-12,2025-09-15,Matured
-29346202-5cb4-4775-b986-a45be6e8fec8,b8c05a1b-bb2d-4e0e-8e0e-74c7250c50e9,Smith PLC Essential Plan,Life Insurance,Accidental,1096298.68,385.64,Annual,28,Self,2020-01-20,2026-07-17,Active
-29a93b22-c357-4c2a-b095-20b3ed741618,b8c05a1b-bb2d-4e0e-8e0e-74c7250c50e9,Wu-Shea Secure Plan,Life Insurance,Accidental,1083809.96,345.98,Monthly,5,Self,2016-08-08,2026-07-07,Active
-bccfc674-4e5c-4cd3-8aac-c87679ede29f,b97695e4-1256-445c-978b-ade055511a09,"Pitts, Fisher and Edwards Supreme Plan",General Insurance,Death,948444.99,523.97,Annual,9,Parent,2025-03-26,2031-07-22,Active
-e321efcf-a0b5-4931-a22e-0f14c3c22542,b97695e4-1256-445c-978b-ade055511a09,Medina-Wong Supreme Plan,General Insurance,Accidental,1059924.75,355.41,Monthly,17,Self,2025-12-28,2033-05-05,Active
-16cb0ff8-bf51-48b8-98fe-5159bee5f5bb,e3456dc3-25a1-4ca7-b13d-4aee088c11a0,Serrano-Lambert Essential Plan,General Insurance,Death,1696004.67,472.6,Monthly,9,Self,2019-04-04,2022-05-30,Matured
-4fbb51bb-73b2-4cb8-a4e6-d99bf1e5abd2,e3456dc3-25a1-4ca7-b13d-4aee088c11a0,Aguirre Ltd Supreme Plan,Health Insurance,Death,1300509.94,287.27,Semi-Annual,19,Parent,2025-09-23,2035-05-04,Active
-5358b076-5760-44c6-841e-1626533eb872,e3456dc3-25a1-4ca7-b13d-4aee088c11a0,"Pena, Williams and Alexander Health Plan",Life Insurance,Death,1063480.8,174.17,Monthly,24,Child,2019-01-29,2021-07-03,Matured
-926b8f53-7d13-4b83-9936-9cc388d2bd85,e3456dc3-25a1-4ca7-b13d-4aee088c11a0,Baldwin-Glass Legacy Plan,Life Insurance,Critical Illness,956428.98,225.73,Monthly,11,Parent,2020-10-01,2028-06-17,Settled
-8754e0f2-6414-4f21-bbb6-add76bfed09b,e3456dc3-25a1-4ca7-b13d-4aee088c11a0,King-Bell Essential Plan,Health Insurance,Total Permanent Disability,1626605.49,363.15,Monthly,26,Child,2020-07-08,2025-09-14,Matured
-a57dfe01-457d-4c77-8efb-0733d83ca6a0,6207643a-4c29-449d-8cfe-31d90db759b3,Foley-Dunlap Essential Plan,Life Insurance,Accidental,477331.22,163.77,Quarterly,20,Parent,2020-10-18,2027-10-12,Active
-b04ee5da-f559-45d5-b9e0-d3ab1ac8ba65,006d1014-0d33-470d-b3a7-23c5c42a9064,Jackson Group Total Care Plan,General Insurance,Accidental,1498255.17,205.97,Semi-Annual,8,Spouse,2018-08-28,2021-09-09,Matured
-0867c193-39a5-45a5-9def-7a19189be569,006d1014-0d33-470d-b3a7-23c5c42a9064,George-Ortega Wellness Plan,Health Insurance,Hospitalization,1009831.17,506.4,Quarterly,8,Spouse,2022-07-26,2029-08-25,Active
-20b8c026-605f-4a19-bad6-b4d69f2ebf5a,792c2888-6857-4e7e-8a67-9585086dece7,Bowman Group Shield Plan,General Insurance,Hospitalization,108538.65,30.59,Quarterly,8,Spouse,2025-10-17,2026-02-28,Void
-7e2f351d-1f5b-4e17-9411-538f72d2a76a,792c2888-6857-4e7e-8a67-9585086dece7,Martin-Vasquez Shield Plan,Health Insurance,Critical Illness,111550.88,16.83,Monthly,25,Self,2025-09-05,2027-11-18,Active
-87b53951-3de5-4000-bfde-044ab258b558,792c2888-6857-4e7e-8a67-9585086dece7,Ramirez-Wells Shield Plan,General Insurance,Hospitalization,111436.04,22.44,Semi-Annual,13,Self,2025-11-02,2033-10-07,Active
-1a73332d-926c-49ad-99c0-a77ced60a437,a2c2899d-2f10-4056-8e97-95c4de82f3b3,Williams-Pineda Supreme Plan,Life Insurance,Critical Illness,143672.67,45.62,Semi-Annual,27,Child,2025-02-01,2031-01-29,Active
-920292f2-a3cc-4b18-9989-8bc82155d176,a2c2899d-2f10-4056-8e97-95c4de82f3b3,Hughes PLC Legacy Plan,Life Insurance,Death,112390.47,26.27,Annual,29,Self,2016-10-21,2022-09-02,Settled
-37bae297-0c7c-485f-9a8c-ad735cfe8753,a2c2899d-2f10-4056-8e97-95c4de82f3b3,"Cook, Anderson and Smith Wellness Plan",Life Insurance,Death,106395.83,43.89,Semi-Annual,14,Self,2022-05-22,2024-06-12,Matured
-d06d547f-3015-4d7a-988b-8a62281bfbfb,dc5ebde1-b17a-4e2f-8e33-239c80e92e4b,"Hernandez, Mills and Morris Total Care Plan",General Insurance,Critical Illness,93329.05,32.38,Annual,8,Parent,2021-07-22,2025-09-17,Matured
-3a24df53-d8fc-4bdd-a27c-b6696479d924,dc5ebde1-b17a-4e2f-8e33-239c80e92e4b,Bailey-Jones Supreme Plan,General Insurance,Accidental,117964.68,35.37,Quarterly,25,Parent,2017-01-20,2018-02-08,Matured
-4386b317-e5d5-47f7-91c1-d65a1184aecf,dc5ebde1-b17a-4e2f-8e33-239c80e92e4b,"Paul, Stephenson and James Supreme Plan",General Insurance,Hospitalization,88214.85,27.27,Monthly,13,Spouse,2022-03-23,2025-01-04,Matured
-a26327ac-c195-474c-bbe1-1f15754ff89e,a8c59e97-3ab9-44ce-8c2f-86738506d521,"Larson, Odom and Garcia Supreme Plan",Life Insurance,Death,594493.03,250.44,Annual,17,Child,2023-04-29,2032-01-13,Active
-ca9097b9-694f-4e79-a57e-7da9c4929e33,a8c59e97-3ab9-44ce-8c2f-86738506d521,Watkins-Grant Legacy Plan,Life Insurance,Total Permanent Disability,929020.95,255.43,Semi-Annual,17,Spouse,2020-12-08,2029-03-17,Active
-3ba23b8a-2a19-40ca-940a-853813f7c645,6a5f3c1d-b6ec-49da-a75d-eb66a61f44bf,Terry-Barnett Legacy Plan,Life Insurance,Accidental,1186150.84,346.46,Semi-Annual,23,Spouse,2019-06-29,2026-11-29,Active
-66288e06-24bc-4bc3-8f88-bcc4c89a28a7,6a5f3c1d-b6ec-49da-a75d-eb66a61f44bf,"James, Edwards and Lee Total Care Plan",Health Insurance,Hospitalization,794278.7,471.26,Annual,16,Self,2025-04-05,2026-05-18,Active
-ab4f0032-03ad-42b2-b930-51f63cbd207b,28742933-24d3-4c47-a671-77b06afa3b3e,Mitchell-Gross Health Plan,Life Insurance,Critical Illness,1455511.93,418.01,Semi-Annual,19,Child,2024-10-08,2029-10-24,Active
-60c2c1d5-a17c-46fa-9bf4-fd6caf608137,453a5bad-3985-472a-aae9-626cb617d93c,Hensley-Burgess Life Plan,Health Insurance,Death,78525.72,17.67,Semi-Annual,14,Self,2026-02-26,2035-02-10,Active
-79786f44-73ae-452a-bc73-3dd31cee76c9,453a5bad-3985-472a-aae9-626cb617d93c,Fuentes-Baker Term Plan,Life Insurance,Hospitalization,73528.43,15.41,Semi-Annual,22,Spouse,2017-02-04,2026-11-14,Active
-ec31dc1e-325f-4680-b334-e9bb66b7a580,a2c32083-5665-450c-8231-b7cd5953b8da,"Thomas, Gibbs and Raymond Wellness Plan",Life Insurance,Hospitalization,59512.49,12.0,Monthly,18,Spouse,2023-06-12,2028-01-23,Active
-0a475441-9a21-4a36-a65e-c5b81cf1f502,a2c32083-5665-450c-8231-b7cd5953b8da,Huerta LLC Shield Plan,General Insurance,Hospitalization,55369.17,15.57,Quarterly,24,Self,2019-08-17,2021-01-03,Matured
-2ebbcc72-42e9-4261-97e0-1319451be056,a2c32083-5665-450c-8231-b7cd5953b8da,Lee Inc Secure Plan,Life Insurance,Total Permanent Disability,65152.19,14.6,Semi-Annual,10,Parent,2021-01-31,2026-12-24,Active
-dd3598c0-dd91-41b0-a5fd-757fb9c0bbeb,8a0e07ce-2308-4dec-9b65-fa4aafcd5283,Wade and Sons Shield Plan,General Insurance,Accidental,380814.38,129.85,Semi-Annual,27,Child,2026-02-22,2030-10-23,Active
-a79d4550-beac-45f4-b736-a07ad8fc4b68,697b64ae-a1fa-430f-b08f-4e2f97dc85ab,Stewart-Pugh Essential Plan,Health Insurance,Hospitalization,1024793.78,483.01,Monthly,13,Self,2021-02-11,2030-10-31,Active
-deb1ceb9-108e-4d41-896c-5b284843f777,697b64ae-a1fa-430f-b08f-4e2f97dc85ab,Conway Inc Essential Plan,Life Insurance,Accidental,1528334.29,160.96,Semi-Annual,19,Child,2025-09-20,2028-12-05,Active
-a8d091a5-990b-44e2-8351-df0d8e065925,697b64ae-a1fa-430f-b08f-4e2f97dc85ab,Johnson-Bryant Shield Plan,General Insurance,Hospitalization,1461765.68,194.72,Quarterly,14,Parent,2020-04-24,2027-09-21,Active
-cc76efc1-8878-4da3-9f17-229f75a4f65e,f74c7947-8327-4011-9a8f-d98989e053e9,Padilla-Morton Life Plan,Health Insurance,Critical Illness,86885.63,27.74,Semi-Annual,16,Spouse,2017-06-03,2023-10-12,Matured
-6884114b-b4fc-4b5f-a3f8-fd719e365c5d,f74c7947-8327-4011-9a8f-d98989e053e9,Warner-Bell Shield Plan,Life Insurance,Critical Illness,109908.36,21.83,Quarterly,10,Child,2016-12-08,2024-01-07,Matured
-8f1cdbe5-15a1-44cc-8063-d437c2236556,098d753d-06db-43ad-b6a3-cd4ef5496d60,Munoz-Powell Supreme Plan,Life Insurance,Total Permanent Disability,64503.03,19.97,Quarterly,16,Self,2024-11-06,2026-11-17,Active
-d66fd24d-08c3-44a3-8cd1-665299fbd9ba,6a79b5ac-fe88-4792-8cf4-16a9726138b4,Thomas Inc Shield Plan,Life Insurance,Hospitalization,1051122.97,506.28,Semi-Annual,29,Self,2020-08-25,2025-12-09,Settled
-65b4301b-f713-4392-acd2-7923115b37b2,eb9caacd-809f-4540-88f2-aa47c56ffb2b,Park and Sons Total Care Plan,Life Insurance,Total Permanent Disability,960519.12,397.42,Semi-Annual,29,Self,2023-03-21,2028-07-28,Active
-f98ab390-9e91-4eb9-8953-f4f1e51e0361,eb9caacd-809f-4540-88f2-aa47c56ffb2b,Williams Inc Health Plan,Life Insurance,Accidental,867001.7,480.7,Monthly,13,Spouse,2019-08-15,2021-09-22,Matured
-baf7f091-91e2-4313-809e-898ce47d3d19,eb9caacd-809f-4540-88f2-aa47c56ffb2b,Cooper-Roberts Supreme Plan,Life Insurance,Accidental,1224436.58,323.32,Monthly,26,Self,2020-01-04,2029-04-15,Active
-3dae0150-b914-4ece-983e-9c426a448d51,58f17fe6-e038-4b6b-85b7-f6c025051708,"Smith, Myers and Tyler Total Care Plan",Health Insurance,Critical Illness,66430.67,16.85,Quarterly,26,Child,2016-06-26,2025-12-02,Matured
-8083cccf-0ce9-412f-8470-11614a74abd7,58f17fe6-e038-4b6b-85b7-f6c025051708,Carson Group Health Plan,Health Insurance,Critical Illness,79217.87,29.19,Semi-Annual,19,Parent,2023-11-16,2032-07-09,Active
-9d013004-e622-4a56-8f44-09b5c4bb519a,bbb0dfa0-0633-487c-adee-3b5963a22ab2,Nicholson LLC Health Plan,Life Insurance,Death,802351.61,268.99,Monthly,8,Spouse,2017-08-14,2025-08-07,Matured
-28c9f6a9-8d8f-4198-a2d4-19e4f652a7b3,bbb0dfa0-0633-487c-adee-3b5963a22ab2,Matthews-Carr Secure Plan,General Insurance,Accidental,664606.05,322.99,Monthly,28,Spouse,2020-07-02,2026-09-23,Active
-16ee3e8d-84a7-4736-ba1e-9785eae83735,bbb0dfa0-0633-487c-adee-3b5963a22ab2,Wolfe Inc Health Plan,General Insurance,Death,531760.77,102.91,Semi-Annual,27,Spouse,2018-05-24,2018-12-01,Void
+b8cee6b8-5841-4810-9936-44b9840e37f0,dce2b16e-b396-4fcd-9327-acc092ec1c89,"Harrington, Hall and Gardner Secure Plan",Life Insurance,Death,40929.51,10.56,Annual,20,Child,2017-03-14,2020-09-04,Matured
+d22d15f8-bb72-4d3b-88c9-2a81c408f403,dce2b16e-b396-4fcd-9327-acc092ec1c89,Davis-Murray Life Plan,Health Insurance,Accidental,35679.3,11.19,Semi-Annual,8,Spouse,2017-09-17,2023-05-06,Matured
+f1cd82ec-fe61-4bef-a995-59cbc28fee20,3232eecd-2662-4276-a9ee-5ec5ee126212,Thomas PLC Total Care Plan,Health Insurance,Hospitalization,1135031.12,469.82,Monthly,13,Parent,2020-11-17,2025-04-19,Matured
+e9ca0b12-dc4e-4622-b594-3161536b5dea,3232eecd-2662-4276-a9ee-5ec5ee126212,Gaines-Conley Supreme Plan,Life Insurance,Hospitalization,1370660.01,142.91,Monthly,24,Spouse,2016-09-28,2025-12-15,Matured
+311a7756-e79d-4a75-819f-c9a62c9d21a2,3232eecd-2662-4276-a9ee-5ec5ee126212,"Green, Robinson and Briggs Secure Plan",General Insurance,Death,1220974.57,306.36,Monthly,25,Parent,2018-05-09,2019-04-28,Lapsed
+e9846183-70c2-4b86-be9d-e91c22f2dd4b,3232eecd-2662-4276-a9ee-5ec5ee126212,Hall PLC Shield Plan,General Insurance,Total Permanent Disability,1384900.55,459.49,Semi-Annual,12,Self,2018-06-02,2019-10-04,Void
+e6daa6e4-98c0-4c83-b735-822c3324c929,3232eecd-2662-4276-a9ee-5ec5ee126212,"Williams, Holt and Mckinney Total Care Plan",Life Insurance,Hospitalization,1137613.0,346.29,Monthly,18,Parent,2022-02-16,2023-12-28,Matured
+0e060925-52b1-4c51-a9ca-212d91a2b9b3,0c43686e-5520-43d2-9b04-60a351f7fa80,Mitchell LLC Legacy Plan,Life Insurance,Accidental,997486.17,281.94,Monthly,18,Self,2018-07-23,2026-02-18,Matured
+dcf40549-bc59-4b8e-9aa3-d15621ad1598,0c43686e-5520-43d2-9b04-60a351f7fa80,"Townsend, Crawford and Moore Term Plan",General Insurance,Total Permanent Disability,996357.23,182.62,Semi-Annual,23,Child,2020-10-29,2028-06-05,Active
+16173bae-9842-4a25-a205-a885e792c6e2,0c43686e-5520-43d2-9b04-60a351f7fa80,Solis LLC Wellness Plan,General Insurance,Death,1161056.7,366.95,Semi-Annual,25,Self,2020-10-25,2023-11-14,Matured
+09baaa02-cf12-4272-a234-e642ff2ded1c,0c43686e-5520-43d2-9b04-60a351f7fa80,"Tran, Livingston and Scott Shield Plan",General Insurance,Critical Illness,812393.21,164.45,Quarterly,12,Child,2024-01-12,2025-04-09,Void
+4ce47903-7018-43ef-9012-096f59a57c64,0c43686e-5520-43d2-9b04-60a351f7fa80,"Green, Barber and Wilkinson Health Plan",Life Insurance,Accidental,837862.61,310.33,Semi-Annual,10,Parent,2018-08-16,2026-10-27,Active
+d1d1791d-296d-4abc-814f-db919dea7694,b311347c-139b-41e6-a994-0350b2f2de3c,Martinez Ltd Life Plan,General Insurance,Total Permanent Disability,470255.06,192.08,Semi-Annual,20,Child,2019-10-02,2029-03-09,Active
+ee2aaf21-774a-47d9-9efe-dfd28cc075dd,b311347c-139b-41e6-a994-0350b2f2de3c,Warren and Sons Term Plan,Life Insurance,Total Permanent Disability,764026.26,116.18,Monthly,20,Parent,2018-09-23,2028-06-18,Active
+38488f37-7855-41da-8c89-0c2531f8e5c5,b311347c-139b-41e6-a994-0350b2f2de3c,Davis-Ryan Term Plan,Health Insurance,Total Permanent Disability,716829.0,145.39,Semi-Annual,20,Child,2022-04-30,2031-07-08,Active
+cf767ea5-c8d2-49c1-94cf-933663359f30,b311347c-139b-41e6-a994-0350b2f2de3c,Maxwell-Holder Wellness Plan,General Insurance,Accidental,590225.46,120.52,Monthly,27,Child,2016-08-20,2020-08-02,Matured
+690a9fa8-cfc8-4fcd-8583-45613171323c,b311347c-139b-41e6-a994-0350b2f2de3c,Edwards-Mendoza Total Care Plan,General Insurance,Total Permanent Disability,618385.4,221.89,Annual,16,Parent,2020-12-04,2030-01-14,Active
+7d91342e-0c8b-4f79-9b3e-5c8dda68674a,25f37d3a-8d37-4f30-b47f-ccb7a9dbac71,White-Hayes Term Plan,Life Insurance,Total Permanent Disability,1008067.5,454.28,Semi-Annual,9,Self,2025-10-11,2026-03-29,Lapsed
+c309ced5-b6ae-49cb-b368-34623a09923f,25f37d3a-8d37-4f30-b47f-ccb7a9dbac71,"Smith, Rogers and Ortega Shield Plan",General Insurance,Accidental,1117285.27,347.25,Semi-Annual,23,Parent,2022-11-15,2028-03-24,Active
+79bbcc73-e696-455e-ac2b-a3697b2fa187,2ea49977-1f57-46f0-b021-316846133650,"Hernandez, Smith and Nguyen Total Care Plan",General Insurance,Accidental,129791.86,51.46,Annual,27,Child,2025-11-28,2031-01-07,Active
+acad9024-bf37-4ae3-8bea-c2a6a3f57171,2ea49977-1f57-46f0-b021-316846133650,Franklin-Stone Legacy Plan,Life Insurance,Total Permanent Disability,94894.0,47.33,Semi-Annual,19,Spouse,2022-07-29,2028-02-12,Active
+1d01a231-38a2-4a74-9b24-f771dc7889cf,2ea49977-1f57-46f0-b021-316846133650,"Cunningham, Zamora and Williams Shield Plan",Life Insurance,Accidental,134493.09,40.71,Quarterly,8,Spouse,2023-02-21,2024-04-21,Matured
+9bdb5fcd-9d15-40e5-ab37-f07c82f85fc7,401a3588-d23b-408f-8e17-ce190b6e0ea2,Robinson-Kaiser Legacy Plan,General Insurance,Total Permanent Disability,1483158.75,494.91,Quarterly,10,Parent,2017-03-22,2026-10-24,Active
+7c14cddd-d65e-4781-9572-72489d943292,401a3588-d23b-408f-8e17-ce190b6e0ea2,Long-Hayden Term Plan,Life Insurance,Critical Illness,1202747.02,372.99,Quarterly,16,Spouse,2018-09-26,2021-10-05,Settled
+ee9e0c61-a3a3-4cc7-8b3e-333da527b535,401a3588-d23b-408f-8e17-ce190b6e0ea2,Williams Ltd Shield Plan,General Insurance,Total Permanent Disability,1438619.87,185.31,Semi-Annual,25,Child,2025-05-29,2026-03-20,Lapsed
+b5f493e1-6657-47fd-9b4c-4ae8d388dd29,401a3588-d23b-408f-8e17-ce190b6e0ea2,Holmes Group Essential Plan,Life Insurance,Critical Illness,806952.64,180.47,Semi-Annual,8,Self,2024-01-04,2029-07-03,Active
+7b464190-d7f6-4ca4-8c7b-fd6ffa02b364,6cc176c9-b469-4d3e-807d-b70bdb9fb86c,Thompson PLC Life Plan,Health Insurance,Critical Illness,1237787.43,320.4,Monthly,18,Spouse,2017-07-19,2025-12-03,Matured
+b43c6934-46f8-4962-b5dc-bbad2b364023,6cc176c9-b469-4d3e-807d-b70bdb9fb86c,Franklin-Clark Health Plan,Health Insurance,Death,1555625.8,572.63,Semi-Annual,13,Spouse,2024-02-26,2026-10-12,Active
+ea14bea4-5838-47cc-861d-6658753c0bfd,6cc176c9-b469-4d3e-807d-b70bdb9fb86c,"Meyer, Gonzalez and Johnston Legacy Plan",Health Insurance,Hospitalization,1666063.2,431.4,Semi-Annual,21,Child,2016-12-17,2023-03-24,Matured
+20287d7a-1919-4765-b445-7aa94a32880b,22fc43bc-f4a3-4d6b-b1a5-4b56cb2cbd53,"Davis, Moore and Reed Term Plan",Life Insurance,Hospitalization,1033806.43,334.62,Quarterly,18,Spouse,2018-12-08,2019-01-31,Void
+53ca23ae-6181-4d00-8116-d4f9cd9aad10,9f482eb2-30bb-4f6c-9bc1-527547ff2ce1,Harrison-West Life Plan,Life Insurance,Accidental,49995.28,13.2,Monthly,6,Parent,2023-12-29,2033-09-01,Active
+08d24e1a-b8f8-4f11-90e6-56ad576e7118,9f482eb2-30bb-4f6c-9bc1-527547ff2ce1,Ewing-Spencer Term Plan,Life Insurance,Critical Illness,72780.67,16.86,Annual,26,Parent,2024-02-24,2033-05-31,Active
+fdfd80ba-3a78-4295-bfdc-dc8a5e98404e,9f482eb2-30bb-4f6c-9bc1-527547ff2ce1,"Perez, Walker and Lopez Secure Plan",Health Insurance,Total Permanent Disability,42224.41,24.3,Quarterly,23,Parent,2024-09-29,2032-11-22,Active
+57cb5a76-1a0f-4183-826c-66d9e117a996,9f482eb2-30bb-4f6c-9bc1-527547ff2ce1,Klein Inc Legacy Plan,General Insurance,Death,75006.27,10.23,Monthly,9,Spouse,2024-03-20,2024-08-06,Void
+7febc535-1fbb-4336-b014-aecca1097820,361e5649-3cfb-4781-8ab7-0916c16905b1,Baker Group Total Care Plan,General Insurance,Critical Illness,779195.73,103.99,Semi-Annual,26,Self,2020-08-30,2024-01-02,Matured
+3f85eccf-dc04-4c58-a8b3-3df604da57fb,361e5649-3cfb-4781-8ab7-0916c16905b1,Beck LLC Secure Plan,Life Insurance,Hospitalization,806967.43,150.57,Annual,28,Parent,2016-08-28,2019-08-31,Matured
+85ca6eaf-b5b2-4772-a479-aa9014fcc203,361e5649-3cfb-4781-8ab7-0916c16905b1,Young-Krause Shield Plan,Life Insurance,Accidental,766781.34,141.89,Semi-Annual,16,Spouse,2019-11-29,2029-08-16,Active
+3fc08f47-16d1-4f8c-a858-d94a8abf4f0b,38342a43-0352-4836-9596-dd6bde6dac23,"Blackwell, Williamson and Faulkner Total Care Plan",General Insurance,Critical Illness,459694.08,149.66,Monthly,23,Self,2016-10-21,2025-02-03,Matured
+3926d2a5-e875-4e2f-b600-05654a6ef0dc,38342a43-0352-4836-9596-dd6bde6dac23,Clark Ltd Legacy Plan,General Insurance,Death,351153.62,143.78,Monthly,29,Parent,2021-01-04,2023-05-31,Matured
+5e4d952f-b641-477d-b8bb-1e3d076d392a,38342a43-0352-4836-9596-dd6bde6dac23,Reyes-Brown Health Plan,Life Insurance,Accidental,473827.69,207.34,Monthly,13,Self,2022-04-10,2026-02-22,Matured
+01491305-cad1-4c84-8d97-ef72de3042f4,38342a43-0352-4836-9596-dd6bde6dac23,Brooks-Shields Secure Plan,Health Insurance,Accidental,498646.26,218.34,Annual,9,Spouse,2023-06-16,2032-07-13,Active
+e3d9171b-1696-48ee-849b-d9679d142c65,dcd28f09-bb93-41e7-a3af-b5eee143fe43,Carson LLC Supreme Plan,Life Insurance,Accidental,612684.88,55.38,Annual,8,Parent,2016-08-27,2018-06-18,Lapsed
+873a2746-747c-4c81-a19f-48fea2681bc6,dcd28f09-bb93-41e7-a3af-b5eee143fe43,"Rogers, Shepherd and Johnson Life Plan",General Insurance,Death,421718.34,135.4,Annual,10,Self,2018-06-08,2027-04-20,Active
+f7f542f0-d759-4fdb-ad90-8d14ba84286c,dcd28f09-bb93-41e7-a3af-b5eee143fe43,Adams-Johnson Health Plan,Life Insurance,Critical Illness,391598.45,166.41,Monthly,10,Spouse,2022-08-13,2025-08-03,Matured
+7d9e6ceb-0647-4fb2-8b9b-5a627087e097,dcd28f09-bb93-41e7-a3af-b5eee143fe43,"Thomas, Barnett and Chandler Legacy Plan",Life Insurance,Total Permanent Disability,343342.57,66.1,Monthly,17,Parent,2023-06-12,2029-04-06,Active
+f15ce7af-5e2e-489a-a59b-f8e310011a95,dcd28f09-bb93-41e7-a3af-b5eee143fe43,"Cox, Young and Cohen Secure Plan",Life Insurance,Death,551303.59,160.03,Monthly,29,Child,2024-12-13,2034-08-22,Active
+e1d73f39-2097-4dd6-bc09-3ba2af7e106b,5e253878-0991-4149-ab3d-90115a51e51a,"Delacruz, Johnson and Rodriguez Secure Plan",Life Insurance,Total Permanent Disability,100000.0,100.0,Quarterly,16,Child,2023-06-08,2032-03-07,Active
+5116a483-4c36-4827-b8d1-0ad7ffb3e696,5e253878-0991-4149-ab3d-90115a51e51a,"Woods, Peterson and Conway Supreme Plan",Life Insurance,Accidental,100000.0,100.0,Monthly,7,Self,2018-12-09,2023-04-09,Matured
+fdbc3c38-8c73-4346-8dfc-050d6ead71b2,cb0ed15a-7d3a-43c6-a2a0-cfb4aed038e0,Hill Ltd Health Plan,Health Insurance,Total Permanent Disability,100000.0,100.0,Semi-Annual,18,Self,2023-07-13,2031-06-13,Active
+c99399b8-3122-4ca9-8fe6-97b29d2d3076,cb0ed15a-7d3a-43c6-a2a0-cfb4aed038e0,Mcgee-Anderson Supreme Plan,Life Insurance,Hospitalization,100000.0,100.0,Monthly,29,Child,2021-12-10,2031-07-04,Active
+761bfa80-9eb8-4ab2-ac43-cec0dc90b887,cb0ed15a-7d3a-43c6-a2a0-cfb4aed038e0,"Williams, Price and Livingston Wellness Plan",Life Insurance,Critical Illness,100000.0,100.0,Quarterly,16,Self,2023-09-06,2031-11-15,Active
+63a3c31c-1725-4597-8ce8-385f5d0db9da,9e2afb83-7e81-4cb7-a322-ecc868a2a0b8,Perez LLC Essential Plan,Health Insurance,Hospitalization,1021619.02,148.38,Semi-Annual,26,Self,2024-01-14,2026-08-20,Active
+cfa6dc7d-8ae7-43f0-b4d8-330348013a68,9e2afb83-7e81-4cb7-a322-ecc868a2a0b8,Cruz LLC Term Plan,General Insurance,Critical Illness,853985.77,150.54,Semi-Annual,26,Parent,2022-01-09,2024-09-14,Matured
+0da53126-3e67-4c97-bd0d-fa5a696b918f,9e2afb83-7e81-4cb7-a322-ecc868a2a0b8,"Lopez, Price and Knight Total Care Plan",Life Insurance,Accidental,605569.32,202.27,Monthly,26,Self,2019-10-25,2029-07-23,Active
+5b77cb74-8376-45f9-98bf-90b0df279dcb,9e2afb83-7e81-4cb7-a322-ecc868a2a0b8,Jones-Wood Term Plan,Life Insurance,Death,1068773.56,195.89,Quarterly,28,Spouse,2025-04-28,2028-10-07,Active
+741304eb-26a4-4485-86f4-6a833e56c494,9e2afb83-7e81-4cb7-a322-ecc868a2a0b8,"Norton, Hull and Ochoa Total Care Plan",General Insurance,Hospitalization,873650.22,137.99,Semi-Annual,6,Spouse,2023-02-22,2029-02-03,Active
+3a9a3bfd-5bce-44d8-a169-54d8e903050b,dda67e55-a8ed-4c43-bcd3-8c9cc6769873,Cummings LLC Total Care Plan,General Insurance,Critical Illness,997082.32,336.15,Semi-Annual,27,Child,2020-11-09,2028-03-27,Active
+efc37795-c922-4c08-b658-56bea0d1c3fa,dda67e55-a8ed-4c43-bcd3-8c9cc6769873,"Ford, Thomas and Jenkins Shield Plan",Life Insurance,Death,1415995.94,511.41,Monthly,25,Self,2018-07-27,2023-08-26,Matured
+267c0f52-eb49-45f1-bad3-f3644da3fad8,708b9ad6-a24c-44f6-b6d6-b76b61e95ad0,Mercer-Curry Legacy Plan,Life Insurance,Death,1499563.64,298.61,Quarterly,12,Child,2023-02-21,2032-05-25,Active
+79498c77-4ebb-4fc1-b3a3-65326bd1f799,708b9ad6-a24c-44f6-b6d6-b76b61e95ad0,Noble PLC Total Care Plan,Life Insurance,Hospitalization,900119.62,244.63,Quarterly,10,Self,2026-03-01,2033-08-13,Active
+6e3b6c2c-6dcf-4ac0-9ad8-6abcf382da93,708b9ad6-a24c-44f6-b6d6-b76b61e95ad0,Wright Group Life Plan,Life Insurance,Total Permanent Disability,1267700.27,145.48,Annual,13,Parent,2022-05-27,2029-01-21,Active
+820b4ed6-bf0f-40f3-bc84-4427701a8a85,9316b44b-325e-4ef4-b361-677d81aa46ce,White-Ramirez Health Plan,Life Insurance,Death,21596.11,2.95,Monthly,28,Parent,2016-05-31,2019-02-01,Matured
+c50b057e-f018-4120-b80f-3d9916cd4f66,9316b44b-325e-4ef4-b361-677d81aa46ce,Robertson-Barker Legacy Plan,Life Insurance,Death,27733.04,7.86,Annual,15,Parent,2022-12-21,2032-08-04,Active
+4c9bf555-4f74-42c2-bce5-cb4daee31931,9316b44b-325e-4ef4-b361-677d81aa46ce,"Ford, Williams and Perez Shield Plan",Life Insurance,Death,23662.07,3.38,Quarterly,10,Parent,2023-06-18,2032-07-28,Settled
+b4de9fbe-d3d0-4fb7-bdd7-1a985bfef86a,9316b44b-325e-4ef4-b361-677d81aa46ce,Davis-Miller Essential Plan,Life Insurance,Hospitalization,25769.81,9.22,Monthly,24,Self,2023-10-20,2029-09-10,Active
+486cd1d4-f957-438f-bbbb-6c220dadedfd,9316b44b-325e-4ef4-b361-677d81aa46ce,Cooper LLC Supreme Plan,Life Insurance,Total Permanent Disability,23249.19,3.64,Semi-Annual,17,Self,2023-05-20,2026-02-19,Matured
+ee083ea8-e423-4bc1-a967-468692b31e34,5e92db4a-b5d5-4537-9577-2524fd6e86e8,"Mann, Miller and Bernard Life Plan",General Insurance,Total Permanent Disability,1542271.3,483.63,Quarterly,6,Parent,2021-04-27,2026-05-24,Settled
+882de75c-69ce-4152-a343-b8ea85de847c,5e92db4a-b5d5-4537-9577-2524fd6e86e8,"Johnson, Cruz and Bullock Supreme Plan",Life Insurance,Total Permanent Disability,1609821.52,569.39,Quarterly,12,Spouse,2018-02-07,2020-08-13,Matured
+4a025bf1-8ea1-4b5f-8824-5b87484b9b7a,5e92db4a-b5d5-4537-9577-2524fd6e86e8,Leon Inc Essential Plan,Life Insurance,Death,1017540.43,174.54,Semi-Annual,8,Parent,2024-10-18,2029-12-13,Settled
+26bf4b63-75af-42fd-b2c6-610267ae1e08,5e92db4a-b5d5-4537-9577-2524fd6e86e8,Ramirez-Garcia Life Plan,Life Insurance,Critical Illness,974797.89,231.02,Monthly,25,Spouse,2020-06-11,2025-02-18,Matured
+e90d4c0f-d789-4d89-a8f3-505c303d091a,8c255b17-5844-426d-8ea4-f0998f5729ce,Smith-Hale Life Plan,Health Insurance,Hospitalization,100000.0,100.0,Quarterly,6,Child,2022-09-27,2030-08-12,Active
+2da4c598-8814-48d9-956f-b14d72f35ebc,8c255b17-5844-426d-8ea4-f0998f5729ce,Wilson Group Secure Plan,Life Insurance,Critical Illness,100000.0,100.0,Semi-Annual,8,Child,2020-10-31,2027-08-25,Active
+4f70d6d2-e217-4108-bf48-0627ce6f6a3c,8c255b17-5844-426d-8ea4-f0998f5729ce,Rivas-Barton Legacy Plan,Health Insurance,Death,100000.0,100.0,Semi-Annual,26,Self,2022-06-29,2026-01-27,Matured
+80ac6bf2-4bce-4923-8152-0064cbfb4e7a,fe3c0901-ce3d-4402-bc53-71aabad3c30e,"Carlson, Aguilar and Coffey Health Plan",Life Insurance,Total Permanent Disability,383145.21,113.82,Quarterly,24,Parent,2023-05-20,2026-10-16,Active
+c562205a-1db5-489c-9eff-bb51d2f9f4c5,fe3c0901-ce3d-4402-bc53-71aabad3c30e,Hall and Sons Supreme Plan,Life Insurance,Hospitalization,333884.69,81.04,Annual,9,Parent,2023-08-14,2031-05-10,Active
+d16956a6-2773-4934-97a3-1b02deea23c3,fe3c0901-ce3d-4402-bc53-71aabad3c30e,Reyes-Arroyo Wellness Plan,General Insurance,Hospitalization,494962.96,169.58,Semi-Annual,16,Self,2019-10-26,2026-11-14,Active
+6c953e60-2544-45f2-875f-3de1f009efef,fe3c0901-ce3d-4402-bc53-71aabad3c30e,"Patrick, Odonnell and Fischer Wellness Plan",Life Insurance,Hospitalization,550438.19,132.2,Semi-Annual,10,Child,2022-03-26,2028-10-05,Active
+178eb238-2600-4099-a642-4ddb78fef1dd,fe3c0901-ce3d-4402-bc53-71aabad3c30e,"Stuart, Thomas and Elliott Health Plan",Life Insurance,Critical Illness,477891.85,136.48,Semi-Annual,13,Child,2023-09-06,2029-02-24,Active
+51155b2e-964a-463b-aefd-dabcb3d65b22,0454de64-a06e-44ff-8577-79359bc7758a,Griffin and Sons Legacy Plan,General Insurance,Death,382087.8,108.77,Quarterly,6,Spouse,2016-08-30,2021-05-02,Matured
+ab81bef4-ab4d-4fbc-9d81-49047b99acb7,0454de64-a06e-44ff-8577-79359bc7758a,"Pratt, Parker and Martinez Health Plan",General Insurance,Critical Illness,434920.59,122.27,Semi-Annual,18,Parent,2023-08-11,2030-12-21,Active
+2c0fd62a-197c-4eae-ae6a-608d4da6d0ca,0454de64-a06e-44ff-8577-79359bc7758a,White PLC Health Plan,Life Insurance,Total Permanent Disability,624229.55,61.87,Quarterly,8,Spouse,2024-01-09,2029-04-20,Active
+ddc54ff1-797d-4141-a19f-b12a6bb66b4d,0454de64-a06e-44ff-8577-79359bc7758a,Reeves Ltd Wellness Plan,Health Insurance,Total Permanent Disability,588590.63,70.37,Semi-Annual,29,Parent,2025-05-22,2030-04-12,Active
+8e697246-f623-4920-bc33-dcd555e65938,0454de64-a06e-44ff-8577-79359bc7758a,Padilla-Miranda Health Plan,Life Insurance,Total Permanent Disability,332582.8,146.21,Quarterly,24,Spouse,2018-04-24,2020-06-18,Matured
+3f9c4ef9-9de8-42b2-a8e4-a58d624caf8e,a7268584-f6a8-46cd-bbe0-1f43c66835dc,Weber Group Legacy Plan,General Insurance,Accidental,763657.93,304.87,Annual,8,Spouse,2016-08-16,2026-03-24,Matured
+c1a9769d-3496-4af5-a1db-a66abc068a8a,a7268584-f6a8-46cd-bbe0-1f43c66835dc,Johnson-Sandoval Supreme Plan,General Insurance,Death,1058465.98,237.08,Quarterly,20,Spouse,2016-08-14,2025-05-28,Matured
+2e73b610-de5b-42dc-968e-74b9a8088867,a7268584-f6a8-46cd-bbe0-1f43c66835dc,Russo Inc Secure Plan,Life Insurance,Accidental,908253.66,428.92,Semi-Annual,10,Self,2022-08-20,2030-11-01,Active
+1419a9a2-26ac-4957-ae8e-7630af07e7d4,c186404b-5e70-4220-9c9f-eaa52b7fc28e,Goodman LLC Term Plan,Life Insurance,Hospitalization,920.33,0.41,Annual,22,Parent,2025-01-27,2030-08-08,Active
+b2f0ed8d-d7ac-46aa-bcea-6cb4b22c1f6f,c186404b-5e70-4220-9c9f-eaa52b7fc28e,Schroeder-Ross Shield Plan,Life Insurance,Hospitalization,1038.56,0.27,Quarterly,11,Self,2025-07-01,2034-11-10,Active
+530b214f-c9f3-4176-be1e-5149412305dd,b68453ee-4b8b-46d2-95a9-819f653b67e6,"Nunez, Flowers and Navarro Term Plan",Health Insurance,Accidental,588822.33,145.44,Annual,23,Spouse,2018-08-30,2020-07-08,Settled
+c1c5cf0c-dbcd-4874-a550-d6ce9abea7f2,b68453ee-4b8b-46d2-95a9-819f653b67e6,Howard-Kelly Life Plan,Health Insurance,Accidental,773643.15,266.63,Monthly,14,Spouse,2024-04-25,2025-06-08,Matured
+b4afff4a-0fb3-4c19-a220-af91f8ece93a,b68453ee-4b8b-46d2-95a9-819f653b67e6,Rivas PLC Shield Plan,Life Insurance,Hospitalization,764294.73,210.02,Monthly,24,Child,2023-01-17,2024-07-09,Lapsed
+20cce4a1-84aa-4bb0-9ee9-4ce23c31cdb7,8eb214a3-7752-4c2b-96da-26311aa08011,Barry-Lawson Wellness Plan,Life Insurance,Total Permanent Disability,807589.01,223.08,Quarterly,21,Spouse,2023-06-30,2029-03-08,Active
+9d2f5a32-4a04-4c7f-9c62-2b7bc1067c30,8eb214a3-7752-4c2b-96da-26311aa08011,Frazier Inc Legacy Plan,Life Insurance,Accidental,896784.85,222.62,Monthly,7,Self,2022-05-15,2028-12-20,Active
+9bccaa0a-612e-4140-bce6-37c531909462,8eb214a3-7752-4c2b-96da-26311aa08011,Martinez-Nguyen Health Plan,Life Insurance,Critical Illness,1110499.29,261.49,Quarterly,12,Child,2026-02-19,2026-03-29,Void
+1bba205c-0435-49d6-b54c-5a6e3ccdef52,726403d9-7fcf-43f3-8f2e-a5356988c531,"Williams, Nelson and Pruitt Total Care Plan",Life Insurance,Accidental,31597.64,8.69,Semi-Annual,22,Child,2017-11-11,2025-01-23,Settled
+4196f746-77a4-4482-839c-062ae28425be,726403d9-7fcf-43f3-8f2e-a5356988c531,"Williams, Allen and Roberts Wellness Plan",Health Insurance,Hospitalization,40666.72,7.99,Monthly,24,Child,2019-06-01,2025-03-30,Matured
+c98a3a30-e8c2-4f3e-8fec-90c5c0d26bf0,e18bffee-7785-4eaa-84fd-55eda3f36431,"Gonzales, Baker and Thomas Total Care Plan",Health Insurance,Total Permanent Disability,829118.44,186.61,Monthly,29,Child,2020-06-24,2024-09-01,Matured
+2e963d86-f43d-4363-b125-ae4a340b1164,e18bffee-7785-4eaa-84fd-55eda3f36431,Perkins Inc Secure Plan,General Insurance,Total Permanent Disability,1150619.22,214.68,Quarterly,7,Self,2024-11-05,2024-12-23,Void
+e7b4de21-0ab3-43a2-83c1-b684f804f32b,e18bffee-7785-4eaa-84fd-55eda3f36431,Weaver-Nelson Term Plan,Life Insurance,Hospitalization,1234047.71,516.78,Annual,18,Self,2026-01-23,2028-01-18,Active
+2d6a2e05-77ad-455c-a7b9-5b9b5873e69d,e18bffee-7785-4eaa-84fd-55eda3f36431,Greene-Martinez Supreme Plan,Life Insurance,Accidental,1589053.46,167.86,Quarterly,7,Spouse,2022-01-04,2026-10-28,Active
+eaf04c9d-c644-4b65-9d54-81c9d29e0a50,efe03db4-d746-4974-8925-0f5a9e35cf68,Marsh-Lopez Shield Plan,Health Insurance,Critical Illness,899722.72,224.71,Quarterly,27,Child,2025-02-14,2033-12-03,Active
+215ad45e-f562-4338-ae55-42f349dbd1ab,efe03db4-d746-4974-8925-0f5a9e35cf68,Conley-Prince Total Care Plan,Life Insurance,Accidental,1012666.36,277.78,Annual,9,Parent,2021-07-20,2022-09-08,Matured
+7ace1ace-26cf-4051-bd64-086d68af3f32,efe03db4-d746-4974-8925-0f5a9e35cf68,Harris Group Essential Plan,Life Insurance,Hospitalization,820501.16,256.2,Semi-Annual,6,Parent,2022-03-23,2025-12-21,Matured
+2f3880a0-81e2-4033-97f1-ea5f01fa709f,2666e785-be8e-466b-8151-1fc05403f1d9,"Banks, Taylor and Thompson Wellness Plan",General Insurance,Hospitalization,557885.76,163.38,Monthly,26,Child,2017-11-11,2019-03-05,Matured
+d1565b37-e112-45e0-920b-793f01f9fe36,1f516996-57be-4f8a-9a17-7aa040ce855a,Johnson-Robinson Life Plan,Life Insurance,Total Permanent Disability,42328.42,16.88,Annual,17,Parent,2017-04-28,2023-05-26,Matured
+ada5b927-f250-42f3-b9ea-949a8f1db217,1f516996-57be-4f8a-9a17-7aa040ce855a,Hunter-Smith Essential Plan,Life Insurance,Total Permanent Disability,50139.99,9.68,Monthly,6,Parent,2019-04-09,2024-06-30,Matured
+5e1730be-a6e5-49ce-9a93-356623e06546,1f516996-57be-4f8a-9a17-7aa040ce855a,Reese-Barker Essential Plan,General Insurance,Death,67496.47,8.57,Monthly,28,Self,2023-10-27,2030-01-25,Active
+0a0ff75f-247a-495f-b9b3-f322209f60f4,1f516996-57be-4f8a-9a17-7aa040ce855a,Gray-Holt Wellness Plan,Life Insurance,Hospitalization,47756.83,22.8,Annual,8,Spouse,2025-03-17,2031-03-26,Active
+e31ed439-1ae8-4d0a-be71-524fe9d5e78e,1f516996-57be-4f8a-9a17-7aa040ce855a,"Schneider, Mullen and Terrell Life Plan",General Insurance,Death,68881.65,9.1,Monthly,27,Spouse,2025-01-05,2026-01-27,Void
+d2936214-907f-47ab-83a1-700b04aba70e,749038a9-0b00-48ff-b9c2-1512bea1b32f,"Bright, Banks and Carney Secure Plan",General Insurance,Critical Illness,1335397.77,385.17,Quarterly,9,Child,2020-03-20,2025-12-10,Matured
+01a06ae9-9d5a-49d9-9e04-615dae5e1a58,749038a9-0b00-48ff-b9c2-1512bea1b32f,Brooks LLC Health Plan,Life Insurance,Accidental,1275678.73,416.7,Annual,7,Spouse,2018-12-24,2022-08-09,Matured
+aeaaa1bd-e631-403d-9080-90ac3d5f5019,749038a9-0b00-48ff-b9c2-1512bea1b32f,Ryan-Miles Essential Plan,Life Insurance,Total Permanent Disability,1007231.59,193.99,Semi-Annual,6,Parent,2017-10-04,2023-07-28,Matured
+44d46cf2-6c50-4c72-a05b-7abeb99f51b2,3c82bc5d-d68c-400a-8da1-e1c0bbe6958c,Marshall LLC Essential Plan,Life Insurance,Total Permanent Disability,10740.62,7.02,Quarterly,23,Self,2023-01-25,2024-07-30,Lapsed
+be570bf0-9bec-44f9-8517-61c437ba946e,3c82bc5d-d68c-400a-8da1-e1c0bbe6958c,Lee-Davis Legacy Plan,Life Insurance,Total Permanent Disability,11384.2,4.18,Monthly,13,Parent,2023-10-25,2031-05-09,Active
+40c05f18-84ef-4b3e-a516-5675201f8bd1,3c82bc5d-d68c-400a-8da1-e1c0bbe6958c,Peters LLC Health Plan,Life Insurance,Accidental,18908.74,5.88,Annual,28,Parent,2024-03-22,2030-05-04,Active
+d54aec91-e36e-461b-9f6e-a004ce95b6a5,3c82bc5d-d68c-400a-8da1-e1c0bbe6958c,"Miller, Gonzalez and Hall Supreme Plan",Life Insurance,Critical Illness,11770.04,3.39,Annual,17,Spouse,2024-08-02,2026-12-28,Active
+55b0ec49-57a8-43c8-8703-67e8871a32e6,0905d0a8-0144-4886-9678-7085d8a8e1b2,"Meyer, Drake and Hall Supreme Plan",Life Insurance,Total Permanent Disability,128611.98,22.26,Annual,12,Spouse,2018-01-23,2025-09-15,Matured
+d1897164-3557-49cf-8aec-b53831dedc72,0905d0a8-0144-4886-9678-7085d8a8e1b2,Moore Inc Supreme Plan,Life Insurance,Death,120965.52,14.73,Annual,8,Self,2017-01-09,2019-01-26,Matured
+3fb91529-b7ec-4f51-9c06-ba3df2b96098,0905d0a8-0144-4886-9678-7085d8a8e1b2,"Wilson, Ramirez and Cook Wellness Plan",Health Insurance,Hospitalization,123661.34,28.27,Annual,9,Self,2022-03-19,2026-10-28,Pending
+a1203670-f9ae-4fe3-b4fb-4573eef5405b,0905d0a8-0144-4886-9678-7085d8a8e1b2,"Gill, Walsh and Mendoza Supreme Plan",Life Insurance,Critical Illness,75162.43,12.35,Quarterly,8,Spouse,2016-04-13,2024-02-17,Matured
+fc461ee7-3596-4640-9c5e-5c8b70583ac8,0905d0a8-0144-4886-9678-7085d8a8e1b2,"Fitzgerald, Martinez and Campbell Shield Plan",Life Insurance,Total Permanent Disability,112980.14,27.26,Semi-Annual,5,Spouse,2022-01-09,2029-07-28,Active
+ee88b2d7-7371-40ab-bc15-baf4566edf08,f0fb66a0-5e32-4e43-b49d-a9d8972a3191,Jones-Arnold Legacy Plan,Life Insurance,Hospitalization,100000.0,100.0,Monthly,20,Child,2025-01-16,2031-03-23,Active
+e3c68cbd-6a63-4cb0-91d0-4c2b321b6301,f0fb66a0-5e32-4e43-b49d-a9d8972a3191,Rodriguez Inc Term Plan,Life Insurance,Critical Illness,100000.0,100.0,Quarterly,6,Spouse,2025-09-14,2030-12-09,Active
+0624c107-ee56-4f81-98d1-7beca6f8f4df,f0fb66a0-5e32-4e43-b49d-a9d8972a3191,"Martinez, Rodriguez and Mccoy Health Plan",General Insurance,Hospitalization,100000.0,100.0,Semi-Annual,25,Self,2025-03-07,2030-02-25,Active
+10525764-192f-428e-b1e3-8fc4f919a9aa,f0fb66a0-5e32-4e43-b49d-a9d8972a3191,Franklin-Gardner Wellness Plan,Life Insurance,Hospitalization,100000.0,100.0,Quarterly,8,Spouse,2024-03-12,2025-05-02,Matured
+cce2f151-94f6-4771-826b-fb9225a89f5f,f0fb66a0-5e32-4e43-b49d-a9d8972a3191,"Cantrell, Medina and Woods Shield Plan",Health Insurance,Total Permanent Disability,100000.0,100.0,Annual,24,Child,2025-10-10,2031-07-06,Active
+2df8e3cf-67c5-48c7-808a-3cb3b14bb730,1d80a08c-0f5d-462f-a864-1e9747f0d723,Hart-Morales Shield Plan,Life Insurance,Hospitalization,85813.55,45.18,Semi-Annual,21,Spouse,2024-05-11,2031-03-18,Active
+a7f7c4d8-aa25-47c8-af45-5e72093a80f2,1d80a08c-0f5d-462f-a864-1e9747f0d723,Holmes-Alexander Total Care Plan,Life Insurance,Total Permanent Disability,83982.76,26.63,Quarterly,26,Parent,2023-08-05,2028-05-09,Active
+f871106d-9f8b-4053-b89a-eb84b7a4c124,1d80a08c-0f5d-462f-a864-1e9747f0d723,Gillespie-Garcia Supreme Plan,Life Insurance,Critical Illness,91952.29,43.1,Annual,5,Parent,2025-04-18,2033-05-05,Active
+2d773cef-7f01-44c0-aa27-95a1b7e0e666,1d80a08c-0f5d-462f-a864-1e9747f0d723,Sawyer and Sons Wellness Plan,Life Insurance,Hospitalization,121039.05,20.94,Monthly,18,Child,2020-08-12,2028-11-05,Active
+f2c45635-de81-4033-acda-e48d15c2e300,2d576e05-4fec-4612-acc6-a99ab30054be,Daniel-Maldonado Shield Plan,Life Insurance,Hospitalization,757290.46,236.21,Monthly,20,Spouse,2022-03-16,2026-11-26,Active
+18469142-9d4b-4d75-812b-c0fd423e52a2,2d576e05-4fec-4612-acc6-a99ab30054be,Doyle Group Shield Plan,Health Insurance,Total Permanent Disability,824114.24,241.49,Monthly,25,Child,2024-01-27,2031-10-08,Active
+db308f8a-4d71-44d0-9ec7-2da1c00456c8,2d576e05-4fec-4612-acc6-a99ab30054be,Ellis-Smith Wellness Plan,Health Insurance,Critical Illness,662143.96,326.09,Monthly,22,Spouse,2021-11-02,2023-01-27,Matured
+00295b93-a78c-410f-9761-c1ac1ce78307,8ddc578c-6163-4aea-8616-322879680076,Reynolds-Hess Essential Plan,Health Insurance,Accidental,416349.46,160.3,Quarterly,15,Self,2022-06-17,2028-04-19,Active
+a88cd598-4139-483e-b0b0-da983ce7d7f0,8ddc578c-6163-4aea-8616-322879680076,Murray Inc Life Plan,Life Insurance,Total Permanent Disability,398191.11,167.79,Semi-Annual,26,Parent,2024-02-21,2026-06-26,Active
+66f837c9-5d49-4f36-b7f1-5c34336c56c5,8ddc578c-6163-4aea-8616-322879680076,Hoffman-Martinez Wellness Plan,General Insurance,Critical Illness,500275.42,115.4,Annual,7,Parent,2016-11-22,2019-07-27,Matured
+88ce0d3d-6c26-4273-a5c8-4079aae9b352,8ddc578c-6163-4aea-8616-322879680076,"Ward, Ho and Vaughn Wellness Plan",Health Insurance,Death,356882.7,78.42,Monthly,10,Self,2020-01-17,2024-02-09,Matured

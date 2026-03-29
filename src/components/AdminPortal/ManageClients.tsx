@@ -152,7 +152,7 @@ const ManageClients: React.FC = () => {
           .limit(50)
 
         if (addClientsSearch.trim()) {
-          query = query.ilike('name_as_per_id', `%${addClientsSearch.trim()}%`)
+          query = query.ilike('name_as_per_id', `${addClientsSearch.trim()}%`)
         }
 
         const { data, error: err } = await query
@@ -274,11 +274,10 @@ const ManageClients: React.FC = () => {
     }
   }
 
-  const selectedAgent = users.find((u) => u.user_id === selectedUserId)
 
   const filteredTheirClients = useMemo(() => {
     return theirClients.filter(c =>
-      c.name_as_per_id.toLowerCase().includes(clientSearchLeft.toLowerCase())
+      c.name_as_per_id.toLowerCase().startsWith(clientSearchLeft.toLowerCase())
     )
   }, [theirClients, clientSearchLeft])
 

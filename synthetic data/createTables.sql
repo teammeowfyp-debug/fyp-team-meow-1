@@ -10,37 +10,37 @@ CREATE TABLE public.users (
 CREATE TABLE public.clients (
   client_id uuid NOT NULL DEFAULT gen_random_uuid(),
   assigned_user_id uuid NOT NULL,
-  title text NOT NULL CHECK (title IN ('Mr.', 'Ms.', 'Mrs.')),
+  title text CHECK (title IN ('Mr.', 'Ms.', 'Mrs.')),
   name_as_per_id text NOT NULL,
-  gender text NOT NULL CHECK (gender IN ('Male', 'Female')),
-  date_of_birth date NOT NULL,
-  age integer NOT NULL CHECK (age >= 0),
-  smoker_status text NOT NULL CHECK (smoker_status IN ('Smoker', 'Non-smoker')),
-  race text NOT NULL CHECK (race IN ('Chinese', 'Malay', 'Indian', 'Caucasian', 'Others')),
-  marital_status text NOT NULL CHECK (marital_status IN ('Single', 'Married', 'Divorced', 'Widowed')),
+  gender text CHECK (gender IN ('Male', 'Female')),
+  date_of_birth date,
+  age integer CHECK (age >= 0),
+  smoker_status text CHECK (smoker_status IN ('Smoker', 'Non-smoker')),
+  race text CHECK (race IN ('Chinese', 'Malay', 'Indian', 'Caucasian', 'Others')),
+  marital_status text CHECK (marital_status IN ('Single', 'Married', 'Divorced', 'Widowed')),
   qualification text,
-  nationality text NOT NULL,
-  singapore_pr text NOT NULL CHECK (singapore_pr IN ('Yes', 'No')),
-  id_type text NOT NULL CHECK (id_type IN ('NRIC', 'Passport')),
-  id_no text NOT NULL,
+  nationality text,
+  singapore_pr text CHECK (singapore_pr IN ('Yes', 'No')),
+  id_type text CHECK (id_type IN ('NRIC', 'Passport')),
+  id_no text,
   id_expiry_date date,
   fin_no text,
   fin_expiry_date date,
-  languages_spoken text[] NOT NULL,
-  languages_written text[] NOT NULL,
-  email text NOT NULL,
-  mobile_no text NOT NULL,
+  languages_spoken text[],
+  languages_written text[],
+  email text,
+  mobile_no text,
   home_no text,
   office_no text,
-  occupation text NOT NULL,
-  employment_status text NOT NULL CHECK (employment_status IN ('Full-time', 'Part-time', 'Contract', 'Self-employed', 'Freelance', 'Student', 'Unemployed', 'Retired')),
-  address_type text NOT NULL CHECK (address_type IN ('Local', 'Overseas')),
-  postal_district text NOT NULL,
-  house_block_no text NOT NULL,
-  street_name text NOT NULL,
+  occupation text,
+  employment_status text CHECK (employment_status IN ('Full-time', 'Part-time', 'Contract', 'Self-employed', 'Freelance', 'Student', 'Unemployed', 'Retired')),
+  address_type text CHECK (address_type IN ('Local', 'Overseas')),
+  postal_district text,
+  house_block_no text,
+  street_name text,
   building_name text,
   unit_no text,
-  risk_profile text NOT NULL CHECK (risk_profile IN ('Level 1', 'Level 2', 'Level 3', 'Level 4')),
+  risk_profile text NOT NULL DEFAULT 'Level 2' CHECK (risk_profile IN ('Level 1', 'Level 2', 'Level 3', 'Level 4')),
   last_updated date DEFAULT CURRENT_DATE,
   CONSTRAINT clients_pkey PRIMARY KEY (client_id),
   CONSTRAINT clients_assigned_user_id_fkey FOREIGN KEY (assigned_user_id) REFERENCES public.users(user_id) ON DELETE RESTRICT
@@ -72,9 +72,6 @@ CREATE TABLE public.client_investments (
   client_id uuid NOT NULL,
   policy_name text NOT NULL,
   policy_type text NOT NULL CHECK (policy_type IN ('Equity', 'Fixed Income', 'Cash')),
-  initial_investment numeric DEFAULT 0 CHECK (initial_investment >= 0),
-  contribution_amount numeric DEFAULT 0 CHECK (contribution_amount >= 0),
-  contribution_frequency text CHECK (contribution_frequency IN ('Monthly', 'Quarterly', 'Semi-Annual', 'Annual')),
   start_date date NOT NULL,
   expiry_date date,
   status text NOT NULL DEFAULT 'Pending' CHECK (status IN ('Pending', 'Active', 'Lapsed', 'Matured', 'Settled', 'Void')),
@@ -110,15 +107,13 @@ CREATE TABLE public.cashflow (
   rental_income numeric NOT NULL DEFAULT 0 CHECK (rental_income >= 0),
   investment_income numeric NOT NULL DEFAULT 0 CHECK (investment_income >= 0),
 
-  -- Expenses
+  -- Outflows
   household_expenses numeric NOT NULL DEFAULT 0 CHECK (household_expenses >= 0),
   income_tax numeric NOT NULL DEFAULT 0 CHECK (income_tax >= 0),
   insurance_premiums numeric NOT NULL DEFAULT 0 CHECK (insurance_premiums >= 0),
   property_expenses numeric NOT NULL DEFAULT 0 CHECK (property_expenses >= 0),
   property_loan_repayment numeric NOT NULL DEFAULT 0 CHECK (property_loan_repayment >= 0),
   non_property_loan_repayment numeric NOT NULL DEFAULT 0 CHECK (non_property_loan_repayment >= 0),
-
-  -- Wealth Transfers
   cpf_contribution_total numeric NOT NULL DEFAULT 0 CHECK (cpf_contribution_total >= 0),
   regular_investments numeric NOT NULL DEFAULT 0 CHECK (regular_investments >= 0),
 
@@ -126,17 +121,10 @@ CREATE TABLE public.cashflow (
   total_inflow numeric GENERATED ALWAYS AS (
     employment_income_gross + rental_income + investment_income
   ) STORED,
-  total_expense numeric GENERATED ALWAYS AS (
-    household_expenses + income_tax + insurance_premiums + property_expenses + property_loan_repayment + non_property_loan_repayment
+  total_outflow numeric GENERATED ALWAYS AS (
+    household_expenses + income_tax + insurance_premiums + property_expenses + property_loan_repayment + non_property_loan_repayment + cpf_contribution_total + regular_investments
   ) STORED,
-  wealth_transfers numeric GENERATED ALWAYS AS (
-    cpf_contribution_total + regular_investments
-  ) STORED,
-  net_surplus numeric GENERATED ALWAYS AS (
-    (employment_income_gross + rental_income + investment_income) - 
-    (household_expenses + income_tax + insurance_premiums + property_expenses + property_loan_repayment + non_property_loan_repayment)
-  ) STORED,
-  net_cashflow numeric GENERATED ALWAYS AS (  -- After wealth transfers
+  net_position numeric GENERATED ALWAYS AS (
     (employment_income_gross + rental_income + investment_income) - 
     (household_expenses + income_tax + insurance_premiums + property_expenses + property_loan_repayment + non_property_loan_repayment + cpf_contribution_total + regular_investments)
   ) STORED,

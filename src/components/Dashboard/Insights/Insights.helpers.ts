@@ -148,26 +148,26 @@ export const buildFinancialContextParams = (client: any, dateRange?: { startDate
     let historicalTrend = '';
     const recentCashflows = cashflowsAtRef.filter((cf: any) => new Date(cf.as_of_date) >= oneYearBeforeRef);
     if (recentCashflows.length > 1) {
-        const avgSurplus = recentCashflows.reduce((sum: number, cf: any) => sum + (parseFloat(cf.net_surplus) || 0), 0) / recentCashflows.length;
+        const avgNetPosition = recentCashflows.reduce((sum: number, cf: any) => sum + (parseFloat(cf.net_position) || 0), 0) / recentCashflows.length;
         const avgInflow = recentCashflows.reduce((sum: number, cf: any) => sum + (parseFloat(cf.total_inflow) || 0), 0) / recentCashflows.length;
 
-        let surplusVolatilityInfo = '';
+        let netPositionVolatilityInfo = '';
         if (recentCashflows.length >= 3) {
-            const surpluses = recentCashflows.map((cf: any) => parseFloat(cf.net_surplus) || 0);
-            const variance = surpluses.reduce((sum: number, val: number) => sum + Math.pow(val - avgSurplus, 2), 0) / surpluses.length;
+            const netPositions = recentCashflows.map((cf: any) => parseFloat(cf.net_position) || 0);
+            const variance = netPositions.reduce((sum: number, val: number) => sum + Math.pow(val - avgNetPosition, 2), 0) / netPositions.length;
             const stdDev = Math.sqrt(variance);
-            const stdDevPercent = avgSurplus !== 0 ? ((stdDev / Math.abs(avgSurplus)) * 100).toFixed(1) : '0';
-            surplusVolatilityInfo = `, Net Surplus Std Dev: ${stdDevPercent}%`;
+            const stdDevPercent = avgNetPosition !== 0 ? ((stdDev / Math.abs(avgNetPosition)) * 100).toFixed(1) : '0';
+            netPositionVolatilityInfo = `, Net Position Std Dev: ${stdDevPercent}%`;
         }
-        historicalTrend = `\n                       - Last 12 Months Average: Total Inflow ($${Math.round(avgInflow)}), Net Surplus ($${Math.round(avgSurplus)})${surplusVolatilityInfo}`;
+        historicalTrend = `\n                       - Last 12 Months Average: Total Inflow ($${Math.round(avgInflow)}), Net Position ($${Math.round(avgNetPosition)})${netPositionVolatilityInfo}`;
     }
 
     const latestCashflow = cashflowsAtRef[0];
     const cashflowString = latestCashflow
         ? `Current Cashflow Summary (at Ref Date):
-                   - Income: Employment ($${latestCashflow.employment_income_gross}), Rental ($${latestCashflow.rental_income}), Investment ($${latestCashflow.investment_income}). Total Inflow: $${latestCashflow.total_inflow}
-                   - Expense: Household ($${latestCashflow.household_expenses}), Tax ($${latestCashflow.income_tax}), Insurance ($${latestCashflow.insurance_premiums}), Property ($${latestCashflow.property_expenses}), Debt/Loan ($${latestCashflow.property_loan_repayment + latestCashflow.non_property_loan_repayment}). Total Expense: $${latestCashflow.total_expense}
-                   - Net State: Net Surplus ($${latestCashflow.net_surplus}), Net Cashflow ($${latestCashflow.net_cashflow}).${historicalTrend}`
+                   - Inflow: Employment ($${latestCashflow.employment_income_gross}), Rental ($${latestCashflow.rental_income}), Investment ($${latestCashflow.investment_income}). Total Inflow: $${latestCashflow.total_inflow}
+                   - Outflow: Household ($${latestCashflow.household_expenses}), Tax ($${latestCashflow.income_tax}), Insurance ($${latestCashflow.insurance_premiums}), Property ($${latestCashflow.property_expenses}), Debt/Loan ($${latestCashflow.property_loan_repayment + latestCashflow.non_property_loan_repayment}), CPF ($${latestCashflow.cpf_contribution_total}), Investments ($${latestCashflow.regular_investments}). Total Outflow: $${latestCashflow.total_outflow}
+                   - Net State: Net Position ($${latestCashflow.net_position}).${historicalTrend}`
         : 'No cashflow data';
 
     const plansString = activePlans.length > 0

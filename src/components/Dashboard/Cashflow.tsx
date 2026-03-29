@@ -1,34 +1,39 @@
 import React, { useState, useMemo } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, ReferenceLine } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, ReferenceLine, Legend } from 'recharts';
 import { CustomizedXAxisTick } from '../UI/ChartUtils';
 import { FocusModal } from '../UI/FocusModal';
+import { Button } from '../UI/Button';
 
 interface CashflowProps {
     client?: any;
     mode?: 'overview' | 'focused';
     dateRange?: { startDate: string; endDate: string };
     isExporting?: boolean;
+    forceViewMode?: 'periodic' | 'cumulative';
 }
 
-const Cashflow: React.FC<CashflowProps> = ({ client, mode = 'overview', dateRange, isExporting = false }) => {
+const getNetPositionColor = (value: number) => value >= 0 ? '#719266' : '#9B2226';
+const getNetPositionBg = (value: number) => value >= 0 ? 'rgba(113, 146, 102, 0.08)' : 'rgba(155, 34, 38, 0.08)';
+const getNetPositionBorder = (value: number) => value >= 0 ? 'rgba(113, 146, 102, 0.2)' : 'rgba(155, 34, 38, 0.2)';
+
+const Cashflow: React.FC<CashflowProps> = ({ client, mode = 'overview', dateRange, isExporting = false, forceViewMode }) => {
     // State to track which lines are visible
     const [visibleLines, setVisibleLines] = useState<Record<string, boolean>>({
         inflow: true,
-        expense: true,
-        wealthTransfers: true,
-        netSurplus: true,
-        netCashflow: true
+        outflow: true,
+        netPosition: true
     });
 
+    const [viewModeState, setViewMode] = useState<'periodic' | 'cumulative'>('periodic');
+    const viewMode = forceViewMode || viewModeState;
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedSnapshot, setSelectedSnapshot] = useState<any>(null);
     const [activeCategory, setActiveCategory] = useState<string | null>(null);
     const [activeItemName, setActiveItemName] = useState<string | null>(null);
 
     const CASHFLOW_COLORS: Record<string, string> = {
-        'Inflows': '#719266', // Matches Inflow green
-        'Expenses': '#9B2226', // Matches Expense red
-        'Wealth Transfers': '#3C5A82' // Matches Wealth Transfer blue
+        'Inflows': '#3C5A82', // Deep Professional Blue
+        'Outflows': '#E09F3E'  // Warm Amber/Gold
     };
 
     const toggleLine = (dataKey: string) => {
@@ -67,38 +72,62 @@ const Cashflow: React.FC<CashflowProps> = ({ client, mode = 'overview', dateRang
             });
         }
 
-        return data
-            .sort((a: any, b: any) => new Date(a.as_of_date).getTime() - new Date(b.as_of_date).getTime())
-            .map((item: any) => ({
-                // Use the ISO date as the unique key for Recharts to handle multiple points correctly
+        const sortedData = data.sort((a: any, b: any) => new Date(a.as_of_date).getTime() - new Date(b.as_of_date).getTime());
+
+        // Cumulative calculations
+        let cumulativeInflow = 0;
+        let cumulativeOutflow = 0;
+        let cumulativeNetPosition = 0;
+
+        return sortedData.map((item: any) => {
+            const inflowVal = parseFloat(item.total_inflow || 0);
+            const outflowVal = parseFloat(item.total_outflow || 0);
+            const netPositionVal = parseFloat(item.net_position || 0);
+
+            cumulativeInflow += inflowVal;
+            cumulativeOutflow += outflowVal;
+            cumulativeNetPosition += netPositionVal;
+
+            return {
                 as_of_date: item.as_of_date,
                 date: new Date(item.as_of_date).toLocaleDateString('en-SG', { month: 'short', year: '2-digit' }),
                 fullDate: new Date(item.as_of_date).toLocaleDateString('en-SG', { day: '2-digit', month: 'long', year: 'numeric' }),
-                inflow: parseFloat(item.total_inflow),
-                expense: parseFloat(item.total_expense),
-                wealthTransfers: parseFloat(item.wealth_transfers),
-                netSurplus: parseFloat(item.net_surplus),
-                netCashflow: parseFloat(item.net_cashflow),
-                // Inflows
+                inflow: viewMode === 'cumulative' ? cumulativeInflow : inflowVal,
+                outflow: viewMode === 'cumulative' ? cumulativeOutflow : outflowVal,
+                netPosition: viewMode === 'cumulative' ? cumulativeNetPosition : netPositionVal,
+                // These are for the breakdown modal (non-cumulative)
+                rawInflow: inflowVal,
+                rawOutflow: outflowVal,
+                rawNetPosition: netPositionVal,
+                // Details
                 employmentIncome: parseFloat(item.employment_income_gross || 0),
                 rentalIncome: parseFloat(item.rental_income || 0),
                 investmentIncome: parseFloat(item.investment_income || 0),
-                // Expenses
                 household: parseFloat(item.household_expenses || 0),
                 tax: parseFloat(item.income_tax || 0),
                 insurance: parseFloat(item.insurance_premiums || 0),
                 propertyExp: parseFloat(item.property_expenses || 0),
                 propertyLoan: parseFloat(item.property_loan_repayment || 0),
                 nonPropertyLoan: parseFloat(item.non_property_loan_repayment || 0),
-                // Wealth Transfers
                 cpf: parseFloat(item.cpf_contribution_total || 0),
                 regularInv: parseFloat(item.regular_investments || 0)
-            }));
-    }, [client?.cashflow, dateRange]);
-
-
+            };
+        });
+    }, [client?.cashflow, dateRange, viewMode]);
 
     const hasData = chartData.length > 0;
+
+    const gradientOffset = useMemo(() => {
+        if (!chartData.length) return 0;
+        const netPosData = chartData.map(d => d.netPosition);
+        const max = Math.max(...netPosData);
+        const min = Math.min(...netPosData);
+
+        if (max <= 0) return 0;
+        if (min >= 0) return 1;
+
+        return max / (max - min);
+    }, [chartData]);
 
     const CustomTooltip = ({ active, payload }: any) => {
         if (active && payload && payload.length) {
@@ -106,11 +135,9 @@ const Cashflow: React.FC<CashflowProps> = ({ client, mode = 'overview', dateRang
             return (
                 <div style={{ backgroundColor: '#fff', padding: '12px', border: '1px solid var(--border)', borderRadius: '8px', boxShadow: 'var(--shadow-lg)', minWidth: '220px' }}>
                     <p style={{ color: 'var(--secondary)', marginBottom: '8px', fontWeight: 600 }}>{data.fullDate}</p>
-                    {visibleLines.inflow && <p style={{ color: '#719266', fontSize: '0.9rem', margin: '4px 0' }}>Inflow: <strong>${data.inflow.toLocaleString()}</strong></p>}
-                    {visibleLines.expense && <p style={{ color: '#9B2226', fontSize: '0.9rem', margin: '4px 0' }}>Expense: <strong>${data.expense.toLocaleString()}</strong></p>}
-                    {visibleLines.wealthTransfers && <p style={{ color: '#3C5A82', fontSize: '0.9rem', margin: '4px 0' }}>Wealth Transfers: <strong>${data.wealthTransfers.toLocaleString()}</strong></p>}
-                    {visibleLines.netSurplus && <p style={{ color: '#BC6C25', fontSize: '0.9rem', margin: '4px 0' }}>Net Surplus: <strong>${data.netSurplus.toLocaleString()}</strong></p>}
-                    {visibleLines.netCashflow && <p style={{ color: '#C5B358', fontSize: '0.9rem', margin: '4px 0' }}>Net Cashflow: <strong>${data.netCashflow.toLocaleString()}</strong></p>}
+                    {visibleLines.inflow && <p style={{ color: CASHFLOW_COLORS['Inflows'], fontSize: '0.9rem', margin: '4px 0' }}>{viewMode === 'cumulative' ? 'Total Inflow' : 'Inflow'}: <strong>${data.inflow.toLocaleString()}</strong></p>}
+                    {visibleLines.outflow && <p style={{ color: CASHFLOW_COLORS['Outflows'], fontSize: '0.9rem', margin: '4px 0' }}>{viewMode === 'cumulative' ? 'Total Outflow' : 'Outflow'}: <strong>${data.outflow.toLocaleString()}</strong></p>}
+                    {visibleLines.netPosition && <p style={{ color: getNetPositionColor(data.netPosition), fontSize: '0.9rem', margin: '4px 0' }}>Net Position: <strong>${data.netPosition.toLocaleString()}</strong></p>}
                 </div>
             );
         }
@@ -119,34 +146,69 @@ const Cashflow: React.FC<CashflowProps> = ({ client, mode = 'overview', dateRang
 
     if (isExporting) {
         return (
-            <div className="chart-container" style={{ flex: 1, position: 'relative', minHeight: 0 }}>
-                <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={chartData} margin={{ top: 0, right: 30, left: 0, bottom: 0 }}>
+            <div className="chart-container" style={{ width: '100%', flex: 1, marginTop: '10px' }}>
+                <ResponsiveContainer width="100%" height={370}>
+                    <LineChart data={chartData} margin={{ top: 15, right: 20, left: 0, bottom: 5 }}>
+                        <defs>
+                            <linearGradient id="netPositionGradient" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset={gradientOffset} stopColor="#719266" stopOpacity={1} />
+                                <stop offset={gradientOffset} stopColor="#9B2226" stopOpacity={1} />
+                            </linearGradient>
+                        </defs>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
                         <XAxis dataKey="as_of_date" tick={<CustomizedXAxisTick />} interval="preserveStartEnd" axisLine={false} tickLine={false} height={60} />
-                        <YAxis tickFormatter={(v) => `$${v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v}`} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
-                        <Line type="monotone" dataKey="inflow" stroke="#719266" strokeWidth={1.5} dot={false} isAnimationActive={false} />
-                        <Line type="monotone" dataKey="expense" stroke="#9B2226" strokeWidth={1.5} dot={false} isAnimationActive={false} />
-                        <Line type="monotone" dataKey="wealthTransfers" stroke="#3C5A82" strokeWidth={1.5} dot={false} isAnimationActive={false} />
-                        <Line type="monotone" dataKey="netSurplus" stroke="#BC6C25" strokeWidth={1.5} dot={false} isAnimationActive={false} />
-                        <Line type="monotone" dataKey="netCashflow" stroke="#C5B358" strokeWidth={1.5} dot={false} isAnimationActive={false} />
+                        <YAxis tickFormatter={(v) => {
+                            const absV = Math.abs(v);
+                            const sign = v < 0 ? '-' : '';
+                            return `${sign}$${absV >= 1000 ? (absV / 1000).toFixed(0) + 'k' : absV}`;
+                        }} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
+                        <Legend 
+                            verticalAlign="bottom" 
+                            wrapperStyle={{ paddingTop: '5px', fontSize: '10px' }}
+                            content={(props: any) => {
+                                const { payload } = props;
+                                if (!payload) return null;
+                                
+                                // FORCE ORDER: Inflow -> Outflow -> Net Position
+                                const order = ['Inflow', 'Outflow', 'Net Position'];
+                                const sortedPayload = [...payload].sort((a, b) => 
+                                    order.indexOf(a.value) - order.indexOf(b.value)
+                                );
+
+                                return (
+                                    <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', paddingTop: '8px' }}>
+                                        {sortedPayload.map((entry: any, index: number) => {
+                                            // Handle gradient color fallback for legend icon
+                                            let iconColor = entry.color;
+                                            if (entry.value === 'Net Position' && (iconColor.includes('url') || !iconColor)) {
+                                                const lastVal = chartData[chartData.length - 1]?.netPosition ?? 0;
+                                                iconColor = lastVal >= 0 ? '#719266' : '#9B2226';
+                                            }
+                                            return (
+                                                <div key={`item-${index}`} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: iconColor }} />
+                                                    <span style={{ color: '#666', fontWeight: 600 }}>{entry.value}</span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                );
+                            }}
+                        />
+                                {visibleLines.inflow && <Line name="Inflow" type="monotone" dataKey="inflow" stroke={CASHFLOW_COLORS['Inflows']} strokeWidth={1.5} dot={false} isAnimationActive={false} />}
+                                {visibleLines.outflow && <Line name="Outflow" type="monotone" dataKey="outflow" stroke={CASHFLOW_COLORS['Outflows']} strokeWidth={1.5} dot={false} isAnimationActive={false} />}
+                                {visibleLines.netPosition && <Line 
+                                    name="Net Position"
+                                    type="monotone" 
+                                    dataKey="netPosition" 
+                                    stroke={chartData.every(d => d.netPosition >= 0) ? '#719266' : (chartData.every(d => d.netPosition < 0) ? '#9B2226' : 'url(#netPositionGradient)')} 
+                                    strokeWidth={1.5} 
+                                    dot={false} 
+                                    isAnimationActive={false} 
+                                />}
                         <ReferenceLine y={0} stroke="#555555" strokeWidth={2} strokeDasharray="6 4" />
                     </LineChart>
                 </ResponsiveContainer>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', justifyContent: 'center', marginTop: '0.5rem' }}>
-                    {[
-                        { key: 'inflow', label: 'Inflow', color: '#719266' },
-                        { key: 'expense', label: 'Expense', color: '#9B2226' },
-                        { key: 'wealthTransfers', label: 'Wealth Transfers', color: '#3C5A82' },
-                        { key: 'netSurplus', label: 'Net Surplus', color: '#BC6C25' },
-                        { key: 'netCashflow', label: 'Net Cashflow', color: '#C5B358' }
-                    ].map((item) => (
-                        <div key={item.key} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.7rem', color: item.color, fontWeight: 600 }}>
-                            <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: item.color }} />
-                            {item.label}
-                        </div>
-                    ))}
-                </div>
             </div>
         );
     }
@@ -154,18 +216,40 @@ const Cashflow: React.FC<CashflowProps> = ({ client, mode = 'overview', dateRang
     return (
         <>
             <section className={`glass-card quadrant ${mode === 'focused' ? 'focused' : ''}`}>
-                <div className="card-header">
+                <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <h3>Cashflow</h3>
+                    <Button
+                        variant="primary"
+                        size="small"
+                        onClick={(e: React.MouseEvent) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            setViewMode(viewMode === 'periodic' ? 'cumulative' : 'periodic');
+                        }}
+                        style={{ borderRadius: '20px', padding: '4px 12px', fontSize: '0.7rem' }}
+                    >
+                        {viewMode === 'periodic' ? 'Periodic' : 'Cumulative'}
+                    </Button>
                 </div>
 
                 <div className="chart-container" style={{ flex: 1, position: 'relative', minHeight: 0 }}>
                     {hasData ? (
                         <>
                             <ResponsiveContainer width="100%" height="95%">
-                                <LineChart data={chartData} onClick={handleChartClick} margin={{ top: 0, right: 30, left: 0, bottom: 0 }}>
+                                <LineChart data={chartData} onClick={handleChartClick} margin={{ top: 15, right: 30, left: 0, bottom: 5 }}>
+                                    <defs>
+                                        <linearGradient id="netPositionGradientNormal" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset={gradientOffset} stopColor="#719266" stopOpacity={1} />
+                                            <stop offset={gradientOffset} stopColor="#9B2226" stopOpacity={1} />
+                                        </linearGradient>
+                                    </defs>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
                                     <XAxis dataKey="as_of_date" tick={<CustomizedXAxisTick />} interval={0} axisLine={false} tickLine={false} height={50} />
-                                    <YAxis tickFormatter={(v) => `$${v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v}`} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
+                                    <YAxis tickFormatter={(v) => {
+                                        const absV = Math.abs(v);
+                                        const sign = v < 0 ? '-' : '';
+                                        return `${sign}$${absV >= 1000 ? (absV / 1000).toFixed(0) + 'k' : absV}`;
+                                    }} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
                                     <Tooltip content={<CustomTooltip />} />
                                     {(() => {
                                         const isFocused = mode === 'focused';
@@ -174,11 +258,26 @@ const Cashflow: React.FC<CashflowProps> = ({ client, mode = 'overview', dateRang
 
                                         return (
                                             <>
-                                                {visibleLines.inflow && <Line type="monotone" dataKey="inflow" stroke="#719266" strokeWidth={1.5} dot={dotStyle} activeDot={activeDotStyle} isAnimationActive={!isExporting} animationDuration={800} />}
-                                                {visibleLines.expense && <Line type="monotone" dataKey="expense" stroke="#9B2226" strokeWidth={1.5} dot={dotStyle} activeDot={activeDotStyle} isAnimationActive={!isExporting} animationDuration={800} />}
-                                                {visibleLines.wealthTransfers && <Line type="monotone" dataKey="wealthTransfers" stroke="#3C5A82" strokeWidth={1.5} dot={dotStyle} activeDot={activeDotStyle} isAnimationActive={!isExporting} animationDuration={800} />}
-                                                {visibleLines.netSurplus && <Line type="monotone" dataKey="netSurplus" stroke="#BC6C25" strokeWidth={1.5} dot={dotStyle} activeDot={activeDotStyle} isAnimationActive={!isExporting} animationDuration={800} />}
-                                                {visibleLines.netCashflow && <Line type="monotone" dataKey="netCashflow" stroke="#C5B358" strokeWidth={1.5} dot={dotStyle} activeDot={activeDotStyle} isAnimationActive={!isExporting} animationDuration={800} />}
+                                                {visibleLines.inflow && <Line type="monotone" dataKey="inflow" stroke={CASHFLOW_COLORS['Inflows']} strokeWidth={1.5} dot={dotStyle} activeDot={activeDotStyle} isAnimationActive={!isExporting} animationDuration={800} />}
+                                                {visibleLines.outflow && <Line type="monotone" dataKey="outflow" stroke={CASHFLOW_COLORS['Outflows']} strokeWidth={1.5} dot={dotStyle} activeDot={activeDotStyle} isAnimationActive={!isExporting} animationDuration={800} />}
+                                                {visibleLines.netPosition && <Line 
+                                                    type="monotone" 
+                                                    dataKey="netPosition" 
+                                                    stroke={chartData.every(d => d.netPosition >= 0) ? '#719266' : (chartData.every(d => d.netPosition < 0) ? '#9B2226' : 'url(#netPositionGradientNormal)')} 
+                                                    strokeWidth={2} 
+                                                    dot={(props: any) => {
+                                                        const { cx, cy, payload } = props;
+                                                        if (cx === undefined || cy === undefined) return null;
+                                                        return <circle key={`dot-${payload.as_of_date}`} cx={cx} cy={cy} r={isFocused ? 4 : 2.5} fill="#fff" stroke={getNetPositionColor(payload.netPosition)} strokeWidth={2} />;
+                                                    }}
+                                                    activeDot={(props: any) => {
+                                                        const { cx, cy, payload } = props;
+                                                        if (cx === undefined || cy === undefined) return null;
+                                                        return <circle key={`active-dot-${payload.as_of_date}`} cx={cx} cy={cy} r={isFocused ? 6 : 4} fill={getNetPositionColor(payload.netPosition)} stroke="#fff" strokeWidth={2} />;
+                                                    }}
+                                                    isAnimationActive={!isExporting} 
+                                                    animationDuration={800} 
+                                                />}
                                             </>
                                         );
                                     })()}
@@ -188,11 +287,13 @@ const Cashflow: React.FC<CashflowProps> = ({ client, mode = 'overview', dateRang
 
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', justifyContent: 'center', marginTop: '0rem' }}>
                                 {[
-                                    { key: 'inflow', label: 'Inflow', color: '#719266' },
-                                    { key: 'expense', label: 'Expense', color: '#9B2226' },
-                                    { key: 'wealthTransfers', label: 'Wealth Transfers', color: '#3C5A82' },
-                                    { key: 'netSurplus', label: 'Net Surplus', color: '#BC6C25' },
-                                    { key: 'netCashflow', label: 'Net Cashflow', color: '#C5B358' }
+                                { key: 'inflow', label: 'Inflow', color: CASHFLOW_COLORS['Inflows'] },
+                                    { key: 'outflow', label: 'Outflow', color: CASHFLOW_COLORS['Outflows'] },
+                                    { 
+                                        key: 'netPosition', 
+                                        label: 'Net Position', 
+                                        color: getNetPositionColor(chartData[chartData.length - 1]?.netPosition ?? 0) 
+                                    }
                                 ].map((item) => (
                                     <div
                                         key={item.key}
@@ -267,21 +368,16 @@ const CashflowBreakdown: React.FC<CashflowBreakdownProps> = ({
                 ]
             },
             {
-                name: 'Expenses',
+                name: 'Outflows',
                 items: [
-                    { name: 'Household Expenses', value: data.household, color: CASHFLOW_COLORS['Expenses'] },
-                    { name: 'Income Tax', value: data.tax, color: CASHFLOW_COLORS['Expenses'] },
-                    { name: 'Insurance Premiums', value: data.insurance, color: CASHFLOW_COLORS['Expenses'] },
-                    { name: 'Property Expenses', value: data.propertyExp, color: CASHFLOW_COLORS['Expenses'] },
-                    { name: 'Property Loan', value: data.propertyLoan, color: CASHFLOW_COLORS['Expenses'] },
-                    { name: 'Non-Property Loan', value: data.nonPropertyLoan, color: CASHFLOW_COLORS['Expenses'] }
-                ]
-            },
-            {
-                name: 'Wealth Transfers',
-                items: [
-                    { name: 'CPF Contributions', value: data.cpf, color: CASHFLOW_COLORS['Wealth Transfers'] },
-                    { name: 'Regular Investments', value: data.regularInv, color: CASHFLOW_COLORS['Wealth Transfers'] }
+                    { name: 'Household Expenses', value: data.household, color: CASHFLOW_COLORS['Outflows'] },
+                    { name: 'Income Tax', value: data.tax, color: CASHFLOW_COLORS['Outflows'] },
+                    { name: 'Insurance Premiums', value: data.insurance, color: CASHFLOW_COLORS['Outflows'] },
+                    { name: 'Property Expenses', value: data.propertyExp, color: CASHFLOW_COLORS['Outflows'] },
+                    { name: 'Property Loan', value: data.propertyLoan, color: CASHFLOW_COLORS['Outflows'] },
+                    { name: 'Non-Property Loan', value: data.nonPropertyLoan, color: CASHFLOW_COLORS['Outflows'] },
+                    { name: 'CPF Contributions', value: data.cpf, color: CASHFLOW_COLORS['Outflows'] },
+                    { name: 'Regular Investments', value: data.regularInv, color: CASHFLOW_COLORS['Outflows'] }
                 ]
             }
         ];
@@ -364,17 +460,17 @@ const CashflowBreakdown: React.FC<CashflowBreakdownProps> = ({
                         </div>
 
                         <div
-                            onMouseEnter={() => setActiveItemName('Net Cashflow')} onMouseLeave={() => setActiveItemName(null)}
+                            onMouseEnter={() => setActiveItemName('Net Position')} onMouseLeave={() => setActiveItemName(null)}
                             style={{
                                 width: '100%', maxWidth: '320px', padding: '15px', textAlign: 'center',
-                                background: selectedSnapshot.netCashflow >= 0 ? 'rgba(197, 179, 88, 0.08)' : 'rgba(214, 40, 40, 0.08)',
-                                borderRadius: '12px', border: `1px solid ${selectedSnapshot.netCashflow >= 0 ? 'rgba(197, 179, 88, 0.2)' : 'rgba(214, 40, 40, 0.2)'}`,
-                                opacity: activeItemName && activeItemName !== 'Net Cashflow' ? 0.3 : 1, transition: '0.2s', cursor: 'pointer',
-                                transform: activeItemName === 'Net Cashflow' ? 'scale(1.05)' : 'scale(1)'
+                                background: getNetPositionBg(selectedSnapshot.netPosition),
+                                borderRadius: '12px', border: `1px solid ${getNetPositionBorder(selectedSnapshot.netPosition)}`,
+                                opacity: activeItemName && activeItemName !== 'Net Position' ? 0.3 : 1, transition: '0.2s', cursor: 'pointer',
+                                transform: activeItemName === 'Net Position' ? 'scale(1.05)' : 'scale(1)'
                             }}
                         >
-                            <div style={{ fontSize: 'var(--text-xs)', textTransform: 'uppercase', color: selectedSnapshot.netCashflow >= 0 ? 'var(--primary)' : '#D62828', fontWeight: 700 }}>Net Cashflow</div>
-                            <div style={{ fontSize: 'var(--text-3xl)', fontWeight: 800, color: 'var(--secondary)' }}>${selectedSnapshot.netCashflow.toLocaleString()}</div>
+                            <div style={{ fontSize: 'var(--text-xs)', textTransform: 'uppercase', color: getNetPositionColor(selectedSnapshot.netPosition), fontWeight: 700 }}>Net Position</div>
+                            <div style={{ fontSize: 'var(--text-3xl)', fontWeight: 800, color: 'var(--secondary)' }}>${selectedSnapshot.netPosition.toLocaleString()}</div>
                         </div>
                     </div>
 
@@ -395,7 +491,7 @@ const CashflowBreakdown: React.FC<CashflowBreakdownProps> = ({
                                             transition: 'all 0.3s ease',
                                             padding: '8px 12px',
                                             borderRadius: '8px',
-                                            background: isCatActive ? `rgba(${group.name === 'Inflows' ? '113, 146, 102' : '100, 100, 100'}, 0.05)` : 'transparent',
+                                            background: isCatActive ? (group.name === 'Inflows' ? 'rgba(60, 90, 130, 0.05)' : 'rgba(224, 159, 62, 0.05)') : 'transparent',
                                             borderLeft: isCatActive ? `4px solid ${groupColor}` : '4px solid transparent',
                                             boxShadow: isCatActive && total > 0 ? '0 4px 15px rgba(0,0,0,0.05)' : 'none'
                                         }}

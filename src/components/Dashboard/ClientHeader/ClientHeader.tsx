@@ -37,9 +37,10 @@ const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, onClose }
     const [mode, setMode] = useState<'view' | 'update'>('view');
 
     // Define Groups
-    const contactFields = ['email', 'employment_status', 'occupation', 'mobile_no', 'home_no', 'office_no'];
+    const basicFields = ['name_as_per_id', 'id_type', 'id_no', 'title', 'gender', 'date_of_birth', 'age', 'nationality', 'singapore_pr'];
+    const personalProfileFields = ['marital_status', 'smoker_status', 'race', 'qualification', 'languages_spoken', 'languages_written', 'risk_profile', 'employment_status', 'occupation'];
+    const contactFields = ['email', 'mobile_no', 'home_no', 'office_no'];
     const addressFields = ['address_type', 'postal_district', 'house_block_no', 'street_name', 'building_name', 'unit_no'];
-    const technicalFields = ['client_id', 'full_name', 'name_as_per_id', 'client_investments', 'client_insurance', 'cashflow', 'client_plans', 'client_family', 'family_members_count', 'last_updated'];
 
     const renderValue = (key: string, value: any) => {
         if (value === null || value === undefined || value === '') return '-';
@@ -107,11 +108,7 @@ const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, onClose }
         </div>
     );
 
-    const basicFields = Object.keys(client).filter(key =>
-        !contactFields.includes(key) &&
-        !addressFields.includes(key) &&
-        !technicalFields.includes(key)
-    );
+
 
     if (mode === 'update') {
         return (
@@ -132,10 +129,10 @@ const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, onClose }
         >
             {/* Fixed Header Area */}
             <div className="modal-header">
-                <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div style={{ flex: 1 }}>
-                        <h2 style={{ fontSize: 'var(--text-3xl)', color: 'var(--secondary)', marginBottom: '8px' }}>{client.full_name}</h2>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <div style={{ marginBottom: '1.25rem' }}>
+                    <h2 style={{ fontSize: 'var(--text-3xl)', color: 'var(--secondary)', marginBottom: '8px' }}>{client.full_name}</h2>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                             <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)', margin: 0 }}>
                                 {client.client_id}
                             </p>
@@ -148,6 +145,14 @@ const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, onClose }
                                 </div>
                             </div>
                         </div>
+                        <Button
+                            variant="outline"
+                            size="small"
+                            onClick={() => setMode('update')}
+                            style={{ padding: '4px 12px', fontSize: 'var(--text-xs)' }}
+                        >
+                            Update Client
+                        </Button>
                     </div>
                 </div>
 
@@ -174,19 +179,12 @@ const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, onClose }
             <div className="modal-body">
                 {activeTab === 'personal' ? (
                     <>
-                        {renderSection('Basic Information', basicFields)}
-                        {renderSection('Contact Information and Other Information', contactFields)}
+                        {renderSection('Basic Details', basicFields)}
+                        {renderSection('Personal Profile', personalProfileFields)}
+                        {renderSection('Contact Information', contactFields)}
                         {renderSection('Residential Address', addressFields)}
                         
-                        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '2rem' }}>
-                            <Button
-                                variant="outline"
-                                size="medium"
-                                onClick={() => setMode('update')}
-                            >
-                                Update Client Profile
-                            </Button>
-                        </div>
+
                     </>
                 ) : (
                     <div className="family-section">
@@ -342,7 +340,7 @@ const ClientHeader: React.FC<ClientHeaderProps> = ({
                         justifyContent: 'center',
                         flexShrink: 0 
                     }}>
-                        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                             <circle cx="12" cy="7" r="4"></circle>
                         </svg>
@@ -359,7 +357,7 @@ const ClientHeader: React.FC<ClientHeaderProps> = ({
                                     }}
                                     style={{ padding: '6px 14px' }}
                                 >
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                         <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
                                     </svg>
                                     Update Client
@@ -447,7 +445,7 @@ const ClientHeader: React.FC<ClientHeaderProps> = ({
                             boxSizing: 'border-box'
                         }}
                     >
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.85, flexShrink: 0, marginLeft: '0.25rem' }}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.85, flexShrink: 0, marginLeft: '0.25rem' }}>
                             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                             <line x1="16" y1="2" x2="16" y2="6"></line>
                             <line x1="8" y1="2" x2="8" y2="6"></line>

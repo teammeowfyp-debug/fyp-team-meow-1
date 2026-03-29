@@ -103,10 +103,8 @@ export const useDashboardData = (clientId: string | undefined) => {
                         cpf_contribution_total,
                         regular_investments,
                         total_inflow,
-                        total_expense,
-                        wealth_transfers,
-                        net_surplus,
-                        net_cashflow
+                        total_outflow,
+                        net_position
                     )
                 `)
                 .eq('client_id', clientId)

@@ -144,15 +144,15 @@ const RemoveUser: React.FC = () => {
               />
             </div>
             <button
-              className="btn-base btn-primary"
+              className="btn-base btn-outline"
               style={{ 
-                background: 'var(--danger)', 
+                color: 'var(--danger)',
                 borderColor: 'var(--danger)', 
                 width: '140px', 
                 flexShrink: 0,
                 padding: '0.6rem 1rem',
                 fontSize: '11px',
-                transition: 'none' // Removing transitions to eliminate the opacity glitch
+                transition: 'none'
               }}
               onClick={handleDelete}
               disabled={deleting || selected.size === 0}

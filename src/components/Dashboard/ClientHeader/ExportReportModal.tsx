@@ -58,14 +58,15 @@ const PDF_S = {
     },
     td: { padding: '8px 8px', borderBottom: '1px solid #eee', verticalAlign: 'top' as const, lineHeight: '1.4', overflow: 'hidden', wordWrap: 'break-word' as const },
     tdRight: { padding: '8px 8px', borderBottom: '1px solid #eee', textAlign: 'right' as const, verticalAlign: 'top' as const, fontWeight: 500 },
-    infoGrid: { display: 'grid' as const, gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px 30px', fontSize: '11px', marginBottom: '20px' },
+    infoGrid: { display: 'grid' as const, gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px 25px', fontSize: '11px', marginBottom: '15px' },
     infoLabel: { fontSize: '9px', textTransform: 'uppercase' as const, color: '#888', fontWeight: 700, letterSpacing: '0.06em', marginBottom: '3px' },
-    infoValue: { color: 'var(--secondary)', fontWeight: 600 as const },
+    infoValue: { color: 'var(--secondary)', fontWeight: 600 as const, wordBreak: 'break-word' as const },
     footer: {
         position: 'absolute' as const, bottom: '40px', left: '0', right: '0',
-        padding: '0 40px', display: 'flex', justifyContent: 'space-between',
+        padding: '0 40px', display: 'flex', alignItems: 'center',
         fontSize: '9px', color: '#aaa', borderTop: '1px solid #f0f0f0', paddingTop: '15px'
-    }
+    },
+    footerItem: { flex: 1 }
 };
 
 const fmtDate = (d: string | null | undefined) => {
@@ -127,9 +128,9 @@ const ExportReportModal: React.FC<ExportReportModalProps> = ({
     const reportRef = useRef<HTMLDivElement>(null);
 
     const isRiskAnalysisValid = !!(
-        cache?.focused &&
-        cache?.generatedPeriod?.startDate === startDate &&
-        cache?.generatedPeriod?.endDate === endDate
+        cache?.overview &&
+        cache?.generatedPeriod?.startDate?.substring(0, 10) === startDate?.substring(0, 10) &&
+        cache?.generatedPeriod?.endDate?.substring(0, 10) === endDate?.substring(0, 10)
     );
 
     const isMeetingNotesValid = !!(
@@ -149,10 +150,10 @@ const ExportReportModal: React.FC<ExportReportModalProps> = ({
         })
         .sort((a: any, b: any) => new Date(a.as_of_date).getTime() - new Date(b.as_of_date).getTime());
 
-    const contactFields = ['email', 'employment_status', 'occupation', 'mobile_no', 'home_no', 'office_no'];
+    const basicFields = ['name_as_per_id', 'id_type', 'id_no', 'title', 'gender', 'date_of_birth', 'age', 'nationality', 'singapore_pr'];
+    const personalProfileFields = ['marital_status', 'smoker_status', 'race', 'qualification', 'languages_spoken', 'languages_written', 'risk_profile', 'employment_status', 'occupation'];
+    const contactFields = ['email', 'mobile_no', 'home_no', 'office_no'];
     const addressFields = ['address_type', 'postal_district', 'house_block_no', 'street_name', 'building_name', 'unit_no'];
-    const technicalFields = ['client_id', 'full_name', 'name_as_per_id', 'client_investments', 'client_insurance', 'cashflow', 'client_plans', 'client_family', 'family_members_count', 'last_updated', 'assigned_user_id'];
-    const basicFields = Object.keys(client).filter(k => !contactFields.includes(k) && !addressFields.includes(k) && !technicalFields.includes(k));
 
     const handleExport = async () => {
         setIsExporting(true);
@@ -172,11 +173,18 @@ const ExportReportModal: React.FC<ExportReportModalProps> = ({
             for (let i = 0; i < pageElements.length; i++) {
                 const element = pageElements[i] as HTMLElement;
                 const sectionTag = element.querySelector('h2');
-                let sectionName = 'Cover Page';
-                if (i !== 0 && sectionTag && sectionTag.textContent) {
-                    sectionName = sectionTag.textContent.replace(/^\d+\.\s*/, '');
+                let sectionName = '';
+
+                if (i === 0) {
+                    setStatusText('Rendering Cover Page...');
+                } else {
+                    if (sectionTag && sectionTag.textContent) {
+                        sectionName = sectionTag.textContent.replace(/^\d+\.\s*/, '');
+                    } else if (i === 1) {
+                        sectionName = 'Table of Contents';
+                    }
+                    setStatusText(`Rendering Page ${i} of ${pageElements.length - 1} — ${sectionName}...`);
                 }
-                setStatusText(`Rendering Page ${i + 1} of ${pageElements.length} — ${sectionName}...`);
 
                 const canvas = await html2canvas(element, {
                     scale: 2,
@@ -222,9 +230,9 @@ const ExportReportModal: React.FC<ExportReportModalProps> = ({
 
     const renderFooter = (page: number, total: number) => (
         <div style={PDF_S.footer}>
-            <span>Confidential | Calibre Advisory</span>
-            <span>Page {page} of {total}</span>
-            <span>{new Date().toLocaleDateString('en-SG')}</span>
+            <span style={{ ...PDF_S.footerItem, textAlign: 'left' }}>Confidential | Calibre Advisory</span>
+            <span style={{ ...PDF_S.footerItem, textAlign: 'center' }}>Page {page} of {total}</span>
+            <span style={{ ...PDF_S.footerItem, textAlign: 'right' }}>{new Date().toLocaleDateString('en-SG')}</span>
         </div>
     );
 
@@ -253,7 +261,7 @@ const ExportReportModal: React.FC<ExportReportModalProps> = ({
     let cashflowMonths: string[] = [...(client.cashflow || [])].sort((a: any, b: any) => new Date(a.as_of_date).getTime() - new Date(b.as_of_date).getTime()).map((c: any) => c.as_of_date).filter((d: string) => (!startDate || d.substring(0, 10) >= startDate) && (!endDate || d.substring(0, 10) <= endDate));
     const assetClassSet = new Set<string>(); (client.client_plans || []).forEach((p: any) => assetClassSet.add(p.asset_class));
     const classes = Array.from(assetClassSet).filter(c => c !== 'Insurance (Wealth)');
-    const allocationHistoryChunks = chunkArray(cashflowMonths, 30);
+    const allocationHistoryChunks = chunkArray(cashflowMonths, 25);
 
     const pages = {
         cover: 1,
@@ -266,7 +274,7 @@ const ExportReportModal: React.FC<ExportReportModalProps> = ({
         meeting: includeMeetingNotes ? 1 : 0
     };
 
-    let offset = 3; // Cover=1, TOC=2, profile starts at 3
+    let offset = 2; // TOC is Page 1, so Personal Profile starts at Page 2
     const profileRange = { start: offset, end: offset + pages.profile - 1 };
     offset = profileRange.end + 1;
 
@@ -295,11 +303,12 @@ const ExportReportModal: React.FC<ExportReportModalProps> = ({
     const tocSections: { num: string; title: string; range: string; indent?: boolean }[] = [];
 
     tocSections.push({ num: `${sectionNum}`, title: 'Personal Profile', range: formatRange(profileRange) });
-    tocSections.push({ num: `${sectionNum}.1`, title: 'Basic Information', range: '', indent: true });
-    tocSections.push({ num: `${sectionNum}.2`, title: 'Employment & Contact', range: '', indent: true });
-    tocSections.push({ num: `${sectionNum}.3`, title: 'Residential Address', range: '', indent: true });
+    tocSections.push({ num: `${sectionNum}.1`, title: 'Basic Details', range: '', indent: true });
+    tocSections.push({ num: `${sectionNum}.2`, title: 'Personal Profile', range: '', indent: true });
+    tocSections.push({ num: `${sectionNum}.3`, title: 'Contact Information', range: '', indent: true });
+    tocSections.push({ num: `${sectionNum}.4`, title: 'Residential Address', range: '', indent: true });
     if ((client.client_family || []).length > 0) {
-        tocSections.push({ num: `${sectionNum}.4`, title: 'Family Members', range: '', indent: true });
+        tocSections.push({ num: `${sectionNum}.5`, title: 'Family Members', range: '', indent: true });
     }
     sectionNum++;
 
@@ -378,17 +387,24 @@ const ExportReportModal: React.FC<ExportReportModalProps> = ({
                                     <span style={{ fontSize: '0.9rem', fontWeight: 500 }}>Include Risk Analysis</span>
                                 </label>
                                 {includeRiskAnalysis && !isRiskAnalysisValid && (
-                                    <div style={{ marginLeft: '26px', padding: '10px', borderRadius: '8px', background: 'rgba(239, 68, 68, 0.05)', border: '1.2px dashed rgba(239, 68, 68, 0.35)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                        <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--danger)', fontWeight: 500, lineHeight: '1.4' }}>
-                                            {cache?.focused
-                                                ? `This analysis was generated for a different period (${fmtDate(cache.generatedPeriod?.startDate)} - ${fmtDate(cache.generatedPeriod?.endDate)})`
-                                                : 'No AI risk analysis found.'}
-                                        </p>
+                                    <div className="error-text" style={{ marginLeft: '26px', padding: '10px', flexDirection: 'column', alignItems: 'flex-start', gap: '8px', margin: '4px 0' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                <circle cx="12" cy="12" r="10"></circle>
+                                                <line x1="12" y1="8" x2="12" y2="12"></line>
+                                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                            </svg>
+                                            <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>
+                                                {cache?.overview
+                                                    ? `This analysis was generated for a different period (${fmtDate(cache.generatedPeriod?.startDate)} - ${fmtDate(cache.generatedPeriod?.endDate)})`
+                                                    : 'No risk analysis found.'}
+                                            </span>
+                                        </div>
                                         <Button
                                             variant="outline"
                                             size="small"
                                             onClick={() => { onFocusQuadrant?.('risk', 'risk-analysis'); onClose(); }}
-                                            style={{ alignSelf: 'flex-start', fontSize: '0.75rem', padding: '4px 10px', color: 'var(--danger)', borderColor: 'rgba(239, 68, 68, 0.3)' }}
+                                            style={{ alignSelf: 'flex-start', fontSize: '0.75rem', padding: '4px 10px', color: 'var(--danger)', borderColor: 'rgba(155, 34, 38, 0.3)' }}
                                         >
                                             Go to Risk Analysis
                                         </Button>
@@ -408,15 +424,20 @@ const ExportReportModal: React.FC<ExportReportModalProps> = ({
                                     <span style={{ fontSize: '0.9rem', fontWeight: 500 }}>Include Meeting Notes</span>
                                 </label>
                                 {includeMeetingNotes && !isMeetingNotesValid && (
-                                    <div style={{ marginLeft: '26px', padding: '10px', borderRadius: '8px', background: 'rgba(239, 68, 68, 0.05)', border: '1.2px dashed rgba(239, 68, 68, 0.35)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                        <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--danger)', fontWeight: 500 }}>
-                                            No meeting notes or transcript found.
-                                        </p>
+                                    <div className="error-text" style={{ marginLeft: '26px', padding: '10px', flexDirection: 'column', alignItems: 'flex-start', gap: '8px', margin: '4px 0' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                <circle cx="12" cy="12" r="10"></circle>
+                                                <line x1="12" y1="8" x2="12" y2="12"></line>
+                                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                            </svg>
+                                            <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>No meeting notes found.</span>
+                                        </div>
                                         <Button
                                             variant="outline"
                                             size="small"
                                             onClick={() => { onFocusQuadrant?.('risk', 'meeting-notes'); onClose(); }}
-                                            style={{ alignSelf: 'flex-start', fontSize: '0.75rem', padding: '4px 10px', color: 'var(--danger)', borderColor: 'rgba(239, 68, 68, 0.3)' }}
+                                            style={{ alignSelf: 'flex-start', fontSize: '0.75rem', padding: '4px 10px', color: 'var(--danger)', borderColor: 'rgba(155, 34, 38, 0.3)' }}
                                         >
                                             Go to Meeting Notes
                                         </Button>
@@ -495,13 +516,14 @@ const ExportReportModal: React.FC<ExportReportModalProps> = ({
                     {/* SECTION 1: Client Personal Profile (page 1 with first family chunk) */}
                     <div className="pdf-page" style={PDF_S.page}>
                         <h2 style={PDF_S.sectionTitle}>1. Personal Profile</h2>
-                        {renderInfoSection('1.1 Basic Information', basicFields)}
-                        {renderInfoSection('1.2 Employment & Contact', contactFields)}
-                        {renderInfoSection('1.3 Residential Address', addressFields)}
+                        {renderInfoSection('1.1 Basic Details', basicFields)}
+                        {renderInfoSection('1.2 Personal Profile', personalProfileFields)}
+                        {renderInfoSection('1.3 Contact Information', contactFields)}
+                        {renderInfoSection('1.4 Residential Address', addressFields)}
 
                         {familyChunks.length > 0 && (
                             <>
-                                <h4 style={PDF_S.subTitle}>1.4 Family Members</h4>
+                                <h4 style={PDF_S.subTitle}>1.5 Family Members</h4>
                                 <table style={PDF_S.table}>
                                     <thead>
                                         <tr>
@@ -539,7 +561,7 @@ const ExportReportModal: React.FC<ExportReportModalProps> = ({
                     {familyChunks.slice(1).map((chunk, chunkIdx) => (
                         <div key={`family-overflow-${chunkIdx}`} className="pdf-page" style={PDF_S.page}>
                             <h2 style={PDF_S.sectionTitle}>1. Personal Profile</h2>
-                            <h4 style={PDF_S.subTitle}>1.4 Family Members (cont.)</h4>
+                            <h4 style={PDF_S.subTitle}>1.5 Family Members (cont.)</h4>
                             <table style={PDF_S.table}>
                                 <thead>
                                     <tr>
@@ -576,8 +598,15 @@ const ExportReportModal: React.FC<ExportReportModalProps> = ({
                     <div className="pdf-page" style={PDF_S.page}>
                         <h2 style={PDF_S.sectionTitle}>2. Cashflow</h2>
                         <h4 style={PDF_S.subTitle}>2.1 Trend Visualisation</h4>
-                        <div style={{ height: '340px', marginBottom: '40px', background: '#fff', border: '1px solid #eee', padding: '10px', borderRadius: '8px' }}>
-                            <Cashflow client={client} mode="overview" dateRange={{ startDate, endDate }} isExporting={true} />
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '30px', marginBottom: '30px' }}>
+                            <div style={{ height: '420px', background: '#fff', border: '1px solid #eee', padding: '10px', borderRadius: '8px' }}>
+                                <p style={{ fontSize: '11px', fontWeight: 600, color: '#666', textAlign: 'center', margin: '0 0 8px' }}>Periodic</p>
+                                <Cashflow client={client} mode="overview" dateRange={{ startDate, endDate }} isExporting={true} forceViewMode="periodic" />
+                            </div>
+                            <div style={{ height: '420px', background: '#fff', border: '1px solid #eee', padding: '10px', borderRadius: '8px' }}>
+                                <p style={{ fontSize: '11px', fontWeight: 600, color: '#666', textAlign: 'center', margin: '0 0 8px' }}>Cumulative</p>
+                                <Cashflow client={client} mode="overview" dateRange={{ startDate, endDate }} isExporting={true} forceViewMode="cumulative" />
+                            </div>
                         </div>
                         {renderFooter(currentPage++, totalPages)}
                     </div>
@@ -600,8 +629,7 @@ const ExportReportModal: React.FC<ExportReportModalProps> = ({
                                     <tr>
                                         <th style={{ ...PDF_S.th, width: '48px', fontSize: '7px' }} rowSpan={2}>Date</th>
                                         <th style={{ ...PDF_S.th, textAlign: 'center', background: '#eef5ee', fontSize: '7px' }} colSpan={4}>Inflows</th>
-                                        <th style={{ ...PDF_S.th, textAlign: 'center', background: '#fff5f5', fontSize: '7px' }} colSpan={7}>Expenses</th>
-                                        <th style={{ ...PDF_S.th, textAlign: 'center', fontSize: '7px' }} colSpan={3}>Transfers</th>
+                                        <th style={{ ...PDF_S.th, textAlign: 'center', background: '#fff5f5', fontSize: '7px' }} colSpan={9}>Outflows</th>
                                         <th style={{ ...PDF_S.th, textAlign: 'right', background: '#f0f2f5', fontWeight: 800, fontSize: '7px' }}>Net</th>
                                     </tr>
                                     <tr style={{ fontSize: '6.5px' }}>
@@ -611,14 +639,13 @@ const ExportReportModal: React.FC<ExportReportModalProps> = ({
                                         <th style={{ ...PDF_S.th, textAlign: 'right', background: '#dcecdb', fontSize: '6.5px' }}>TOTAL</th>
                                         <th style={{ ...PDF_S.th, textAlign: 'right', fontSize: '6.5px' }}>H'hold</th>
                                         <th style={{ ...PDF_S.th, textAlign: 'right', fontSize: '6.5px' }}>Tax</th>
-                                        <th style={{ ...PDF_S.th, textAlign: 'right', fontSize: '6.5px' }}>Invest.</th>
+                                        <th style={{ ...PDF_S.th, textAlign: 'right', fontSize: '6.5px' }}>Ins.</th>
                                         <th style={{ ...PDF_S.th, textAlign: 'right', fontSize: '6.5px' }}>Prop.</th>
                                         <th style={{ ...PDF_S.th, textAlign: 'right', fontSize: '6.5px' }}>Mort.</th>
                                         <th style={{ ...PDF_S.th, textAlign: 'right', fontSize: '6.5px' }}>Loans</th>
-                                        <th style={{ ...PDF_S.th, textAlign: 'right', background: '#fbe9e9', fontSize: '6.5px' }}>TOTAL</th>
                                         <th style={{ ...PDF_S.th, textAlign: 'right', fontSize: '6.5px' }}>CPF</th>
                                         <th style={{ ...PDF_S.th, textAlign: 'right', fontSize: '6.5px' }}>Invest.</th>
-                                        <th style={{ ...PDF_S.th, textAlign: 'right', background: '#d5d7d9', fontSize: '6.5px' }}>TOTAL</th>
+                                        <th style={{ ...PDF_S.th, textAlign: 'right', background: '#fbe9e9', fontSize: '6.5px' }}>TOTAL</th>
                                         <th style={{ ...PDF_S.th, textAlign: 'right', background: '#d5d7d9', fontSize: '6.5px' }}></th>
                                     </tr>
                                 </thead>
@@ -636,13 +663,13 @@ const ExportReportModal: React.FC<ExportReportModalProps> = ({
                                             <td style={{ ...PDF_S.tdRight, fontSize: '7px', paddingLeft: '4px', paddingRight: '4px' }}>{fmtCurrency(cf.property_expenses)}</td>
                                             <td style={{ ...PDF_S.tdRight, fontSize: '7px', paddingLeft: '4px', paddingRight: '4px' }}>{fmtCurrency(cf.property_loan_repayment)}</td>
                                             <td style={{ ...PDF_S.tdRight, fontSize: '7px', paddingLeft: '4px', paddingRight: '4px' }}>{fmtCurrency(cf.non_property_loan_repayment)}</td>
-                                            <td style={{ ...PDF_S.tdRight, fontWeight: 800, background: '#fff5f5', fontSize: '7px', paddingLeft: '4px', paddingRight: '4px' }}>{fmtCurrency(cf.total_expense)}</td>
                                             <td style={{ ...PDF_S.tdRight, fontSize: '7px', paddingLeft: '4px', paddingRight: '4px' }}>{fmtCurrency(cf.cpf_contribution_total)}</td>
                                             <td style={{ ...PDF_S.tdRight, fontSize: '7px', paddingLeft: '4px', paddingRight: '4px' }}>{fmtCurrency(cf.regular_investments)}</td>
-                                            <td style={{ ...PDF_S.tdRight, fontWeight: 700, background: '#f0f2f5', fontSize: '7px', paddingLeft: '4px', paddingRight: '4px' }}>{fmtCurrency(cf.wealth_transfers)}</td>
-                                            <td style={{ ...PDF_S.tdRight, fontWeight: 900, background: '#f0f2f5', fontSize: '7px', paddingLeft: '4px', paddingRight: '4px' }}>{fmtCurrency(cf.net_cashflow)}</td>
+                                            <td style={{ ...PDF_S.tdRight, fontWeight: 800, background: '#fff5f5', fontSize: '7px', paddingLeft: '4px', paddingRight: '4px' }}>{fmtCurrency(cf.total_outflow)}</td>
+                                            <td style={{ ...PDF_S.tdRight, fontWeight: 900, background: '#f0f2f5', fontSize: '7px', paddingLeft: '4px', paddingRight: '4px' }}>{fmtCurrency(cf.net_position)}</td>
                                         </tr>
                                     ))}
+
                                 </tbody>
                             </table>
                             {renderFooter(currentPage++, totalPages)}
@@ -670,8 +697,7 @@ const ExportReportModal: React.FC<ExportReportModalProps> = ({
                                         <th style={{ ...PDF_S.th, width: '11%' }}>Start</th>
                                         <th style={{ ...PDF_S.th, width: '11%' }}>Expiry</th>
                                         <th style={{ ...PDF_S.th, width: '10%' }}>Status</th>
-                                        <th style={{ ...PDF_S.th, width: '11%', textAlign: 'right' }}>Value</th>
-                                        <th style={{ ...PDF_S.th, width: '11%', textAlign: 'right' }}>Init. Inv.</th>
+                                        <th style={{ ...PDF_S.th, width: '15%', textAlign: 'right' }}>Value</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -689,7 +715,6 @@ const ExportReportModal: React.FC<ExportReportModalProps> = ({
                                                 <td style={{ ...PDF_S.td, whiteSpace: 'nowrap' }}>{fmtDate(plan.end_date)}</td>
                                                 <td style={{ ...PDF_S.td, textTransform: 'capitalize', whiteSpace: 'nowrap' }}>{plan.status || '-'}</td>
                                                 <td style={PDF_S.tdRight}>{value > 0 ? fmtCurrency(value) : '-'}</td>
-                                                <td style={PDF_S.tdRight}>{plan.initial_investment ? fmtCurrency(plan.initial_investment) : '-'}</td>
                                             </tr>
                                         );
                                     })}
@@ -728,9 +753,6 @@ const ExportReportModal: React.FC<ExportReportModalProps> = ({
                                             {isIns && <div><div style={PDF_S.infoLabel}>Payment Term</div><div style={PDF_S.infoValue}>{plan.payment_term ? `${plan.payment_term} yrs` : '-'}</div></div>}
                                             {isIns && <div><div style={PDF_S.infoLabel}>Life Assured</div><div style={PDF_S.infoValue}>{plan.life_assured || '-'}</div></div>}
                                             {isIns && <div><div style={PDF_S.infoLabel}>Benefit Type</div><div style={PDF_S.infoValue}>{plan.benefit_type || '-'}</div></div>}
-                                            {!isIns && <div><div style={PDF_S.infoLabel}>Initial Investment</div><div style={PDF_S.infoValue}>{fmtCurrency(plan.initial_investment)}</div></div>}
-                                            {!isIns && <div><div style={PDF_S.infoLabel}>Contribution Amount</div><div style={PDF_S.infoValue}>{fmtCurrency(plan.contribution_amount)}</div></div>}
-                                            {!isIns && <div><div style={PDF_S.infoLabel}>Contribution Frequency</div><div style={PDF_S.infoValue}>{plan.contribution_frequency || '-'}</div></div>}
                                         </div>
 
                                         <p style={{ fontSize: '10px', color: '#666', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: '10px', marginBottom: '8px' }}>Valuation History</p>
@@ -765,8 +787,15 @@ const ExportReportModal: React.FC<ExportReportModalProps> = ({
                     <div className="pdf-page" style={PDF_S.page}>
                         <h2 style={PDF_S.sectionTitle}>4. Asset Allocation</h2>
                         <h4 style={PDF_S.subTitle}>4.1 Trend Visualisation</h4>
-                        <div style={{ height: '340px', marginBottom: '40px', background: '#fff', border: '1px solid #eee', padding: '10px', borderRadius: '8px' }}>
-                            <AssetAllocation client={client} mode="overview" dateRange={{ startDate, endDate }} isExporting={true} />
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '30px', marginBottom: '30px' }}>
+                            <div style={{ height: '420px', background: '#fff', border: '1px solid #eee', padding: '10px', borderRadius: '8px' }}>
+                                <p style={{ fontSize: '11px', fontWeight: 600, color: '#666', textAlign: 'center', margin: '0 0 8px' }}>Raw Value</p>
+                                <AssetAllocation client={client} mode="overview" dateRange={{ startDate, endDate }} isExporting={true} forceChartType="absolute" />
+                            </div>
+                            <div style={{ height: '420px', background: '#fff', border: '1px solid #eee', padding: '10px', borderRadius: '8px' }}>
+                                <p style={{ fontSize: '11px', fontWeight: 600, color: '#666', textAlign: 'center', margin: '0 0 8px' }}>Percentage</p>
+                                <AssetAllocation client={client} mode="overview" dateRange={{ startDate, endDate }} isExporting={true} forceChartType="percent" />
+                            </div>
                         </div>
                         {renderFooter(currentPage++, totalPages)}
                     </div>
@@ -783,12 +812,12 @@ const ExportReportModal: React.FC<ExportReportModalProps> = ({
                         <div key={`alloc-chunk-${chunkIdx}`} className="pdf-page" style={PDF_S.page}>
                             <h2 style={PDF_S.sectionTitle}>4. Asset Allocation</h2>
                             <h4 style={PDF_S.subTitle}>4.2 History by Asset Type</h4>
-                            <table style={PDF_S.table}>
+                            <table style={{ ...PDF_S.table, width: '100%', tableLayout: 'fixed' }}>
                                 <thead>
                                     <tr>
-                                        <th style={PDF_S.th}>Date</th>
-                                        {classes.map(c => <th key={c} style={{ ...PDF_S.th, textAlign: 'right' }}>{c}</th>)}
-                                        <th style={{ ...PDF_S.th, textAlign: 'right', fontWeight: 700 }}>Net Worth</th>
+                                        <th style={{ ...PDF_S.th, width: '60px' }}>Date</th>
+                                        {classes.map(c => <th key={c} style={{ ...PDF_S.th, textAlign: 'right', wordWrap: 'break-word', whiteSpace: 'normal' }}>{c}</th>)}
+                                        <th style={{ ...PDF_S.th, textAlign: 'right', fontWeight: 700, width: '80px' }}>Net Worth</th>
                                     </tr>
                                 </thead>
                                 <tbody>

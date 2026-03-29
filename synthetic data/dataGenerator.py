@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 fake = Faker()
 
 # Configuration
-NUM_CLIENTS = 30
+NUM_CLIENTS = 40
 NUM_USERS = 5  # 1 admin + 4 staff
 
 def generate_financial_data():
@@ -35,18 +35,18 @@ def generate_financial_data():
 
     DATE_TODAY = datetime.now().date()
 
-    # 0. Generate users (agents) - 1 admin, 4 staff
-    admin_names = ['Ryan Admin']  # Customize admin name
-    staff_first = ['Wei Ming', 'Priya', 'James', 'Sarah']
-    staff_last = ['Tan', 'Kumar', 'Lee', 'Wong']
+    # 0. Generate users (agents) - 1 admin, others staff
+    admin_names = ['Ryan Cheng']  # Customize admin name
     for i in range(NUM_USERS):
         is_admin = i == 0
         if is_admin:
             full_name = admin_names[0]
             email = 'admin@calibre.com'
         else:
-            full_name = f"{staff_first[i-1]} {staff_last[i-1]}"
-            email = f"{staff_first[i-1].lower()}.{staff_last[i-1].lower()}@calibre.com"
+            first = fake.first_name()
+            last = fake.last_name()
+            full_name = f"{first} {last}"
+            email = f"{first.lower()}.{last.lower()}@calibre.com"
         users.append({
             'user_id': str(uuid.uuid4()),
             'full_name': full_name,
@@ -92,7 +92,7 @@ def generate_financial_data():
         client_insurance_list = []
 
         # 2. Generate Investment Plans
-        for _ in range(np.random.choice(6, p=[0.05, 0.15, 0.3, 0.3, 0.15, 0.05])):
+        for _ in range(np.random.choice(6, p=[0.05, 0.1, 0.15, 0.25, 0.30, 0.15])):
             p_id = str(uuid.uuid4())
             p_type = np.random.choice(investment_types)
             status = np.random.choice(plan_statuses, p=[0.05, 0.8, 0.05, 0.0, 0.05, 0.05])
@@ -111,20 +111,11 @@ def generate_financial_data():
             tag = np.random.choice(investment_keywords)
             p_name = f"{fake.company()} {tag} Fund"
             
-            # Investments take 3-10% of salary
-            inv_ratio = np.random.uniform(0.03, 0.10)
-            cont_amt = round(base_salary * inv_ratio, 2) if base_salary > 0 else 0
-            cont_freq = np.random.choice(frequencies) if cont_amt > 0 else None
-            init_inv = round(base_salary * np.random.uniform(2, 6), 2) if base_salary > 0 else 5000
-
             inv_obj = {
                 'policy_id': p_id,
                 'client_id': c_id,
                 'policy_name': p_name,
                 'policy_type': p_type,
-                'initial_investment': round(init_inv, 2),
-                'contribution_amount': round(cont_amt, 2),
-                'contribution_frequency': cont_freq,
                 'start_date': plan_start_date,
                 'expiry_date': expiry_date,
                 'status': status
@@ -133,7 +124,7 @@ def generate_financial_data():
             client_investments_list.append(inv_obj)
 
         # 3. Generate Insurance Policies
-        for _ in range(np.random.choice(6, p=[0.05, 0.15, 0.3, 0.3, 0.15, 0.05])):
+        for _ in range(np.random.choice(6, p=[0.05, 0.1, 0.15, 0.25, 0.30, 0.15])):
             p_id = str(uuid.uuid4())
             p_type = np.random.choice(insurance_types, p=[0.5, 0.25, 0.25])
             status = np.random.choice(plan_statuses, p=[0.05, 0.8, 0.05, 0.0, 0.05, 0.05])
@@ -264,7 +255,7 @@ def generate_financial_data():
             'fin_expiry_date': fin_expiry,
             'languages_spoken': spoken_pg,
             'languages_written': written_pg,
-            'email': fake.email(),
+            'email': f"{client_first_name.lower()}.{client_last_name.lower()}@{fake.free_email_domain()}",
             'mobile_no': fake.numerify(text='8#######'),
             'home_no': fake.numerify(text='6#######') if np.random.random() < 0.5 else None,
             'office_no': fake.numerify(text='6#######') if np.random.random() < 0.3 else None,
@@ -280,11 +271,12 @@ def generate_financial_data():
             'last_updated': DATE_TODAY
         })
 
-        # Stable Investment Income (Linked to Portfolio Size)
-        # Assume ~2-4% dividend yield per year, converted to monthly income
-        total_initial_capital = sum(p['initial_investment'] for p in client_investments_list)
+        # Stable Investment Income 
+        # Assume ~2-4% dividend yield per year, mock baseline off of salary
+        has_investments = len(client_investments_list) > 0
         yield_rate = np.random.uniform(0.02, 0.04)
-        client_inv_income = round((total_initial_capital * yield_rate) / 12, 2) if total_initial_capital > 0 else 0
+        mock_capital = base_salary * np.random.uniform(5, 20) if has_investments else 0
+        client_inv_income = round((mock_capital * yield_rate) / 12, 2) if has_investments else 0
 
         # Family Generation
         client_family_list = []
@@ -381,31 +373,31 @@ def generate_financial_data():
             years_from_start = (meeting_date - simulation_start).days / 365.25
             current_salary = base_salary * (1.03 ** years_from_start)
 
-            # Employee CPF Rates (only this affects take-home cashflow)
-            cpf_rate = 0.20
-            if client_age > 70: cpf_rate = 0.05
-            elif client_age > 65: cpf_rate = 0.075
-            elif client_age > 60: cpf_rate = 0.1
-            elif client_age > 55: cpf_rate = 0.125
-
-            # Effective Tax Rate
-            tax_rate = 0
-            if current_salary > 8000: tax_rate = 0.08
-            elif current_salary > 4000: tax_rate = 0.04
-            elif current_salary > 2500: tax_rate = 0.01
+            # Simplified Tax Rate (1-5% generic approximation)
+            tax_rate = np.random.uniform(0.01, 0.05)
 
             # Investment Income Growth (Gradual 4% CAGR)
             current_inv_income = client_inv_income * (1.04 ** years_from_start)
             
-            # Lifestyle Expenses linked to CURRENT salary
-            current_household_expenses = 500 + (len(client_family_list) * 200) + (current_salary * 0.1) + total_upkeep
-
-            # No mortgages for students/unemployed/under-25s usually
-            current_p_loan = client_mortgage if years_from_start < mortgage_end_year else 0
-            p_expenses = (current_household_expenses * 0.2) if (has_property or np.random.random() < 0.2) else 0
+            # Lifestyle Expenses: 5% chance of a big ticket spike, otherwise capped to encourage positive net position (90% of the time)
+            base_expenses = 500 + (len(client_family_list) * 200) + (current_salary * 0.1) + total_upkeep
+            is_spike = np.random.random() < 0.05
+            spike_amt = np.random.uniform(3000, 15000) if is_spike else 0
             
-            # If they are a landlord, they definitely have property expenses
-            if client_rent > 0: p_expenses = max(p_expenses, 300) 
+            current_household_expenses = base_expenses * np.random.uniform(0.9, 1.1) + spike_amt
+            
+            if not is_spike:
+                if np.random.random() > 0.1:
+                    # Lower Cap: Standard disciplined clients keep expenses to ~30% of gross income
+                    max_safe_expense = max(500, current_salary * 0.3)
+                else:
+                    # Higher Cap: High-spenders/Lifestyle creep keep expenses to ~60% of gross income
+                    max_safe_expense = max(1000, current_salary * 0.6)
+                
+                current_household_expenses = min(current_household_expenses, max_safe_expense)
+
+            # Simplified Property Expenses
+            p_expenses = 300 if client_rent > 0 else (current_household_expenses * 0.2 if has_property else 0)
 
             # Only pay if the plan has started AND hasn't expired
             def get_monthly_normalized_amt(p, current_date, amt_key, freq_key):
@@ -421,7 +413,8 @@ def generate_financial_data():
                 return amt * freq_map[freq] / 12
 
             insurance_total = sum(get_monthly_normalized_amt(p, meeting_date, 'premium_amount', 'payment_frequency') for p in client_insurance_list)
-            investment_total = sum(get_monthly_normalized_amt(p, meeting_date, 'contribution_amount', 'contribution_frequency') for p in client_investments_list)
+            # Without contribution metadata, regular cashflow investments are mocked directly
+            investment_total = round(current_salary * np.random.uniform(0.01, 0.05), 2) if client_investments_list else 0
 
             # Rental Income Growth (2% CAGR) + Noise
             current_rental_income = client_rent * (1.02 ** years_from_start)
@@ -439,9 +432,9 @@ def generate_financial_data():
                 'income_tax': round(current_salary * tax_rate, 2),
                 'insurance_premiums': round(insurance_total, 2),
                 'property_expenses': round(p_expenses * (1 + np.random.uniform(-0.1, 0.1)), 2),
-                'property_loan_repayment': round(current_p_loan, 2),
-                'non_property_loan_repayment': round(current_salary * np.random.uniform(0.05, 0.1), 2) if np.random.random() < 0.3 else 0,
-                'cpf_contribution_total': round(min(current_salary, 8000) * cpf_rate, 2),
+                'property_loan_repayment': round(client_mortgage, 2),
+                'non_property_loan_repayment': round(current_salary * np.random.uniform(0.0, 0.05), 2),
+                'cpf_contribution_total': round(current_salary * np.random.uniform(0.1, 0.2), 2),
                 'regular_investments': round(investment_total, 2)
             })
 
@@ -450,20 +443,15 @@ def generate_financial_data():
                 if inv['start_date'] <= meeting_date and (inv['expiry_date'] is None or meeting_date <= inv['expiry_date']):
                     years_passed = (meeting_date - inv['start_date']).days / 365.25
                     
-                    # Calculate total contributions up to this date
-                    total_contributions = 0
-                    if inv['contribution_amount'] > 0:
-                        periods_per_year = freq_map[inv['contribution_frequency']]
-                        total_contributions = inv['contribution_amount'] * (years_passed * periods_per_year)
-                    
-                    capital_invested = inv['initial_investment'] + total_contributions
-                    growth = (1.06 ** years_passed) * (1 + np.random.uniform(-0.05, 0.05))
+                    # Purely snapshot-based valuation using random walk and time passed (no initial investment data used)
+                    base_val = 5000 + (base_salary * years_passed * 0.5)
+                    growth = (1.06 ** years_passed) * (1 + np.random.uniform(-0.1, 0.1))
 
                     investment_valuations.append({
                         'valuation_id': str(uuid.uuid4()),
                         'policy_id': inv['policy_id'],
                         'as_of_date': meeting_date,
-                        'current_value': round(capital_invested * growth, 2)
+                        'current_value': round(base_val * growth, 2)
                     })
 
             # Insurance Valuations (Only Life Insurance)

@@ -234,7 +234,16 @@ export const RiskAnalysis: React.FC<InsightsProps> = ({
                         <InlineCopyButton onClick={onCopyClicked} isCopied={copied} visible={riskOutputHovered} />
                     )}
                     <div className="ai-analysis-scroll-area">
-                        {error && <p className="error-text">{error}</p>}
+                        {error && (
+                            <div className="error-text">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                </svg>
+                                <span>{error}</span>
+                            </div>
+                        )}
                         {mode === 'focused' && (
                             <div className="structured-analysis">
                                 {summary && (
@@ -345,22 +354,13 @@ export const RiskAnalysis: React.FC<InsightsProps> = ({
 
                 {/* Outdated Analysis Warning Indicator */}
                 {cache?.generatedPeriod && dateRange && (cache.generatedPeriod.startDate !== dateRange.startDate || cache.generatedPeriod.endDate !== dateRange.endDate) && (
-                    <div style={{
-                        padding: '8px 12px',
-                        background: 'rgba(155, 34, 38, 0.05)',
-                        border: '1.2px dashed rgba(155, 34, 38, 0.35)',
-                        borderRadius: '8px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        marginTop: '0.25rem'
-                    }}>
+                    <div className="standard-error-box" style={{ marginTop: '0.25rem'}}>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9B2226" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                             <circle cx="12" cy="12" r="10"></circle>
                             <line x1="12" y1="8" x2="12" y2="12"></line>
                             <line x1="12" y1="16" x2="12.01" y2="16"></line>
                         </svg>
-                        <span style={{ fontSize: 'var(--text-sm)', color: '#9B2226', fontWeight: 'var(--font-semibold)', flex: 1 }}>
+                        <span style={{ flex: 1 }}>
                             This analysis was generated for a different period ({new Date(cache.generatedPeriod.startDate).toLocaleDateString()} - {new Date(cache.generatedPeriod.endDate).toLocaleDateString()})
                         </span>
                         <Button

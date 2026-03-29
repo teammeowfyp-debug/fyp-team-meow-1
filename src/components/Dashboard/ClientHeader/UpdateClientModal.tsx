@@ -118,7 +118,16 @@ export const UpdateClientModal: React.FC<UpdateClientModalProps> = ({ clientId, 
                 </div>
               )}
 
-              {error && <p style={{ color: '#c0392b', fontWeight: 600, marginBottom: '1.5rem', fontSize: 'var(--text-sm)', textAlign: 'center' }}>⚠ {error}</p>}
+              {error && (
+                <div className="standard-error-box" style={{ margin: '0 auto 1.5rem', justifyContent: 'center', width: 'fit-content' }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                  </svg>
+                  <span>{error}</span>
+                </div>
+              )}
             </div>
           )}
 
@@ -139,38 +148,38 @@ export const UpdateClientModal: React.FC<UpdateClientModalProps> = ({ clientId, 
           {/* REVIEW STEP - Form sections inside the scrollable modal-body */}
           {step === 'review' && extracted && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginTop: '1.5rem', flex: 1 }}>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  background: 'rgba(197,179,88,0.05)',
-                  border: '1px dashed var(--primary, #c5b358)',
-                  borderRadius: '12px',
-                  padding: '0.75rem 1.25rem',
-                }}>
-                  <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <div style={{ color: 'var(--primary)', opacity: 0.8 }}>
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14 2 14 8 20 8"></polyline>
-                      </svg>
-                    </div>
-                    <div>
-                      <h3 style={{ margin: 0, fontSize: 'var(--text-base)', color: 'var(--secondary, #333)', fontWeight: 600 }}>Autopopulate via PDF</h3>
-                      <p style={{ margin: '0.25rem 0', fontSize: 'var(--text-xs)', color: 'var(--text-muted, #888)' }}>
-                        Extract data from a Great Eastern life plan to save time.
-                      </p>
-                    </div>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                background: 'rgba(197,179,88,0.05)',
+                border: '1px dashed var(--primary, #c5b358)',
+                borderRadius: '12px',
+                padding: '0.75rem 1.25rem',
+              }}>
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <div style={{ color: 'var(--primary)', opacity: 0.8 }}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                      <polyline points="14 2 14 8 20 8"></polyline>
+                    </svg>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="small"
-                    onClick={() => setStep('upload')}
-                    style={{ borderRadius: '10px' }}
-                  >
-                    Upload PDF
-                  </Button>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: 'var(--text-base)', color: 'var(--secondary, #333)', fontWeight: 600 }}>Autopopulate via PDF</h3>
+                    <p style={{ margin: '0.25rem 0', fontSize: 'var(--text-xs)', color: 'var(--text-muted, #888)' }}>
+                      Extract data from a Great Eastern life plan to save time.
+                    </p>
+                  </div>
                 </div>
+                <Button
+                  variant="outline"
+                  size="small"
+                  onClick={() => setStep('upload')}
+                  style={{ borderRadius: '10px' }}
+                >
+                  Upload PDF
+                </Button>
+              </div>
 
               <div className="tabs-switcher">
                 <Button variant="tab" isActive={activeTab === 'personal'} onClick={() => setActiveTab('personal')}>Personal Information</Button>
@@ -233,7 +242,16 @@ export const UpdateClientModal: React.FC<UpdateClientModalProps> = ({ clientId, 
                 />
               )}
 
-              {error && <p style={{ color: '#e74c3c', fontSize: 'var(--text-sm)', fontWeight: 500 }}>⚠ {error}</p>}
+              {error && (
+                <div className="error-text">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                  </svg>
+                  <span>{error}</span>
+                </div>
+              )}
             </div>
           )}
 
@@ -266,11 +284,12 @@ export const UpdateClientModal: React.FC<UpdateClientModalProps> = ({ clientId, 
         <div className="modal-footer" style={{ borderTop: '1px solid var(--border, #eee)', padding: '1.5rem 2rem', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
           {step === 'review' ? (
             <>
-              <Button variant="ghost" onClick={onClose} style={{ minWidth: '100px' }}>Cancel</Button>
               {extracted && (
-                <Button variant="primary" onClick={handleApply} style={{ minWidth: '200px' }}>
-                  Update Client Profile
-                </Button>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+                  <Button variant="outline" onClick={handleApply} style={{ minWidth: '200px' }}>
+                    Update Client Profile
+                  </Button>
+                </div>
               )}
             </>
           ) : (
@@ -278,7 +297,7 @@ export const UpdateClientModal: React.FC<UpdateClientModalProps> = ({ clientId, 
               <Button variant="ghost" size="medium" onClick={() => setStep('review')} style={{ minWidth: '100px' }}>
                 Cancel
               </Button>
-              <Button variant="primary" size="medium" onClick={handleAnalyse} disabled={!file || step === 'extracting'} style={{ minWidth: '200px' }}>
+              <Button variant="outline" size="medium" onClick={handleAnalyse} disabled={!file || step === 'extracting'} style={{ minWidth: '200px' }}>
                 {step === 'extracting' ? 'Extracting...' : 'Extract'}
               </Button>
             </>

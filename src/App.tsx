@@ -79,7 +79,7 @@ function AppContent() {
               <RequireAuth>
                 <AddClientPage onSuccess={(newId) => {
                   if (newId) window.location.href = `/${newId}`;
-                }} onCancel={() => window.history.back()} />
+                }} />
               </RequireAuth>
             }
           />

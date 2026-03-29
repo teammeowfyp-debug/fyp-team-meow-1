@@ -85,8 +85,8 @@ const AddUser: React.FC = () => {
       </div>
 
       {error && (
-        <div className="status-toast status-toast-error">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <div className="standard-error-box" style={{ marginBottom: '1rem' }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="10"></circle>
             <line x1="12" y1="8" x2="12" y2="12"></line>
             <line x1="12" y1="16" x2="12.01" y2="16"></line>
@@ -161,9 +161,11 @@ const AddUser: React.FC = () => {
           />
         </div>
 
-        <button type="submit" className="btn-base btn-primary w-full btn-large" disabled={loading} style={{ marginTop: '0.5rem' }}>
-          {loading ? 'Processing...' : 'Create User'}
-        </button>
+        <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1.5rem', marginTop: '1.5rem' }}>
+          <button type="submit" className="btn-base btn-primary w-full btn-large" disabled={loading}>
+            {loading ? 'Processing...' : 'Create User'}
+          </button>
+        </div>
       </form>
     </div>
   )

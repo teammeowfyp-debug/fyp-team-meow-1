@@ -353,3 +353,35 @@ button:disabled {
   padding: 4px;
   gap: 0;
 }
+
+/* Standardized Error/Warning Boxes — Corporate Executive Style */
+.error-text, .standard-error-box {
+  background: rgba(155, 34, 38, 0.05);
+  border: 1.2px dashed #9B2226;
+  border-radius: 8px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #9B2226 !important;
+  font-size: var(--text-sm) !important;
+  font-weight: 600 !important;
+  width: auto;
+  line-height: 1.4;
+}
+
+.error-text svg, .standard-error-box svg {
+  flex-shrink: 0;
+  opacity: 0.9;
+}
+
+.select-error {
+  border-color: var(--danger) !important;
+  background: rgba(155, 34, 38, 0.05) !important;
+}
+
+.custom-select-trigger.disabled {
+  background: rgba(0,0,0,0.03) !important;
+  cursor: default;
+  opacity: 0.8;
+}

@@ -17,6 +17,8 @@ interface CustomSelectProps {
     wrapperStyle?: React.CSSProperties;
     placeholder?: string;
     className?: string;
+    error?: boolean;
+    disabled?: boolean;
     /** If true, calls stopPropagation/preventDefault on clicks to prevent parent interaction */
     preventParentInteraction?: boolean;
 }
@@ -33,6 +35,8 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     wrapperStyle,
     placeholder = 'Select...',
     className = '',
+    error = false,
+    disabled = false,
     preventParentInteraction = false
 }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -49,11 +53,12 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     }, []);
 
     const isSelected = (val: string) => {
-        if (multi && Array.isArray(value)) return value.includes(val);
+        if (multi && Array.isArray(value)) return (value as string[]).includes(val);
         return value === val;
     };
 
     const handleSelect = (val: string, e: React.MouseEvent) => {
+        if (disabled) return;
         if (preventParentInteraction) {
             e.stopPropagation();
             e.preventDefault();
@@ -82,19 +87,22 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
 
     const getTriggerLabel = () => {
         if (!multi) {
-            return options.find(o => o.value === value)?.label || value || placeholder;
+            const opt = options.find(o => o.value === value);
+            return opt ? opt.label : (value as string) || placeholder;
         }
         
         const currentValues = Array.isArray(value) ? value : [];
         if (currentValues.includes('All')) return 'All';
         if (currentValues.length === 0) return placeholder;
         if (currentValues.length === 1) {
-             return options.find(o => o.value === currentValues[0])?.label || currentValues[0];
+             const opt = options.find(o => o.value === currentValues[0]);
+             return opt ? opt.label : currentValues[0];
         }
         return `${currentValues.length} Selected`;
     };
 
     const handleTriggerClick = (e: React.MouseEvent) => {
+        if (disabled) return;
         if (preventParentInteraction) {
             e.stopPropagation();
             e.preventDefault();
@@ -106,7 +114,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
 
     return (
         <div 
-            className={`filter-group ${className}`} 
+            className={`filter-group ${className} ${disabled ? 'disabled' : ''}`} 
             ref={dropdownRef} 
             style={style}
             onMouseDown={preventParentInteraction ? (e) => e.stopPropagation() : undefined}
@@ -115,16 +123,18 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
             {label && <label>{label}</label>}
             <div className="custom-select-wrapper" style={{ width: '100%', ...wrapperStyle }}>
                 <div
-                    className={`custom-select-trigger ${isOpen ? 'open' : ''}`}
+                    className={`custom-select-trigger ${isOpen ? 'open' : ''} ${error ? 'select-error' : ''} ${disabled ? 'disabled' : ''}`}
                     onClick={handleTriggerClick}
                     style={triggerStyle}
                 >
-                    <span>{getTriggerLabel()}</span>
-                    <svg className="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <span style={{ color: !value || (Array.isArray(value) && value.length === 0) ? 'var(--text-muted)' : 'inherit' }}>
+                        {getTriggerLabel()}
+                    </span>
+                    <svg className="chevron" viewBox="0 0 24 24" stroke="currentColor" fill="none">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                     </svg>
                 </div>
-                {isOpen && (
+                {isOpen && !disabled && (
                     <div className="custom-select-options glass-card" style={optionsStyle}>
                         {options.map(opt => (
                             <div
@@ -133,6 +143,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
                                 onClick={(e) => handleSelect(opt.value, e)}
                             >
                                 {opt.label}
+                                {isSelected(opt.value) && <span>✓</span>}
                             </div>
                         ))}
                     </div>

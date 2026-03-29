@@ -428,7 +428,7 @@
 
 .status-pill.lapsed,
 .status-pill.void {
-    background: rgba(239, 68, 68, 0.15);
+    background: rgba(155, 34, 38, 0.15);
     color: var(--danger);
 }
 
