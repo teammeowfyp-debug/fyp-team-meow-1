@@ -1,73 +1,31 @@
-import { GoogleGenAI, Type, ThinkingLevel } from '@google/genai'
-import { env } from '../config/env.js'
+import { Type } from '@google/genai'
+import { generateGeminiJson } from './geminiCore.js'
 
-let ai = null
-function getAi() {
-  if (!ai && env.geminiApiKey) {
-    ai = new GoogleGenAI({ apiKey: env.geminiApiKey })
-  }
-  return ai
-}
+const SYSTEM_INSTRUCTION_BASE = `Role: You are a Senior Financial Planning Consultant and Risk Strategist.
 
-const SYSTEM_INSTRUCTION_BASE = `Role: You are a Financial Planning Consultant and Investment Analyst.
+Analytical Framework (The 5 Core Pillars):
+1. Temporal Context: Analyze the client's financial state specifically based on the selected analysis period.
+2. Allocation Alignment: Compare the current portfolio's volatility against the desired risk level in the profile.
+3. Risk Capacity: Determine if there is sufficient liquidity (cashflow net position and emergency funds) to support the desired risk appetite.
+4. Structural Integrity: Identify conflicts such as illiquid assets, plan overlaps, or insurance coverage holes.
+5. Gap Synthesis: Pinpoint the specific delta between the client's current reality and their target goals.
 
-Objective: Synthesize data to determine if the client's current financial reality matches their stated risk appetite.
+Constraints:
+- Response MUST be professional and analytical.
+- Do NOT hallucinate data — only reference financial figures from the provided context.
 
-Data Inputs for Synthesis:
-- Risk Profile Description
-- Asset Allocation
-- Cashflow
-- Plans Held
+Output Requirements (FORMATTING IS CRITICAL):
+- Do NOT use category headers or labels (e.g., "Structural Gap:").
+- Do NOT use manual bullets like "-", "•", or "1.".
+- FOR EACH SECTION: Return multiple sentences, each on its OWN NEW LINE. I want a raw block of text where every newline represents a new insight for my frontend to parse. Do not concatenate points into paragraphs.
 
-Analysis Requirements and Logic:
-- Allocation Alignment: Does the current Asset Allocation match the volatility expected of their Risk Profile?
-- Capacity vs. Tolerance: Does the client’s Cashflow provide the capacity to take the risk their Risk Profile suggests?
-- Structural Analysis: Review Plans Held. Are there illiquid assets or locked-in plans that conflict with the client's need for flexibility?
-- The "Gap": Identify the specific delta between where they are and where their profile says they should be.
+Output Sections:`
 
-Output:`
-
-function buildContents(params) {
-  return [
-    {
-      role: 'user',
-      parts: [
-        {
-          text: `Risk Profile Description: ${params.riskProfileDescription}
+function buildUserPrompt(params) {
+  return `Risk Profile Description: ${params.riskProfileDescription}
 - Asset Allocation: ${params.assetAllocation}
 - Cashflow: ${params.cashflow}
-- Plans Held: ${params.plansHeld}`,
-        },
-      ],
-    },
-  ]
-}
-
-async function generateJson({ params, schema, instruction, fallback }) {
-  if (!env.geminiApiKey) {
-    return fallback
-  }
-
-  const config = {
-    thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
-    responseMimeType: 'application/json',
-    responseSchema: schema,
-    systemInstruction: [{ text: `${SYSTEM_INSTRUCTION_BASE}\n${instruction}\n- Ensure response is as concise as possible.` }],
-  }
-
-  const activeAi = getAi()
-  const res = await activeAi.models.generateContent({
-    model: env.geminiModel,
-    config,
-    contents: buildContents(params),
-  })
-
-  const text = res?.text ?? ''
-  try {
-    return JSON.parse(text)
-  } catch {
-    return { _raw: text }
-  }
+- Plans Held: ${params.plansHeld}`
 }
 
 export async function generateRiskSummary(params) {
@@ -76,9 +34,17 @@ export async function generateRiskSummary(params) {
     required: ['Executive Summary'],
     properties: { 'Executive Summary': { type: Type.STRING } },
   }
-  const instruction = "- Executive Summary: A 2-sentence executive summary of the client's risk alignment"
+  const instruction = "- Executive Summary: A 3-sentence executive summary of the client's risk alignment"
   const fallback = { "Executive Summary": "AI functions are currently disabled to save tokens." }
-  return await generateJson({ params, schema, instruction, fallback })
+
+  return await generateGeminiJson({
+    params,
+    schema,
+    systemInstruction: `${SYSTEM_INSTRUCTION_BASE}\n${instruction}`,
+    userText: buildUserPrompt(params),
+    fallback,
+    serviceName: 'GeminiRisk'
+  })
 }
 
 export async function generateRiskAnalysis(params) {
@@ -91,14 +57,21 @@ export async function generateRiskAnalysis(params) {
       Recommendations: { type: Type.STRING },
     },
   }
-  const instruction = `- Key Insights: Concise insights based on synthesized data.
-- Potential Risks: Any immediate dangers.
-- Recommendations: Clear actions for the advisor to take.`
+  const instruction = `- Key Insights: High-level synthesis of alignment. Focus on 'Risk Capacity' vs 'Risk Tolerance'.
+- Potential Risks: Highlight immediate vulnerabilities (e.g., liquidity gaps, concentration, or extreme misalignments).
+- Recommendations: Specific, prioritized actions for the advisor to discuss.`
   const fallback = {
     "Key Insights": "AI functions are currently disabled to save tokens.",
     "Potential Risks": "AI functions are currently disabled to save tokens.",
     "Recommendations": "AI functions are currently disabled to save tokens."
   }
-  return await generateJson({ params, schema, instruction, fallback })
-}
 
+  return await generateGeminiJson({
+    params,
+    schema,
+    systemInstruction: `${SYSTEM_INSTRUCTION_BASE}\n${instruction}`,
+    userText: buildUserPrompt(params),
+    fallback,
+    serviceName: 'GeminiRisk'
+  })
+}

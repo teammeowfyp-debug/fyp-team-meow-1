@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { useAuth } from '../lib/AuthProvider'
 import { IDLE_LOGOUT_ACK_KEY } from '../lib/useIdleLogout'
+import logo from '../assets/calibre logo.png'
 import './Login.css'
 
 const Login: React.FC = () => {
@@ -61,9 +62,9 @@ const Login: React.FC = () => {
           </div>
         </div>
       )}
-      <div className="login-card glass-card animate-fade">
-        <header className="login-header">
-          <h2>Welcome Back</h2>
+      <div className="login-card glass-card animate-fade-in">
+        <header className="login-header" style={{ textAlign: 'center' }}>
+          <img src={logo} alt="Calibre Advisory" style={{ height: '48px', width: 'auto', objectFit: 'contain', margin: '0 auto 0.5rem auto', display: 'block' }} />
           <span className="login-subtitle">Sign in to manage your clients</span>
         </header>
 

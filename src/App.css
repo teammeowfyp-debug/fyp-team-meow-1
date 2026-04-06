@@ -3,6 +3,11 @@
   width: 100%;
 }
 
+.app-wrapper > main {
+  width: 100%;
+  padding-top: 72px;
+}
+
 #root {
   width: 100%;
 }
@@ -32,7 +37,7 @@
 
 .idle-warning-popup h2 {
   margin: 0 0 0.75rem;
-  font-size: 1.25rem;
+  font-size: var(--text-xl);
   font-family: var(--font-heading);
   color: var(--secondary);
   font-weight: 700;
@@ -41,13 +46,13 @@
 .idle-warning-popup p {
   margin: 0 0 1.5rem;
   color: var(--text-muted);
-  font-size: 0.95rem;
+  font-size: var(--text-base);
   line-height: 1.5;
 }
 
 .idle-warning-stay {
   padding: 0.7rem 1.5rem;
-  font-size: 0.9rem;
+  font-size: var(--text-sm);
   font-weight: 600;
   cursor: pointer;
   background: var(--primary);

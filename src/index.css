@@ -1,10 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap');
 
 :root {
   /* Dynamic Color Palette */
   --primary: #C5B358;
   /* Antique Gold */
-  --primary-glow: rgba(197, 179, 88, 0.15);
+  --primary-glow: rgba(197, 179, 88, 0.2);
   --secondary: #1A1A1A;
   /* Deep Charcoal */
   --accent: #C5B358;
@@ -25,9 +25,36 @@
   /* Deep Charcoal */
   --text-muted: #555555;
 
-  /* Typography */
+  /* Typography Scale */
+  --text-xs: 0.75rem;
+  /* 12px */
+  --text-sm: 0.875rem;
+  /* 14px */
+  --text-base: 1rem;
+  /* 16px */
+  --text-lg: 1.125rem;
+  /* 18px */
+  --text-xl: 1.25rem;
+  /* 20px */
+  --text-2xl: 1.5rem;
+  /* 24px */
+  --text-3xl: 1.875rem;
+  /* 30px */
+  --text-4xl: 2.25rem;
+  /* 36px */
+  --text-5xl: 3rem;
+  /* 48px */
+
   --font-body: 'Inter', system-ui, -apple-system, sans-serif;
   --font-heading: 'Outfit', sans-serif;
+
+  /* Font Weights */
+  --font-light: 300;
+  --font-regular: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  --font-black: 800;
 
   /* Effects */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
@@ -48,6 +75,19 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+html {
+  overflow-y: scroll;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
 }
 
 body {
@@ -90,17 +130,19 @@ h6 {
   transition: all 0.3s ease;
 }
 
-.glass-card:hover {
+.glass-card:not(.no-hover):hover {
   border-color: var(--primary);
   transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.25);
 }
 
+
+
 /* Animations */
-@keyframes fadeIn {
+@keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(15px);
   }
 
   to {
@@ -109,8 +151,115 @@ h6 {
   }
 }
 
+.animate-fade-in {
+  animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+.stagger-5 { animation-delay: 0.5s; }
+.stagger-6 { animation-delay: 0.6s; }
+
+
+/* Standardized Buttons */
+.btn-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-weight: var(--font-semibold);
+  font-size: var(--text-xs);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  gap: 8px;
+  border: 1px solid transparent;
+  padding: 8px 16px;
+  white-space: nowrap;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--primary-glow);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--primary);
+  border: 2px solid var(--primary);
+}
+
+.btn-outline:hover:not(:disabled) {
+  background: var(--primary-glow);
+  transform: translateY(-1px);
+}
+
+.btn-tab {
+  flex: 1;
+  padding: 0.75rem 2rem;
+  border: none !important;
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: 10px;
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+}
+
+.btn-tab.active {
+  background: var(--primary) !important;
+  color: #fff !important;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-small {
+  padding: 4px 12px;
+  font-size: 10px;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+}
+
+.btn-large {
+  padding: 12px 24px;
+  font-size: var(--text-sm);
+  border-radius: 10px;
+}
+
+.btn-disabled,
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.w-full {
+  width: 100% !important;
+}
+
 .animate-fade {
-  animation: fadeIn 0.6s ease-out forwards;
+  animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 /* Minimalist Scrollbar */
@@ -130,4 +279,109 @@ h6 {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--primary);
+}
+
+/* ── Tool Page Layout (Shared across Scenario, Admin, Add Client) ── */
+.scenario-page {
+  padding: 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.scenario-hero {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem 2rem;
+  background: #fff;
+  transition: all 0.3s ease;
+  cursor: default;
+}
+
+.scenario-hero-icon {
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.scenario-title {
+  font-size: var(--text-2xl);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0 0 0.25rem;
+}
+
+.scenario-subtitle {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.5;
+  opacity: 0.9;
+}
+
+.scenario-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.scenario-form-card {
+  padding: 1.75rem;
+}
+
+.scenario-section-heading {
+  font-size: var(--text-base);
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0 0 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Tabs switcher for manage users and tool pages */
+.tabs-switcher {
+  display: flex;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.04);
+  border-radius: 12px;
+  padding: 4px;
+  gap: 0;
+}
+
+/* Standardized Error/Warning Boxes — Corporate Executive Style */
+.error-text, .standard-error-box {
+  background: rgba(155, 34, 38, 0.05);
+  border: 1.2px dashed #9B2226;
+  border-radius: 8px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #9B2226 !important;
+  font-size: var(--text-sm) !important;
+  font-weight: 600 !important;
+  width: auto;
+  line-height: 1.4;
+}
+
+.error-text svg, .standard-error-box svg {
+  flex-shrink: 0;
+  opacity: 0.9;
+}
+
+.select-error {
+  border-color: var(--danger) !important;
+  background: rgba(155, 34, 38, 0.05) !important;
+}
+
+.custom-select-trigger.disabled {
+  background: rgba(0,0,0,0.03) !important;
+  cursor: default;
+  opacity: 0.8;
 }

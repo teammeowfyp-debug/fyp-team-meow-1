@@ -1,8 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import Dashboard from '../components/Dashboard';
+import Dashboard from '../components/Dashboard/Dashboard';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../lib/AuthProvider';
 
@@ -17,23 +16,24 @@ vi.mock('../lib/AuthProvider', () => ({
     useAuth: vi.fn(),
 }));
 
-vi.mock('../components/ClientHeader', () => ({
+vi.mock('../components/Dashboard/ClientHeader', () => ({
     default: () => <div data-testid="client-header">ClientHeader Mock</div>,
 }));
 
-vi.mock('../components/quadrants/PlansHeld', () => ({
+vi.mock('../components/Dashboard/PlansHeld', () => ({
     default: () => <div data-testid="plans-held">PlansHeld Mock</div>,
 }));
 
-vi.mock('../components/quadrants/RiskProfile', () => ({
-    default: () => <div data-testid="risk-profile">RiskProfile Mock</div>,
+vi.mock('../components/Dashboard/Insights', () => ({
+    __esModule: true,
+    default: () => <div data-testid="risk-profile">Insights Mock</div>,
 }));
 
-vi.mock('../components/quadrants/Cashflow', () => ({
+vi.mock('../components/Dashboard/Cashflow', () => ({
     default: () => <div data-testid="cashflow">Cashflow Mock</div>,
 }));
 
-vi.mock('../components/quadrants/AssetAllocation', () => ({
+vi.mock('../components/Dashboard/AssetAllocation', () => ({
     default: () => <div data-testid="asset-allocation">AssetAllocation Mock</div>,
 }));
 
@@ -78,6 +78,7 @@ describe('Dashboard Data Mapping Logic', () => {
                     policy_id: 'inv-1',
                     policy_name: 'Tech Fund',
                     policy_type: 'Equities',
+                    status: 'Active',
                     start_date: '2020-01-01',
                     expiry_date: '2030-01-01',
                     investment_valuations: [{ current_value: 10000, as_of_date: '2023-01-01' }]
@@ -88,6 +89,7 @@ describe('Dashboard Data Mapping Logic', () => {
                     policy_id: 'ins-1',
                     policy_name: 'Life Plan',
                     policy_type: 'Whole Life',
+                    status: 'Active',
                     start_date: '2021-01-01',
                     expiry_date: '2050-01-01',
                     sum_assured: 500000,

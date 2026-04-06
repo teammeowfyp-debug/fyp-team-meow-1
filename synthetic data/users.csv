@@ -1,6 +1,6 @@
 user_id,full_name,email,role,admin
-2c33aa34-05e1-42d5-8a8a-ab8861778a33,Ryan Admin,admin@calibre.com,admin,True
-8f1344cd-30c4-4cee-8251-0f3307cf0cfa,Wei Ming Tan,wei ming.tan@calibre.com,staff,False
-eb99ad2e-5061-45e3-a17e-54cc7907f1b8,Priya Kumar,priya.kumar@calibre.com,staff,False
-eb50e7b4-c4e1-4766-861d-241d1a902838,James Lee,james.lee@calibre.com,staff,False
-2d1dea40-cab8-4219-8420-2f083fae6369,Sarah Wong,sarah.wong@calibre.com,staff,False
+8bbe0782-82b8-47d3-8eae-c704122bb281,Ryan Cheng,admin@calibre.com,admin,True
+3770f878-1cb9-432b-8fec-135dca096f63,Deborah Kim,deborah.kim@calibre.com,staff,False
+4fe8c159-878f-4556-b391-1af37d040a01,Erik Rodriguez,erik.rodriguez@calibre.com,staff,False
+20a4bde5-b3dc-4d3e-9838-30efc71ae755,Kristin Richards,kristin.richards@calibre.com,staff,False
+92ff7ca8-a16b-41f6-95ed-1d46c5764d3d,Jeremy Allen,jeremy.allen@calibre.com,staff,False
