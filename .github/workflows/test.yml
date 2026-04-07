@@ -21,6 +21,9 @@ jobs:
         
     - name: Install dependencies
       run: npm ci || npm install
+
+    - name: Typecheck app (excludes test-only files in tsconfig.app.json)
+      run: npm run typecheck
       
     - name: Run Vitest
       run: npm run test
