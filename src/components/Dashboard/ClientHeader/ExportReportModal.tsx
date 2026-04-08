@@ -159,6 +159,28 @@ const ExportReportModal: React.FC<ExportReportModalProps> = ({
         setIsExporting(true);
         setStatusText('Preparing Document...');
 
+        // showSaveFilePicker must run before any other await: the browser only allows it during a user gesture.
+        let saveHandle: FileSystemFileHandle | undefined;
+        if ('showSaveFilePicker' in window) {
+            try {
+                // @ts-expect-error File System Access API
+                saveHandle = await window.showSaveFilePicker({
+                    suggestedName: filename || 'Report.pdf',
+                    types: [{ description: 'PDF Document', accept: { 'application/pdf': ['.pdf'] } }],
+                });
+            } catch (err: unknown) {
+                const e = err as { name?: string };
+                if (e.name === 'AbortError') {
+                    setIsExporting(false);
+                    return;
+                }
+                console.error('Failed to generate report:', err);
+                alert('An error occurred during export. Please check the console for details.');
+                setIsExporting(false);
+                return;
+            }
+        }
+
         try {
             await new Promise(r => setTimeout(r, 1000));
 
@@ -204,13 +226,8 @@ const ExportReportModal: React.FC<ExportReportModalProps> = ({
             setStatusText('Saving PDF File...');
             const pdfBlob = pdf.output('blob');
 
-            if ('showSaveFilePicker' in window) {
-                // @ts-ignore
-                const handle = await window.showSaveFilePicker({
-                    suggestedName: filename || 'Report.pdf',
-                    types: [{ description: 'PDF Document', accept: { 'application/pdf': ['.pdf'] } }],
-                });
-                const writable = await handle.createWritable();
+            if (saveHandle) {
+                const writable = await saveHandle.createWritable();
                 await writable.write(pdfBlob);
                 await writable.close();
             } else {
