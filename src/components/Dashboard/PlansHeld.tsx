@@ -57,7 +57,7 @@ const PlansHeld: React.FC<PlansHeldProps> = ({ client, mode = 'overview', dateRa
 
     return (
         <>
-            <section className="glass-card quadrant">
+            <section className={`glass-card quadrant ${mode === 'focused' ? 'no-hover' : ''}`}>
                 <div className="card-header">
                     <h3>Plans Held</h3>
                 </div>

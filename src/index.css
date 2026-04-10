@@ -78,7 +78,7 @@
 }
 
 html {
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 
 body {
@@ -204,9 +204,17 @@ h6 {
   border: 2px solid var(--primary);
 }
 
+.btn-outline.solid {
+  background: #fff;
+}
+
 .btn-outline:hover:not(:disabled) {
   background: var(--primary-glow);
   transform: translateY(-1px);
+}
+
+.btn-outline.solid:hover:not(:disabled) {
+  background: linear-gradient(var(--primary-glow), var(--primary-glow)), #fff;
 }
 
 .btn-tab {

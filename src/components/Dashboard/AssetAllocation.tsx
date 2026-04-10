@@ -202,7 +202,7 @@ const AssetAllocation: React.FC<AssetAllocationProps> = ({ client, mode = 'overv
     }
 
     return (
-        <section className="glass-card quadrant">
+        <section className={`glass-card quadrant ${mode === 'focused' ? 'no-hover' : ''}`}>
             <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h3>Asset Allocation</h3>
                 <Button
@@ -281,7 +281,7 @@ const AssetAllocation: React.FC<AssetAllocationProps> = ({ client, mode = 'overv
             <FocusModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
-                modalContentStyle={{ gap: '1.5rem' }}
+                modalContentStyle={{ gap: '1rem' }}
             >
                 {selectedSnapshot && (
                     <AllocationBreakdown
@@ -317,7 +317,7 @@ const AllocationBreakdown: React.FC<AllocationBreakdownProps> = ({
     return (
         <>
             <div className="modal-header" style={{ textAlign: 'center', marginBottom: '1rem' }}>
-                <h2 style={{ marginBottom: '0.25rem', fontSize: 'var(--text-3xl)' }}>Allocation Breakdown</h2>
+                <h2 style={{ marginBottom: '0.25rem', fontSize: 'var(--text-2xl)' }}>Allocation Breakdown</h2>
                 <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)' }}>{selectedSnapshot.fullDate}</p>
             </div>
 

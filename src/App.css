@@ -8,6 +8,10 @@
   padding-top: 72px;
 }
 
+.app-wrapper > main.no-navbar {
+  padding-top: 0;
+}
+
 #root {
   width: 100%;
 }

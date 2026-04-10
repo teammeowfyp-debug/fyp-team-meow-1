@@ -182,6 +182,7 @@ export const MeetingNotes: React.FC<InsightsProps> = ({
                                     onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleMeetingNotesSubmit(); }}
                                     disabled={!transcript.trim() || loading}
                                     variant="outline"
+                                    className="solid"
                                     size={mode === 'focused' ? 'medium' : 'small'}
                                     style={{
                                         position: 'absolute',
@@ -309,6 +310,7 @@ export const MeetingNotes: React.FC<InsightsProps> = ({
                                 if (onCacheUpdate) onCacheUpdate({ meetingNotes: null, meetingNotesSummary: '', meetingNotesTranscript: '' });
                             }}
                             variant="outline"
+                            className="solid"
                             size={mode === 'focused' ? 'medium' : 'small'}
                             style={{
                                 position: 'absolute',

@@ -215,7 +215,7 @@ const Cashflow: React.FC<CashflowProps> = ({ client, mode = 'overview', dateRang
 
     return (
         <>
-            <section className={`glass-card quadrant ${mode === 'focused' ? 'focused' : ''}`}>
+            <section className={`glass-card quadrant ${mode === 'focused' ? 'focused no-hover' : ''}`}>
                 <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <h3>Cashflow</h3>
                     <Button
@@ -385,8 +385,8 @@ const CashflowBreakdown: React.FC<CashflowBreakdownProps> = ({
 
     return (
         <>
-            <div className="modal-header" style={{ textAlign: 'center', marginBottom: '1.5rem', marginTop: '0.5rem' }}>
-                <h2 style={{ marginBottom: '0.25rem', fontSize: '1.5rem' }}>Cashflow Breakdown</h2>
+            <div className="modal-header" style={{ textAlign: 'center', marginBottom: '1rem', marginTop: '0.5rem' }}>
+                <h2 style={{ marginBottom: '0.25rem', fontSize: 'var(--text-2xl)' }}>Cashflow Breakdown</h2>
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '4px' }}>{selectedSnapshot.fullDate}</p>
             </div>
 

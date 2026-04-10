@@ -20,7 +20,7 @@ function AppContent() {
     <div className="app-wrapper">
       <IdleLogout />
       {!hideNavbar && <Navbar />}
-      <main>
+      <main className={hideNavbar ? 'no-navbar' : ''}>
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route

@@ -36,12 +36,12 @@ export const UpdateClientModal: React.FC<UpdateClientModalProps> = ({ clientId, 
   const modalContent = (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
       {/* Header */}
-      <div className="modal-header" style={{
-        display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
+        <div className="modal-header" style={{
+          display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
         borderBottom: '1px solid var(--border, #eee)', padding: '2rem 2rem 1rem 2rem'
-      }}>
-        <div>
-          <h2 style={{ margin: 0, fontSize: 'var(--text-3xl)', color: 'var(--secondary, #333)' }}>
+        }}>
+          <div>
+            <h2 style={{ margin: 0, fontSize: 'var(--text-2xl)', color: 'var(--secondary)' }}>
             Update Client Profile
           </h2>
           <p style={{ margin: '6px 0 0', fontSize: 'var(--text-sm)', color: 'var(--text-muted, #888)' }}>
@@ -309,7 +309,7 @@ export const UpdateClientModal: React.FC<UpdateClientModalProps> = ({ clientId, 
   );
 
   return (
-    <FocusModal isOpen={true} onClose={onClose} closeOnBackdropClick={false}>
+    <FocusModal isOpen={true} onClose={onClose}>
       {modalContent}
     </FocusModal>
   );

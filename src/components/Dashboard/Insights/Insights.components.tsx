@@ -242,41 +242,23 @@ export const renderCleanList = (content: string) => {
 };
 
 export const InlineCopyButton: React.FC<{ onClick: (e: React.MouseEvent) => void; isCopied: boolean; visible: boolean }> = ({ onClick, isCopied, visible }) => (
-    <button
+    <Button
         onClick={onClick}
+        variant="outline"
+        className="solid"
+        size="small"
         style={{
             position: 'absolute',
-            top: '0.85rem',
-            right: '0.7rem',
-            background: 'transparent',
-            color: isCopied ? 'var(--success)' : 'var(--primary)',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
-            fontSize: 'var(--text-xs)',
-            fontWeight: 'var(--font-semibold)',
-            padding: '3px 7px',
+            top: '0.65rem',
+            right: '0.65rem',
+            color: 'var(--primary)',
+            borderColor: 'var(--primary)',
+            padding: '4px 8px',
             borderRadius: '6px',
-            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em',
-            border: `1px solid ${isCopied ? 'var(--success)' : 'var(--primary)'}`,
             opacity: visible || isCopied ? 1 : 0,
             pointerEvents: visible || isCopied ? 'auto' : 'none',
             zIndex: 10,
-        }}
-        onMouseEnter={(e: any) => {
-            if (!isCopied) {
-                e.currentTarget.style.background = 'var(--primary-glow)';
-                e.currentTarget.style.transform = 'translateY(-1px)';
-            }
-        }}
-        onMouseLeave={(e: any) => {
-            if (!isCopied) {
-                e.currentTarget.style.background = 'transparent';
-                e.currentTarget.style.transform = 'translateY(0)';
-            }
+            fontSize: '10px'
         }}
         title="Copy to clipboard"
     >
@@ -296,7 +278,7 @@ export const InlineCopyButton: React.FC<{ onClick: (e: React.MouseEvent) => void
                 <span>Copy</span>
             </>
         )}
-    </button>
+    </Button>
 );
 
 export const AIDisclaimerButton: React.FC<{

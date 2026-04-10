@@ -11,7 +11,7 @@ const Insights: React.FC<InsightsProps> = (props) => {
     } = props;
 
     return (
-        <section className="glass-card quadrant">
+        <section className={`glass-card quadrant ${props.mode === 'focused' ? 'no-hover' : ''}`}>
             <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h3>Insights</h3>
                 <Button

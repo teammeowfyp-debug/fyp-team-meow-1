@@ -362,9 +362,14 @@ const ExportReportModal: React.FC<ExportReportModalProps> = ({
 
 
     return (
-        <FocusModal isOpen={true} onClose={onClose} modalContentStyle={{ maxWidth: '500px', padding: '0' }}>
-            <div className="modal-header" style={{ padding: '1.5rem 2rem 1rem 2rem', borderBottom: '1px solid var(--border)' }}>
-                <h2 style={{ fontSize: 'var(--text-xl)', color: 'var(--secondary)', margin: 0 }}>Export Client Report</h2>
+        <FocusModal 
+            isOpen={true} 
+            onClose={onClose} 
+            modalContentClassName="modal-sm"
+            modalContentStyle={{ maxWidth: '480px', padding: '0' }}
+        >
+            <div className="modal-header" style={{ padding: '2rem 2rem 1rem 2rem', borderBottom: '1px solid var(--border)' }}>
+                <h2 style={{ fontSize: 'var(--text-2xl)', color: 'var(--secondary)', margin: 0 }}>Export Client Report</h2>
                 <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)', marginTop: '0.25rem' }}>Generate a comprehensive financial review for your client</p>
             </div>
 
