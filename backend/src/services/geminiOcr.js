@@ -145,7 +145,7 @@ export async function extractPdfData(pdfBuffer) {
   }
 
   const res = await activeAi.models.generateContent({
-    model: 'gemini-2.0-flash',
+    model: env.geminiModel,
     config: {
       responseMimeType: 'application/json',
     },
