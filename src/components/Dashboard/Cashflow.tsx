@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, ReferenceLine, Legend } from 'recharts';
 import { CustomizedXAxisTick } from '../UI/ChartUtils';
 import { FocusModal } from '../UI/FocusModal';
-import { Button } from '../UI/Button';
+import { QuadrantModeSwitch } from './QuadrantModeSwitch';
 
 interface CashflowProps {
     client?: any;
@@ -216,20 +216,17 @@ const Cashflow: React.FC<CashflowProps> = ({ client, mode = 'overview', dateRang
     return (
         <>
             <section className={`glass-card quadrant ${mode === 'focused' ? 'focused no-hover' : ''}`}>
-                <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
                     <h3>Cashflow</h3>
-                    <Button
-                        variant="primary"
-                        size="small"
-                        onClick={(e: React.MouseEvent) => {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            setViewMode(viewMode === 'periodic' ? 'cumulative' : 'periodic');
-                        }}
-                        style={{ borderRadius: '20px', padding: '4px 12px', fontSize: '0.7rem' }}
-                    >
-                        {viewMode === 'periodic' ? 'Periodic' : 'Cumulative'}
-                    </Button>
+                    <QuadrantModeSwitch
+                        value={viewMode}
+                        onChange={(v) => setViewMode(v)}
+                        options={[
+                            { value: 'periodic', label: 'Periodic' },
+                            { value: 'cumulative', label: 'Cumulative' },
+                        ]}
+                        ariaLabel="Cashflow chart basis"
+                    />
                 </div>
 
                 <div className="chart-container" style={{ flex: 1, position: 'relative', minHeight: 0 }}>

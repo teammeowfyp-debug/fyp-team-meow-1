@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts';
 import { CustomizedXAxisTick } from '../UI/ChartUtils';
 import { FocusModal } from '../UI/FocusModal';
-import { Button } from '../UI/Button';
+import { QuadrantModeSwitch } from './QuadrantModeSwitch';
 
 const ALLOCATION_COLORS: Record<string, string> = {
     'Equity': 'var(--primary)',
@@ -203,20 +203,17 @@ const AssetAllocation: React.FC<AssetAllocationProps> = ({ client, mode = 'overv
 
     return (
         <section className={`glass-card quadrant ${mode === 'focused' ? 'no-hover' : ''}`}>
-            <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
                 <h3>Asset Allocation</h3>
-                <Button
-                    variant="primary"
-                    size="small"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        setChartType(chartType === 'absolute' ? 'percent' : 'absolute');
-                    }}
-                    style={{ borderRadius: '20px', padding: '4px 12px', fontSize: '0.7rem' }}
-                >
-                    {chartType === 'absolute' ? 'Value' : '%'}
-                </Button>
+                <QuadrantModeSwitch
+                    value={chartType}
+                    onChange={(v) => setChartType(v)}
+                    options={[
+                        { value: 'absolute', label: 'Value' },
+                        { value: 'percent', label: 'Percent' },
+                    ]}
+                    ariaLabel="Allocation display scale"
+                />
             </div>
             <div className="chart-container" style={{ width: '100%', flex: 1, marginTop: '10px' }}>
                 {hasData ? (

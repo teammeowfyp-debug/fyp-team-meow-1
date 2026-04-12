@@ -157,6 +157,11 @@ export const MeetingNotes: React.FC<InsightsProps> = ({
     return (
         <>
             <div className="risk-indicator" style={{ flex: 1, gap: '1rem', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                {mode === 'focused' && loading && (
+                    <p className="insights-run-hint">
+                        Stay on this view until loading finishes. Going back or switching tabs cancels this run (we don’t run AI in the background).
+                    </p>
+                )}
                 <div className="tabs-switcher" style={{ marginBottom: 0 }}>
                     <Button
                         variant="tab"

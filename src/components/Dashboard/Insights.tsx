@@ -2,7 +2,12 @@ import React from 'react';
 import { RiskAnalysis } from './Insights/RiskAnalysis';
 import { MeetingNotes } from './Insights/MeetingNotes';
 import type { InsightsProps } from './Insights/Insights.helpers';
-import { Button } from '../UI/Button';
+import { QuadrantModeSwitch } from './QuadrantModeSwitch';
+
+const INSIGHTS_MODE_OPTIONS = [
+    { value: 'risk-analysis' as const, label: 'Risk analysis' },
+    { value: 'meeting-notes' as const, label: 'Meeting notes' },
+] as const;
 
 const Insights: React.FC<InsightsProps> = (props) => {
     const {
@@ -12,19 +17,14 @@ const Insights: React.FC<InsightsProps> = (props) => {
 
     return (
         <section className={`glass-card quadrant ${props.mode === 'focused' ? 'no-hover' : ''}`}>
-            <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
                 <h3>Insights</h3>
-                <Button
-                    variant="primary"
-                    size="small"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onInsightsModeChange?.(insightsMode === 'risk-analysis' ? 'meeting-notes' : 'risk-analysis');
-                    }}
-                    style={{ borderRadius: '20px', padding: '4px 12px', fontSize: '0.7rem' }}
-                >
-                    {insightsMode === 'risk-analysis' ? 'Risk Analysis' : 'Meeting Notes'}
-                </Button>
+                <QuadrantModeSwitch
+                    value={insightsMode}
+                    onChange={(v) => onInsightsModeChange?.(v)}
+                    options={INSIGHTS_MODE_OPTIONS}
+                    ariaLabel="Choose insights mode"
+                />
             </div>
 
             {insightsMode === 'risk-analysis' ? (

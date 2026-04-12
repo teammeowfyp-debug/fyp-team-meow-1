@@ -200,6 +200,11 @@ export const RiskAnalysis: React.FC<InsightsProps> = ({
     return (
         <>
             <div className="risk-indicator" style={{ flex: 1, gap: '1rem', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                {mode === 'focused' && loading && (
+                    <p className="insights-run-hint">
+                        Stay on this view until loading finishes. Going back or switching tabs cancels this run (we don’t run AI in the background).
+                    </p>
+                )}
                 {clientInfo && (
                     <div className="risk-header-info">
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', alignItems: 'center', justifyContent: 'center', width: '100%' }}>

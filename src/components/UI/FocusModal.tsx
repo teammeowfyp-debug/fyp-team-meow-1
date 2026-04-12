@@ -7,6 +7,8 @@ interface FocusModalProps {
     children: React.ReactNode;
     modalContentStyle?: React.CSSProperties;
     modalContentClassName?: string;
+    /** Extra class on the backdrop (e.g. `modal-overlay--centered` for small dialogs). */
+    overlayClassName?: string;
     closeButtonStyle?: React.CSSProperties;
     closeOnBackdropClick?: boolean;
 }
@@ -17,6 +19,7 @@ export const FocusModal: React.FC<FocusModalProps> = ({
     children,
     modalContentStyle = {},
     modalContentClassName = "",
+    overlayClassName = "",
     closeButtonStyle = {},
     closeOnBackdropClick = true
 }) => {
@@ -35,7 +38,7 @@ export const FocusModal: React.FC<FocusModalProps> = ({
 
     return createPortal(
         <div 
-            className="modal-overlay animate-fade" 
+            className={`modal-overlay animate-fade ${overlayClassName}`.trim()} 
             onClick={closeOnBackdropClick ? onClose : undefined} 
             style={{ zIndex: 9999 }}
         >

@@ -11,7 +11,7 @@ interface AiErrorModalProps {
 }
 
 /**
- * Clear, presentation-friendly error for AI failures (rate limits, model load, etc.).
+ * Compact, centered AI / API error dialog (rate limits, model load, etc.).
  */
 export const AiErrorModal: React.FC<AiErrorModalProps> = ({ open, onClose, message, code }) => {
     if (!message) return null;
@@ -20,37 +20,36 @@ export const AiErrorModal: React.FC<AiErrorModalProps> = ({ open, onClose, messa
         <FocusModal
             isOpen={open}
             onClose={onClose}
-            modalContentStyle={{ maxWidth: '420px', padding: '2rem 2rem 1.5rem' }}
+            overlayClassName="modal-overlay--centered"
+            modalContentClassName="modal-content--compact ai-error-modal"
+            modalContentStyle={{
+                padding: '1.125rem 1.25rem 1rem',
+                borderRadius: '16px',
+                border: '1px solid var(--border)',
+                boxShadow: '0 18px 48px rgba(0, 0, 0, 0.12)',
+                background: 'var(--bg-card, #fff)',
+            }}
+            closeButtonStyle={{
+                top: '0.35rem',
+                right: '0.45rem',
+                fontSize: '1.35rem',
+                padding: '6px',
+            }}
         >
-            <div style={{ paddingRight: '1.5rem' }}>
-                <h3 style={{
-                    margin: '0 0 0.75rem',
-                    fontSize: 'var(--text-lg)',
-                    color: 'var(--secondary)',
-                    fontWeight: 700,
-                }}>
+            <div className="ai-error-modal__inner" style={{ paddingRight: '0.25rem' }}>
+                <h3 className="ai-error-modal__title">
                     {titleForAiErrorCode(code)}
                 </h3>
-                <p style={{
-                    margin: '0 0 1rem',
-                    color: 'var(--text-main)',
-                    lineHeight: 1.55,
-                    fontSize: 'var(--text-sm)',
-                }}>
+                <p className="ai-error-modal__body">
                     {message}
                 </p>
                 {code && (
-                    <p style={{
-                        margin: '0 0 1.25rem',
-                        fontSize: '11px',
-                        color: 'var(--text-muted)',
-                        letterSpacing: '0.02em',
-                    }}>
-                        Reference: {code}
+                    <p className="ai-error-modal__ref">
+                        Ref: {code}
                     </p>
                 )}
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <Button variant="outline" onClick={onClose} style={{ minWidth: '120px' }}>
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    <Button variant="outline" size="small" onClick={onClose} style={{ minWidth: '100px' }}>
                         Dismiss
                     </Button>
                 </div>
