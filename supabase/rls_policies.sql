@@ -53,7 +53,7 @@ CREATE POLICY "users_select_own_or_admin" ON public.users
 -- If you ever need client-side insert (e.g. signup), add a separate policy.
 
 -- 4) Policies: clients
---    Staff see/update only clients assigned to them; admins see/update all. Insert/delete admin only.
+--    Staff see/update/delete only clients assigned to them; admins see/update/delete all.
 
 DROP POLICY IF EXISTS "clients_select_own_or_admin" ON public.clients;
 CREATE POLICY "clients_select_own_or_admin" ON public.clients
@@ -77,6 +77,7 @@ CREATE POLICY "clients_update_own_or_admin" ON public.clients
 
 -- Staff can insert clients assigned to themselves (onboarding); admins can assign to anyone.
 DROP POLICY IF EXISTS "clients_insert_admin_only" ON public.clients;
+DROP POLICY IF EXISTS "clients_insert_own_or_admin" ON public.clients;
 CREATE POLICY "clients_insert_own_or_admin" ON public.clients
   FOR INSERT
   WITH CHECK (
@@ -85,9 +86,13 @@ CREATE POLICY "clients_insert_own_or_admin" ON public.clients
   );
 
 DROP POLICY IF EXISTS "clients_delete_admin_only" ON public.clients;
-CREATE POLICY "clients_delete_admin_only" ON public.clients
+DROP POLICY IF EXISTS "clients_delete_own_or_admin" ON public.clients;
+CREATE POLICY "clients_delete_own_or_admin" ON public.clients
   FOR DELETE
-  USING (public.is_admin());
+  USING (
+    (assigned_user_id = public.get_my_user_id())
+    OR (public.is_admin())
+  );
 
 -- 5) Policies: client_family (access if you can access the client)
 

@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../Dashboard.css';
 import { FocusModal } from '../../UI/FocusModal';
 import { UpdateClientModal } from './UpdateClientModal';
 import ExportReportModal from './ExportReportModal';
 import { Button } from '../../UI/Button';
+import { supabase } from '../../../lib/supabaseClient';
 
 interface ClientDetailModalProps {
     client: any;
@@ -294,11 +296,34 @@ const ClientHeader: React.FC<ClientHeaderProps> = ({
     dashboardEndDate,
     onFocusQuadrant
 }) => {
+    const navigate = useNavigate();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
     const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+    const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false);
+    const [removeLoading, setRemoveLoading] = useState(false);
+    const [removeError, setRemoveError] = useState<string | null>(null);
 
     if (!client) return null;
+
+    const closeRemoveConfirm = () => {
+        if (removeLoading) return;
+        setRemoveConfirmOpen(false);
+        setRemoveError(null);
+    };
+
+    const handleConfirmRemoveClient = async () => {
+        setRemoveLoading(true);
+        setRemoveError(null);
+        const { error } = await supabase.from('clients').delete().eq('client_id', client.client_id);
+        setRemoveLoading(false);
+        if (error) {
+            setRemoveError(error.message || 'Could not remove client.');
+            return;
+        }
+        closeRemoveConfirm();
+        navigate('/');
+    };
 
 
 
@@ -377,6 +402,29 @@ const ClientHeader: React.FC<ClientHeaderProps> = ({
                                     <line x1="12" y1="15" x2="12" y2="3"></line>
                                 </svg>
                                 Export Report
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="medium"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setRemoveError(null);
+                                    setRemoveConfirmOpen(true);
+                                }}
+                                style={{
+                                    padding: '6px 14px',
+                                    borderColor: 'var(--danger)',
+                                    color: 'var(--danger)',
+                                }}
+                            >
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M3 6h18"></path>
+                                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                                </svg>
+                                Remove client
                             </Button>
                         </div>
                     </div>
@@ -530,6 +578,57 @@ const ClientHeader: React.FC<ClientHeaderProps> = ({
                         window.location.reload();
                     }}
                 />
+            )}
+
+            {removeConfirmOpen && (
+                <FocusModal
+                    isOpen={true}
+                    onClose={closeRemoveConfirm}
+                    closeOnBackdropClick={!removeLoading}
+                    overlayClassName="modal-overlay--centered"
+                    modalContentClassName="modal-content--compact"
+                    modalContentStyle={{
+                        padding: '1.25rem 1.35rem 1rem',
+                        borderRadius: '16px',
+                        border: '1px solid var(--border)',
+                        maxWidth: 'min(100%, 400px)',
+                    }}
+                    closeButtonStyle={{
+                        opacity: removeLoading ? 0.35 : 1,
+                        pointerEvents: removeLoading ? 'none' : 'auto',
+                    }}
+                >
+                    <div style={{ paddingRight: '0.5rem' }}>
+                        <h3 style={{ margin: '0 0 0.75rem', fontSize: 'var(--text-lg)', color: 'var(--secondary)' }}>
+                            Remove this client?
+                        </h3>
+                        <p style={{ margin: '0 0 1rem', fontSize: 'var(--text-sm)', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                            This will permanently delete <strong style={{ color: 'var(--secondary)' }}>{client.full_name}</strong> and all related data (family, policies, cashflow, etc.). This cannot be undone.
+                        </p>
+                        {removeError && (
+                            <p style={{ margin: '0 0 1rem', fontSize: 'var(--text-sm)', color: 'var(--danger)' }} role="alert">
+                                {removeError}
+                            </p>
+                        )}
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', flexWrap: 'wrap' }}>
+                            <Button variant="outline" size="small" onClick={closeRemoveConfirm} disabled={removeLoading}>
+                                Cancel
+                            </Button>
+                            <Button
+                                size="small"
+                                onClick={handleConfirmRemoveClient}
+                                disabled={removeLoading}
+                                style={{
+                                    background: 'var(--danger)',
+                                    color: '#fff',
+                                    borderColor: 'var(--danger)',
+                                }}
+                            >
+                                {removeLoading ? 'Removing…' : 'Remove client'}
+                            </Button>
+                        </div>
+                    </div>
+                </FocusModal>
             )}
         </>
     );
