@@ -154,6 +154,14 @@ export const MeetingNotes: React.FC<InsightsProps> = ({
         handleFeedbackSubmit(meetingContent);
     };
 
+    const handleNewTranscript = () => {
+        setMeetingNotesSummary('');
+        setMeetingNotesResult(null);
+        setTranscript('');
+        setMeetingTab('transcript');
+        if (onCacheUpdate) onCacheUpdate({ meetingNotes: null, meetingNotesSummary: '', meetingNotesTranscript: '' });
+    };
+
     return (
         <>
             <div className="risk-indicator" style={{ flex: 1, gap: '1rem', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
@@ -317,30 +325,6 @@ export const MeetingNotes: React.FC<InsightsProps> = ({
                         </>
                     )}
 
-                    {(meetingNotesSummary || meetingNotesResult) && !loading && (
-                        <Button
-                            onClick={(e) => {
-                                e.stopPropagation(); e.preventDefault();
-                                setMeetingNotesSummary(''); setMeetingNotesResult(null); setTranscript(''); setMeetingTab('transcript');
-                                if (onCacheUpdate) onCacheUpdate({ meetingNotes: null, meetingNotesSummary: '', meetingNotesTranscript: '' });
-                            }}
-                            variant="outline"
-                            className="solid"
-                            size={mode === 'focused' ? 'medium' : 'small'}
-                            style={{
-                                position: 'absolute',
-                                bottom: mode === 'focused' ? '12px' : '10px',
-                                right: mode === 'focused' ? '12px' : '10px',
-                                zIndex: 10
-                            }}
-                        >
-                            <svg width={mode === 'focused' ? '12' : '10'} height={mode === 'focused' ? '12' : '10'} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '0.5rem' }}>
-                                <line x1="12" y1="5" x2="12" y2="19"></line>
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                            </svg>
-                            New Transcript
-                        </Button>
-                    )}
                 </div>
 
                 {mode === 'overview' && (
@@ -348,6 +332,9 @@ export const MeetingNotes: React.FC<InsightsProps> = ({
                         mode={mode}
                         onAIModalOpen={() => setIsAIModalOpen(true)}
                         onFeedbackModalOpen={() => setIsFeedbackModalOpen(true)}
+                        actionLabel={(meetingNotesSummary || meetingNotesResult) ? 'New transcript' : undefined}
+                        actionDisabled={loading}
+                        onAction={handleNewTranscript}
                     />
                 )}
             </div>
@@ -357,6 +344,9 @@ export const MeetingNotes: React.FC<InsightsProps> = ({
                     mode={mode}
                     onAIModalOpen={() => setIsAIModalOpen(true)}
                     onFeedbackModalOpen={() => setIsFeedbackModalOpen(true)}
+                    actionLabel={(meetingNotesSummary || meetingNotesResult) ? 'New transcript' : undefined}
+                    actionDisabled={loading}
+                    onAction={handleNewTranscript}
                 />
             )}
 

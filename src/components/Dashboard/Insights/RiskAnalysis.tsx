@@ -27,6 +27,31 @@ export const RiskAnalysis: React.FC<InsightsProps> = ({
     cache,
     onCacheUpdate
 }) => {
+    const OUTDATED_LEEWAY_MONTHS = 2;
+
+    const addMonths = (d: Date, months: number) => {
+        const nd = new Date(d);
+        nd.setMonth(nd.getMonth() + months);
+        return nd;
+    };
+
+    const isOutdatedWithinLeeway = (
+        generatedPeriod: { startDate: string; endDate: string },
+        currentPeriod: { startDate: string; endDate: string }
+    ) => {
+        const gs = new Date(generatedPeriod.startDate);
+        const ge = new Date(generatedPeriod.endDate);
+        const cs = new Date(currentPeriod.startDate);
+        const ce = new Date(currentPeriod.endDate);
+
+        if ([gs, ge, cs, ce].some((x) => Number.isNaN(x.getTime()))) return true;
+
+        // Allow the current range to drift by ±N months relative to the generated range.
+        const allowedStart = addMonths(gs, -OUTDATED_LEEWAY_MONTHS);
+        const allowedEnd = addMonths(ge, OUTDATED_LEEWAY_MONTHS);
+
+        return cs < allowedStart || ce > allowedEnd;
+    };
     const {
         loading, setLoading,
         error, setError,
@@ -54,6 +79,7 @@ export const RiskAnalysis: React.FC<InsightsProps> = ({
     const [riskOutputHovered, setRiskOutputHovered] = useState(false);
     const [hasInitiated, setHasInitiated] = useState(false);
     const [forceRegenerate, setForceRegenerate] = useState(false);
+    const [shouldGenerate, setShouldGenerate] = useState(false);
 
     useEffect(() => {
         const isCacheEmpty = !cache || Object.keys(cache).length === 0;
@@ -64,6 +90,7 @@ export const RiskAnalysis: React.FC<InsightsProps> = ({
         e?.stopPropagation();
         e?.preventDefault();
         setForceRegenerate(true);
+        setShouldGenerate(true);
         reset();
         if (onCacheUpdate) {
             onCacheUpdate({
@@ -74,6 +101,72 @@ export const RiskAnalysis: React.FC<InsightsProps> = ({
         }
         setHasInitiated(true);
     };
+
+    // Auto-load cached analysis on page load (no AI call).
+    useEffect(() => {
+        if (!client || !dateRange) return;
+        if (loading) return;
+        if (summary && (mode !== 'focused' || structuredAnalysis)) return;
+
+        let cancelled = false;
+
+        const loadCached = async () => {
+            try {
+                // Executive summary cache
+                if (!summary) {
+                    const { data: cached, error: cacheErr } = await supabase
+                        .from('client_ai_analysis')
+                        .select('content, created_at')
+                        .eq('client_id', client.client_id)
+                        .eq('analysis_type', 'risk_summary_normal')
+                        .eq('start_date', dateRange.startDate ?? null)
+                        .eq('end_date', dateRange.endDate ?? null)
+                        .order('created_at', { ascending: false })
+                        .limit(1)
+                        .maybeSingle();
+
+                    if (!cancelled && !cacheErr && cached?.content) {
+                        const content: any = cached.content;
+                        const exSummary = content?.['Executive Summary'];
+                        const text =
+                            (typeof exSummary === 'string' && exSummary.trim())
+                                ? exSummary.trim()
+                                : JSON.stringify(content);
+                        setSummary(text);
+                        setHasInitiated(true);
+                        if (onCacheUpdate) onCacheUpdate({ overview: text, generatedPeriod: dateRange });
+                    }
+                }
+
+                // Full analysis cache (focused mode only)
+                if (mode === 'focused' && summary && !structuredAnalysis) {
+                    const { data: cached, error: cacheErr } = await supabase
+                        .from('client_ai_analysis')
+                        .select('content, created_at')
+                        .eq('client_id', client.client_id)
+                        .eq('analysis_type', 'risk_analysis_comprehensive')
+                        .eq('start_date', dateRange.startDate ?? null)
+                        .eq('end_date', dateRange.endDate ?? null)
+                        .order('created_at', { ascending: false })
+                        .limit(1)
+                        .maybeSingle();
+
+                    if (!cancelled && !cacheErr && cached?.content) {
+                        setStructuredAnalysis(cached.content as any);
+                        setHasInitiated(true);
+                        if (onCacheUpdate) onCacheUpdate({ focused: cached.content, generatedPeriod: dateRange });
+                    }
+                }
+            } catch {
+                // ignore cache read errors
+            }
+        };
+
+        loadCached();
+        return () => {
+            cancelled = true;
+        };
+    }, [client?.client_id, dateRange?.startDate, dateRange?.endDate, mode, summary, structuredAnalysis, loading]);
 
     useEffect(() => {
         if (!client) return;
@@ -87,7 +180,7 @@ export const RiskAnalysis: React.FC<InsightsProps> = ({
             if (cache?.focused) setStructuredAnalysis(cache.focused);
         }
 
-        if (!hasInitiated) return;
+        if (!shouldGenerate) return;
 
         const fetchSummary = async () => {
             if (cache?.overview) {
@@ -170,18 +263,19 @@ export const RiskAnalysis: React.FC<InsightsProps> = ({
                     applyAiFailure(err, setError, setErrorCode, 'Failed to load summary.');
                 } finally {
                     setForceRegenerate(false);
+                    setShouldGenerate(false);
                     setLoading(false);
                 }
             }
         };
 
         fetchSummary();
-    }, [client, dateRange?.endDate, cache, hasInitiated]);
+    }, [client, dateRange?.endDate, cache, shouldGenerate]);
 
     useEffect(() => {
         if (mode !== 'focused') return;
         if (!client || !summary || structuredAnalysis || loading) return;
-        if (!hasInitiated) return;
+        if (!shouldGenerate) return;
 
         const generateFullAnalysis = async () => {
             setLoading(true);
@@ -235,12 +329,13 @@ export const RiskAnalysis: React.FC<InsightsProps> = ({
                 applyAiFailure(err, setError, setErrorCode, 'Failed to generate full risk analysis.');
             } finally {
                 setForceRegenerate(false);
+                setShouldGenerate(false);
                 setLoading(false);
             }
         };
 
         generateFullAnalysis();
-    }, [mode, summary, structuredAnalysis, client, hasInitiated, loading]);
+    }, [mode, summary, structuredAnalysis, client, shouldGenerate, loading]);
 
     const onCopyClicked = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -453,7 +548,7 @@ export const RiskAnalysis: React.FC<InsightsProps> = ({
                                 </svg>
                                 <p>Click below to analyse the client's risk alignment.</p>
                                 <Button
-                                    onClick={(e) => { e.stopPropagation(); setHasInitiated(true); }}
+                                    onClick={(e) => { e.stopPropagation(); setHasInitiated(true); setShouldGenerate(true); }}
                                     variant="outline"
                                     size={mode === 'focused' ? 'medium' : 'small'}
                                     style={{ marginTop: '0.5rem' }}
@@ -466,7 +561,7 @@ export const RiskAnalysis: React.FC<InsightsProps> = ({
                 </div>
 
                 {/* Outdated Analysis Warning Indicator */}
-                {cache?.generatedPeriod && dateRange && (cache.generatedPeriod.startDate !== dateRange.startDate || cache.generatedPeriod.endDate !== dateRange.endDate) && (
+                {cache?.generatedPeriod && dateRange && isOutdatedWithinLeeway(cache.generatedPeriod, dateRange) && (
                     <div className="standard-error-box" style={{ marginTop: '0.25rem'}}>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9B2226" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                             <circle cx="12" cy="12" r="10"></circle>
@@ -505,9 +600,9 @@ export const RiskAnalysis: React.FC<InsightsProps> = ({
                         mode={mode}
                         onAIModalOpen={() => setIsAIModalOpen(true)}
                         onFeedbackModalOpen={() => setIsFeedbackModalOpen(true)}
-                        showRegenerate={hasInitiated && !!summary}
-                        regenerateDisabled={loading}
-                        onRegenerate={() => handleRegenerateNow()}
+                        actionLabel={hasInitiated && !!summary ? 'Regenerate' : undefined}
+                        actionDisabled={loading}
+                        onAction={() => handleRegenerateNow()}
                     />
                 )}
             </div>
@@ -517,9 +612,9 @@ export const RiskAnalysis: React.FC<InsightsProps> = ({
                     mode={mode}
                     onAIModalOpen={() => setIsAIModalOpen(true)}
                     onFeedbackModalOpen={() => setIsFeedbackModalOpen(true)}
-                    showRegenerate={hasInitiated && (!!summary || !!structuredAnalysis)}
-                    regenerateDisabled={loading}
-                    onRegenerate={() => handleRegenerateNow()}
+                    actionLabel={hasInitiated && (!!summary || !!structuredAnalysis) ? 'Regenerate' : undefined}
+                    actionDisabled={loading}
+                    onAction={() => handleRegenerateNow()}
                 />
             )}
 

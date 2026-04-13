@@ -215,10 +215,10 @@
     display: inline-flex;
     align-items: stretch;
     border-radius: 999px;
-    padding: 4px;
+    padding: 2px;
     background: rgba(0, 0, 0, 0.04);
     border: 1px solid var(--border);
-    gap: 4px;
+    gap: 2px;
     flex-shrink: 0;
     max-width: min(100%, 340px);
 }
@@ -226,11 +226,11 @@
 .quadrant-mode-switch__btn {
     flex: 1;
     min-width: 0;
-    min-height: 34px;
+    min-height: 28px;
     border: none;
     background: transparent;
-    padding: 8px 14px;
-    font-size: var(--text-xs);
+    padding: 5px 10px;
+    font-size: 10.5px;
     font-weight: 600;
     letter-spacing: 0.02em;
     border-radius: 999px;
