@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { generateRiskAnalysis, generateRiskSummary } from '../../../lib/insightsAI';
 import { useAIAnalysis } from './useAIAnalysis';
 import type { InsightsProps } from './Insights.helpers';
+import { supabase } from '../../../lib/supabaseClient';
 import {
     RISK_LEVEL_DESCRIPTIONS,
     buildFinancialContextParams,
@@ -52,11 +53,27 @@ export const RiskAnalysis: React.FC<InsightsProps> = ({
     const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState<boolean>(false);
     const [riskOutputHovered, setRiskOutputHovered] = useState(false);
     const [hasInitiated, setHasInitiated] = useState(false);
+    const [forceRegenerate, setForceRegenerate] = useState(false);
 
     useEffect(() => {
         const isCacheEmpty = !cache || Object.keys(cache).length === 0;
         setHasInitiated(!isCacheEmpty);
     }, [client?.client_id, dateRange?.startDate, dateRange?.endDate]);
+
+    const handleRegenerateNow = (e?: React.MouseEvent) => {
+        e?.stopPropagation();
+        e?.preventDefault();
+        setForceRegenerate(true);
+        reset();
+        if (onCacheUpdate) {
+            onCacheUpdate({
+                overview: undefined,
+                focused: undefined,
+                generatedPeriod: undefined,
+            });
+        }
+        setHasInitiated(true);
+    };
 
     useEffect(() => {
         if (!client) return;
@@ -101,6 +118,33 @@ export const RiskAnalysis: React.FC<InsightsProps> = ({
                         return;
                     }
 
+                    // Try DB cache first (latest for this client + period).
+                    if (!forceRegenerate) {
+                        try {
+                            const { data: cached, error: cacheErr } = await supabase
+                                .from('client_ai_analysis')
+                                .select('content, created_at')
+                                .eq('client_id', client.client_id)
+                                .eq('analysis_type', 'risk_summary_normal')
+                                .eq('start_date', dateRange?.startDate ?? null)
+                                .eq('end_date', dateRange?.endDate ?? null)
+                                .order('created_at', { ascending: false })
+                                .limit(1)
+                                .maybeSingle();
+
+                            if (!cacheErr && cached?.content) {
+                                const content: any = cached.content;
+                                const exSummary = content?.['Executive Summary'];
+                                const text = (typeof exSummary === 'string' && exSummary.trim()) ? exSummary.trim() : JSON.stringify(content);
+                                setSummary(text);
+                                if (onCacheUpdate) onCacheUpdate({ overview: text, generatedPeriod: dateRange });
+                                return;
+                            }
+                        } catch {
+                            // ignore cache read errors, fall back to generating
+                        }
+                    }
+
                     const stream = generateRiskSummary(params);
                     let fullText = '';
                     for await (const chunk of stream) {
@@ -125,6 +169,7 @@ export const RiskAnalysis: React.FC<InsightsProps> = ({
                 } catch (err: unknown) {
                     applyAiFailure(err, setError, setErrorCode, 'Failed to load summary.');
                 } finally {
+                    setForceRegenerate(false);
                     setLoading(false);
                 }
             }
@@ -148,6 +193,31 @@ export const RiskAnalysis: React.FC<InsightsProps> = ({
                     setError('Not enough client data to run analysis for this period. Try adjusting the date range or ensure plans and cashflow exist.');
                     return;
                 }
+
+                // Try DB cache first (latest for this client + period).
+                if (!forceRegenerate) {
+                    try {
+                        const { data: cached, error: cacheErr } = await supabase
+                            .from('client_ai_analysis')
+                            .select('content, created_at')
+                            .eq('client_id', client.client_id)
+                            .eq('analysis_type', 'risk_analysis_comprehensive')
+                            .eq('start_date', dateRange?.startDate ?? null)
+                            .eq('end_date', dateRange?.endDate ?? null)
+                            .order('created_at', { ascending: false })
+                            .limit(1)
+                            .maybeSingle();
+
+                        if (!cacheErr && cached?.content) {
+                            setStructuredAnalysis(cached.content as any);
+                            if (onCacheUpdate) onCacheUpdate({ focused: cached.content, generatedPeriod: dateRange });
+                            return;
+                        }
+                    } catch {
+                        // ignore cache read errors, fall back to generating
+                    }
+                }
+
                 const stream = generateRiskAnalysis(params);
                 let fullText = '';
                 for await (const chunk of stream) {
@@ -164,6 +234,7 @@ export const RiskAnalysis: React.FC<InsightsProps> = ({
             } catch (err: unknown) {
                 applyAiFailure(err, setError, setErrorCode, 'Failed to generate full risk analysis.');
             } finally {
+                setForceRegenerate(false);
                 setLoading(false);
             }
         };
@@ -199,7 +270,17 @@ export const RiskAnalysis: React.FC<InsightsProps> = ({
 
     return (
         <>
-            <div className="risk-indicator" style={{ flex: 1, gap: '1rem', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+            <div
+                className="risk-indicator"
+                style={{
+                    flex: 1,
+                    gap: '1rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    minHeight: 0,
+                    marginTop: mode === 'focused' ? '-0.75rem' : 0,
+                }}
+            >
                 {mode === 'focused' && loading && (
                     <p className="insights-run-hint">
                         Stay on this view until loading finishes. Going back or switching tabs cancels this run (we don’t run AI in the background).
@@ -207,7 +288,17 @@ export const RiskAnalysis: React.FC<InsightsProps> = ({
                 )}
                 {clientInfo && (
                     <div className="risk-header-info">
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+                        <div
+                            style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '0.75rem',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                width: '100%',
+                                marginTop: 0,
+                            }}
+                        >
                             <div
                                 className="risk-category-display"
                                 style={{
@@ -386,18 +477,7 @@ export const RiskAnalysis: React.FC<InsightsProps> = ({
                             This analysis was generated for a different period ({new Date(cache.generatedPeriod.startDate).toLocaleDateString()} - {new Date(cache.generatedPeriod.endDate).toLocaleDateString()})
                         </span>
                         <Button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                reset(); // Clear local state
-                                if (onCacheUpdate) {
-                                    // Clear cache to trigger re-generation
-                                    onCacheUpdate({
-                                        overview: undefined,
-                                        focused: undefined,
-                                        generatedPeriod: undefined
-                                    });
-                                }
-                            }}
+                            onClick={handleRegenerateNow}
                             variant="outline"
                             size={mode === 'focused' ? 'medium' : 'small'}
                             style={{
@@ -425,6 +505,9 @@ export const RiskAnalysis: React.FC<InsightsProps> = ({
                         mode={mode}
                         onAIModalOpen={() => setIsAIModalOpen(true)}
                         onFeedbackModalOpen={() => setIsFeedbackModalOpen(true)}
+                        showRegenerate={hasInitiated && !!summary}
+                        regenerateDisabled={loading}
+                        onRegenerate={() => handleRegenerateNow()}
                     />
                 )}
             </div>
@@ -434,6 +517,9 @@ export const RiskAnalysis: React.FC<InsightsProps> = ({
                     mode={mode}
                     onAIModalOpen={() => setIsAIModalOpen(true)}
                     onFeedbackModalOpen={() => setIsFeedbackModalOpen(true)}
+                    showRegenerate={hasInitiated && (!!summary || !!structuredAnalysis)}
+                    regenerateDisabled={loading}
+                    onRegenerate={() => handleRegenerateNow()}
                 />
             )}
 

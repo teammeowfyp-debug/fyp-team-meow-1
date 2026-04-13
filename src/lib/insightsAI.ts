@@ -1,6 +1,12 @@
 import { apiClient } from './apiClient';
 
 export interface RiskAnalysisParams {
+  /** For caching + attribution (not used by Gemini prompt). */
+  client_id?: string;
+  /** ISO date string (YYYY-MM-DD). */
+  start_date?: string;
+  /** ISO date string (YYYY-MM-DD). */
+  end_date?: string;
   riskProfileDescription: string;
   assetAllocation: string;
   cashflow: string;

@@ -206,7 +206,7 @@
 }
 
 .card-header h3 {
-    font-size: var(--text-xl);
+    font-size: calc(var(--text-xl) * 1.15);
     color: var(--text-main);
 }
 

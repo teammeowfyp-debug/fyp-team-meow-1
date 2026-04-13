@@ -15,18 +15,44 @@ const ResetPassword: React.FC = () => {
   useEffect(() => {
     let mounted = true
 
-    const checkSession = async () => {
+    const initRecoverySession = async () => {
+      // Supabase recovery links can arrive as:
+      // - PKCE code flow: ?code=...
+      // - token hash flow: ?token_hash=...&type=recovery
+      const url = new URL(window.location.href)
+      const code = url.searchParams.get('code')
+      const tokenHash = url.searchParams.get('token_hash')
+      const type = url.searchParams.get('type')
+
+      try {
+        if (code) {
+          // Establish session from PKCE code.
+          await supabase.auth.exchangeCodeForSession(code)
+        } else if (tokenHash && type === 'recovery') {
+          // Establish session from recovery token hash.
+          await supabase.auth.verifyOtp({ type: 'recovery', token_hash: tokenHash })
+        }
+      } catch (e) {
+        if (!mounted) return
+        setError(e instanceof Error ? e.message : 'This reset link is invalid or expired. Please request a new one.')
+      }
+
       const { data: { session } } = await supabase.auth.getSession()
       if (!mounted) return
       setReady(true)
-      if (!session) navigate('/login', { replace: true })
+      if (!session) {
+        setError((prev) => prev || 'This reset link is invalid or expired. Please request a new one.')
+        return
+      }
     }
 
-    const timer = setTimeout(checkSession, 300)
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+    // Run once on mount (don’t redirect away; show an error instead).
+    const timer = setTimeout(initRecoverySession, 0)
+    const { data: sub } = supabase.auth.onAuthStateChange((_event) => {
+      // Once auth state changes, we can consider the page "ready" even if the session is null
+      // (we'll show an error + let the user navigate back).
       if (!mounted) return
       setReady(true)
-      if (!session) navigate('/login', { replace: true })
     })
 
     return () => {

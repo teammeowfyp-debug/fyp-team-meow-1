@@ -179,6 +179,9 @@ export const buildFinancialContextParams = (client: any, dateRange?: { startDate
         : 'No active plans';
 
     return {
+        client_id: client.client_id,
+        start_date: dateRange?.startDate,
+        end_date: dateRange?.endDate,
         riskProfileDescription: description,
         assetAllocation: allocationString,
         cashflow: cashflowString,
