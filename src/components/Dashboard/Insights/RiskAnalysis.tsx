@@ -46,11 +46,18 @@ export const RiskAnalysis: React.FC<InsightsProps> = ({
 
         if ([gs, ge, cs, ce].some((x) => Number.isNaN(x.getTime()))) return true;
 
-        // Allow the current range to drift by ±N months relative to the generated range.
-        const allowedStart = addMonths(gs, -OUTDATED_LEEWAY_MONTHS);
-        const allowedEnd = addMonths(ge, OUTDATED_LEEWAY_MONTHS);
+        // Apply ±N months to each boundary independently.
+        // Start should be within [gs - N months, gs + N months]
+        // End should be within [ge - N months, ge + N months]
+        const startMin = addMonths(gs, -OUTDATED_LEEWAY_MONTHS);
+        const startMax = addMonths(gs, OUTDATED_LEEWAY_MONTHS);
+        const endMin = addMonths(ge, -OUTDATED_LEEWAY_MONTHS);
+        const endMax = addMonths(ge, OUTDATED_LEEWAY_MONTHS);
 
-        return cs < allowedStart || ce > allowedEnd;
+        const startOutOfWindow = cs < startMin || cs > startMax;
+        const endOutOfWindow = ce < endMin || ce > endMax;
+
+        return startOutOfWindow || endOutOfWindow;
     };
     const {
         loading, setLoading,
