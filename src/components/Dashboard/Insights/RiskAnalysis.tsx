@@ -27,6 +27,31 @@ export const RiskAnalysis: React.FC<InsightsProps> = ({
     cache,
     onCacheUpdate
 }) => {
+    const OUTDATED_LEEWAY_MONTHS = 2;
+
+    const addMonths = (d: Date, months: number) => {
+        const nd = new Date(d);
+        nd.setMonth(nd.getMonth() + months);
+        return nd;
+    };
+
+    const isOutdatedWithinLeeway = (
+        generatedPeriod: { startDate: string; endDate: string },
+        currentPeriod: { startDate: string; endDate: string }
+    ) => {
+        const gs = new Date(generatedPeriod.startDate);
+        const ge = new Date(generatedPeriod.endDate);
+        const cs = new Date(currentPeriod.startDate);
+        const ce = new Date(currentPeriod.endDate);
+
+        if ([gs, ge, cs, ce].some((x) => Number.isNaN(x.getTime()))) return true;
+
+        // Allow the current range to drift by ±N months relative to the generated range.
+        const allowedStart = addMonths(gs, -OUTDATED_LEEWAY_MONTHS);
+        const allowedEnd = addMonths(ge, OUTDATED_LEEWAY_MONTHS);
+
+        return cs < allowedStart || ce > allowedEnd;
+    };
     const {
         loading, setLoading,
         error, setError,
@@ -466,7 +491,7 @@ export const RiskAnalysis: React.FC<InsightsProps> = ({
                 </div>
 
                 {/* Outdated Analysis Warning Indicator */}
-                {cache?.generatedPeriod && dateRange && (cache.generatedPeriod.startDate !== dateRange.startDate || cache.generatedPeriod.endDate !== dateRange.endDate) && (
+                {cache?.generatedPeriod && dateRange && isOutdatedWithinLeeway(cache.generatedPeriod, dateRange) && (
                     <div className="standard-error-box" style={{ marginTop: '0.25rem'}}>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9B2226" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                             <circle cx="12" cy="12" r="10"></circle>
